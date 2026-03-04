@@ -219,20 +219,192 @@
     @yield('content')
   </div>
 
-  {{-- ═══ FOOTER ═══ --}}
-  <footer class="site-footer" id="footer">
-    <div>
-      <strong style="color:#fff;">Trang báo Sinh viên — Đại học An Giang</strong><br>
-      <span>18 Ung Văn Khiêm, P. Đông Xuyên, TP. Long Xuyên, An Giang</span><br>
-      <span>ĐT: (0296) 3 841 424 &nbsp;|&nbsp; Email: enews@agu.edu.vn</span><br>
-      <span style="font-size:.72rem;color:rgba(255,255,255,.45);">&copy; {{ date('Y') }} Trường Đại học An Giang — VNU-HCM. Bảo lưu mọi quyền.</span>
+  {{-- ═══ FOOTER ═══════════════════════════════════════════════ --}}
+  <footer id="footer">
+
+    {{-- ── Main footer body ─────────────────────────────────── --}}
+    <div style="background: linear-gradient(135deg, #0d3b10 0%, #1b5e20 50%, #0d3b10 100%);
+                padding: 42px 0 28px; border-top: 4px solid #f5d400;">
+      <div style="max-width:1140px; margin:0 auto; padding:0 20px;
+                  display:grid; grid-template-columns:2fr 1fr 1fr; gap:36px;">
+
+        {{-- Col 1: Logo + Giới thiệu --}}
+        <div>
+          <div style="display:flex; align-items:center; gap:14px; margin-bottom:16px;">
+            <img src="{{ asset('images/logo.png') }}" alt="AGU Logo"
+                 style="width:52px; height:52px; border-radius:50%; object-fit:cover;
+                        border:2px solid rgba(245,212,0,.5);"
+                 onerror="this.style.display='none'">
+            <div>
+              <div style="font-size:1.1rem; font-weight:900; color:#f5d400; line-height:1.2;
+                          font-style:italic; letter-spacing:.5px;">e-News</div>
+              <div style="font-size:.72rem; color:rgba(255,255,255,.75); font-weight:600; letter-spacing:.3px;">
+                TRANG BÁO SINH VIÊN ĐẠI HỌC AN GIANG
+              </div>
+            </div>
+          </div>
+
+          <p style="font-size:.80rem; color:rgba(255,255,255,.70); line-height:1.75; margin-bottom:18px;">
+            e-News là nơi phản ánh hoạt động học tập, phong trào sinh viên và
+            giảng viên Trường Đại học An Giang — ra mắt từ tháng 10 năm 2004.
+          </p>
+
+          {{-- Thông tin liên hệ --}}
+          <div style="display:flex; flex-direction:column; gap:8px;">
+            <div style="display:flex; align-items:flex-start; gap:8px; font-size:.78rem; color:rgba(255,255,255,.80);">
+              <i class="bi bi-geo-alt-fill" style="color:#f5d400; margin-top:2px; flex-shrink:0;"></i>
+              <span>Số 18, đường Ung Văn Khiêm, phường Long Xuyên, tỉnh An Giang</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:8px; font-size:.78rem; color:rgba(255,255,255,.80);">
+              <i class="bi bi-telephone-fill" style="color:#f5d400; flex-shrink:0;"></i>
+              <span>+84 296 625 6565 nhánh 1602</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:8px; font-size:.78rem; color:rgba(255,255,255,.80);">
+              <i class="bi bi-envelope-fill" style="color:#f5d400; flex-shrink:0;"></i>
+              <a href="mailto:enews@agu.edu.vn"
+                 style="color:rgba(255,255,255,.80); text-decoration:none; transition:color .18s;"
+                 onmouseover="this.style.color='#f5d400'" onmouseout="this.style.color='rgba(255,255,255,.80)'">
+                enews@agu.edu.vn
+              </a>
+            </div>
+            <div style="display:flex; align-items:center; gap:8px; font-size:.78rem; color:rgba(255,255,255,.80);">
+              <i class="bi bi-globe2" style="color:#f5d400; flex-shrink:0;"></i>
+              <a href="http://enews.agu.edu.vn" target="_blank"
+                 style="color:rgba(255,255,255,.80); text-decoration:none; transition:color .18s;"
+                 onmouseover="this.style.color='#f5d400'" onmouseout="this.style.color='rgba(255,255,255,.80)'">
+                enews.agu.edu.vn
+              </a>
+            </div>
+          </div>
+        </div>
+
+        {{-- Col 2: Chuyên mục --}}
+        <div>
+          <h3 style="font-size:.80rem; font-weight:800; color:#f5d400; text-transform:uppercase;
+                     letter-spacing:.8px; margin-bottom:14px; padding-bottom:8px;
+                     border-bottom:1px solid rgba(245,212,0,.2);">
+            <i class="bi bi-grid-3x3-gap-fill me-2"></i>Chuyên mục
+          </h3>
+          @php
+            $footerCats = \App\Models\Category::active()->roots()->limit(8)->get();
+          @endphp
+          <ul style="list-style:none; padding:0; margin:0;">
+            @foreach($footerCats as $cat)
+            <li style="margin-bottom:1px;">
+              <a href="{{ route('category', $cat->slug) }}"
+                 style="display:flex; align-items:center; gap:7px; padding:5px 0;
+                        font-size:.78rem; color:rgba(255,255,255,.72); text-decoration:none;
+                        border-bottom:1px solid rgba(255,255,255,.06); transition:color .15s;"
+                 onmouseover="this.style.color='#f5d400'" onmouseout="this.style.color='rgba(255,255,255,.72)'">
+                <i class="bi bi-chevron-right" style="font-size:.60rem; color:#f5d400;">
+                </i>{{ $cat->name }}
+              </a>
+            </li>
+            @endforeach
+          </ul>
+        </div>
+
+        {{-- Col 3: Liên kết & Ban biên tập --}}
+        <div>
+          <h3 style="font-size:.80rem; font-weight:800; color:#f5d400; text-transform:uppercase;
+                     letter-spacing:.8px; margin-bottom:14px; padding-bottom:8px;
+                     border-bottom:1px solid rgba(245,212,0,.2);">
+            <i class="bi bi-link-45deg me-2"></i>Thông tin
+          </h3>
+          <ul style="list-style:none; padding:0; margin:0 0 20px;">
+            @foreach([
+              ['url'=>route('about'),  'label'=>'Giới thiệu'],
+              ['url'=>route('rules'),  'label'=>'Quy định đăng bài'],
+              ['url'=>route('contact'),'label'=>'Liên hệ tòa soạn'],
+              ['url'=>route('search'), 'label'=>'Tìm kiếm bài viết'],
+              ['url'=>route('login'),  'label'=>'Đăng nhập hệ thống'],
+            ] as $link)
+            <li style="margin-bottom:1px;">
+              <a href="{{ $link['url'] }}"
+                 style="display:flex; align-items:center; gap:7px; padding:5px 0;
+                        font-size:.78rem; color:rgba(255,255,255,.72); text-decoration:none;
+                        border-bottom:1px solid rgba(255,255,255,.06); transition:color .15s;"
+                 onmouseover="this.style.color='#f5d400'" onmouseout="this.style.color='rgba(255,255,255,.72)'">
+                <i class="bi bi-chevron-right" style="font-size:.60rem; color:#f5d400;"></i>
+                {{ $link['label'] }}
+              </a>
+            </li>
+            @endforeach
+          </ul>
+
+          {{-- Phụ trách --}}
+          <div style="background:rgba(255,255,255,.07); border-radius:8px; padding:14px;
+                      border:1px solid rgba(245,212,0,.15);">
+            <div style="font-size:.70rem; font-weight:800; color:#f5d400; text-transform:uppercase;
+                        letter-spacing:.5px; margin-bottom:10px;">
+              <i class="bi bi-person-badge-fill me-1"></i> Phụ trách
+            </div>
+            <div style="display:flex; align-items:center; gap:9px; margin-bottom:8px;">
+              <div style="width:32px; height:32px; border-radius:50%; background:linear-gradient(135deg,#2a7a27,#388e3c);
+                          color:#fff; display:flex; align-items:center; justify-content:center;
+                          font-size:.75rem; font-weight:800; flex-shrink:0;">NK</div>
+              <div>
+                <div style="font-size:.72rem; font-weight:700; color:#fff;">ThS. Ngô Thị Kim Duyên</div>
+                <div style="font-size:.66rem; color:rgba(255,255,255,.55);">Phụ trách chung e-News</div>
+              </div>
+            </div>
+          </div>
+
+          {{-- Social icons --}}
+          <div style="display:flex; gap:8px; margin-top:16px;">
+            <a href="#" title="Facebook"
+               style="width:34px; height:34px; border-radius:8px; background:rgba(255,255,255,.1);
+                      color:rgba(255,255,255,.8); display:flex; align-items:center; justify-content:center;
+                      font-size:.9rem; text-decoration:none; transition:all .18s; border:1px solid rgba(255,255,255,.1);"
+               onmouseover="this.style.background='#1877F2'; this.style.color='#fff'; this.style.border='1px solid #1877F2';"
+               onmouseout="this.style.background='rgba(255,255,255,.1)'; this.style.color='rgba(255,255,255,.8)'; this.style.border='1px solid rgba(255,255,255,.1)';">
+              <i class="bi bi-facebook"></i>
+            </a>
+            <a href="#" title="YouTube"
+               style="width:34px; height:34px; border-radius:8px; background:rgba(255,255,255,.1);
+                      color:rgba(255,255,255,.8); display:flex; align-items:center; justify-content:center;
+                      font-size:.9rem; text-decoration:none; transition:all .18s; border:1px solid rgba(255,255,255,.1);"
+               onmouseover="this.style.background='#FF0000'; this.style.color='#fff'; this.style.border='1px solid #FF0000';"
+               onmouseout="this.style.background='rgba(255,255,255,.1)'; this.style.color='rgba(255,255,255,.8)'; this.style.border='1px solid rgba(255,255,255,.1)';">
+              <i class="bi bi-youtube"></i>
+            </a>
+            <a href="mailto:enews@agu.edu.vn" title="Email"
+               style="width:34px; height:34px; border-radius:8px; background:rgba(255,255,255,.1);
+                      color:rgba(255,255,255,.8); display:flex; align-items:center; justify-content:center;
+                      font-size:.9rem; text-decoration:none; transition:all .18s; border:1px solid rgba(255,255,255,.1);"
+               onmouseover="this.style.background='#f5d400'; this.style.color='#1b5e20'; this.style.border='1px solid #f5d400';"
+               onmouseout="this.style.background='rgba(255,255,255,.1)'; this.style.color='rgba(255,255,255,.8)'; this.style.border='1px solid rgba(255,255,255,.1)';">
+              <i class="bi bi-envelope-fill"></i>
+            </a>
+          </div>
+
+        </div>
+      </div>
     </div>
-    <div class="footer-socials">
-      <a href="#" class="footer-social-btn" title="Facebook"><i class="bi bi-facebook"></i></a>
-      <a href="#" class="footer-social-btn" title="YouTube"><i class="bi bi-youtube"></i></a>
-      <a href="{{ route('login') }}" class="footer-social-btn" title="Đăng nhập CMS"><i class="bi bi-person-fill-lock"></i></a>
+
+    {{-- ── Copyright bar ─────────────────────────────────────── --}}
+    <div style="background:#071d08; padding:12px 20px;
+                display:flex; align-items:center; justify-content:space-between;
+                flex-wrap:wrap; gap:10px;">
+      <div style="font-size:.73rem; color:rgba(255,255,255,.50);">
+        &copy; {{ date('Y') }} <strong style="color:rgba(255,255,255,.70);">e-News</strong>
+        &mdash; Trang báo Sinh viên Trường Đại học An Giang &mdash; VNU-HCM.
+        Bảo lưu mọi quyền.
+      </div>
+      {{-- Back to top --}}
+      <button onclick="window.scrollTo({top:0,behavior:'smooth'})"
+              style="display:flex; align-items:center; gap:6px; background:rgba(245,212,0,.12);
+                     border:1px solid rgba(245,212,0,.3); border-radius:6px;
+                     color:#f5d400; font-size:.72rem; font-weight:700; padding:5px 14px;
+                     cursor:pointer; transition:all .18s; letter-spacing:.3px;"
+              onmouseover="this.style.background='rgba(245,212,0,.22)'"
+              onmouseout="this.style.background='rgba(245,212,0,.12)'">
+        <i class="bi bi-arrow-up-circle-fill"></i> Trở lên trên
+      </button>
     </div>
+
   </footer>
+
 
 </div>{{-- /page-wrapper --}}
 
