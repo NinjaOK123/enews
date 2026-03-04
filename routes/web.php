@@ -2,28 +2,49 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\SearchController;
 
 // ─── Frontend ────────────────────────────────────────────────
 Route::get('/', function () {
     return view('frontend.home');
 })->name('home');
 
-Route::get('/tim-kiem', function () {
-    return view('frontend.search');
-})->name('search');
+Route::get('/tim-kiem', [SearchController::class, 'index'])->name('search');
 
-Route::get('/chuyen-muc/{slug}', function ($slug) {
-    return view('frontend.category', compact('slug'));
-})->name('category');
+Route::get('/chuyen-muc/{slug}', [CategoryController::class, 'show'])->name('category');
+
 
 Route::get('/bai-viet/{slug}', function ($slug) {
     return view('frontend.article', compact('slug'));
 })->name('article');
 
 // ─── Auth: đăng nhập / đăng xuất ────────────────────────────
-Route::get('/dang-nhap',  [AuthController::class, 'showLogin'])->name('login');
-Route::post('/dang-nhap', [AuthController::class, 'loginWithPassword'])->name('login.post');
-Route::get('/dang-xuat',  [AuthController::class, 'logout'])->name('logout');
+use App\Http\Controllers\Auth\LoginController;
+
+Route::get('/login',  [LoginController::class, 'showLoginForm'])->name('login');
+Route::post('/login', [LoginController::class, 'login']);
+Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
+
+// ─── Role-based Dashboards ──────────────────────────────────
+
+Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
+    Route::get('/dashboard', function () {
+        return 'Admin Dashboard - Thống kê, Quản lý bài viết, User, v.v.';
+    })->name('dashboard');
+});
+
+Route::middleware(['auth', 'role:editor'])->prefix('editor')->name('editor.')->group(function () {
+    Route::get('/dashboard', function () {
+        return 'Editor Dashboard - Duyệt bài, chỉnh sửa, v.v.';
+    })->name('dashboard');
+});
+
+Route::middleware(['auth', 'role:contributor'])->prefix('contributor')->name('contributor.')->group(function () {
+    Route::get('/dashboard', function () {
+        return 'Contributor Dashboard - Viết bài, gửi duyệt, v.v.';
+    })->name('dashboard');
+});
 
 // ─── Auth: Google OAuth2 ─────────────────────────────────────
 Route::get('/auth/google',          [AuthController::class, 'redirectToGoogle'])->name('auth.google');

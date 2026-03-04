@@ -300,15 +300,25 @@
     <div class="login-divider">HOẶC tài khoản</div>
 
     {{-- Login form --}}
-    <form action="{{ route('login.post') }}" method="POST" style="width:100%;">
+    <form action="{{ route('login') }}" method="POST" style="width:100%;">
       @csrf
+
+      {{-- Hiển thị lỗi --}}
+      @if($errors->any())
+      <div class="login-error">
+        <i class="bi bi-exclamation-circle-fill"></i>
+        {{ $errors->first() }}
+      </div>
+      @endif
+
       <input
         type="text"
-        name="username"
+        name="login"
         class="login-input"
-        placeholder="Tên tài khoản:"
-        value="{{ old('username') }}"
+        placeholder="Email AGU hoặc tên tài khoản"
+        value="{{ old('login') }}"
         required
+        autofocus
         autocomplete="username"
       >
       <div style="position:relative;">

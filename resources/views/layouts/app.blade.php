@@ -83,38 +83,64 @@
   {{-- ═══ CATEGORY NAV (AGU green sticky bar) ═══ --}}
   <nav class="cat-nav" id="cat-nav">
     <ul>
-      <li class="{{ request()->routeIs('home') ? 'active' : '' }}">
-        <a href="{{ route('home') }}">Bản tin AGU</a>
+      @php $navCategories = $navCategories ?? \App\Models\Category::active()->roots()->get(); @endphp
+      @foreach($navCategories as $cat)
+      <li class="{{ request()->is('chuyen-muc/'.$cat->slug.'*') ? 'active' : '' }}">
+        <a href="{{ route('category', $cat->slug) }}">{{ $cat->name }}</a>
       </li>
-      <li class="{{ request()->is('chuyen-muc/phong-su-anh*') ? 'active' : '' }}">
-        <a href="{{ route('category', 'phong-su-anh') }}">Phóng sự Ảnh</a>
-      </li>
-      <li class="{{ request()->is('chuyen-muc/khoa-hoc*') ? 'active' : '' }}">
-        <a href="{{ route('category', 'khoa-hoc-voi-agu') }}">Khoa học với AGU</a>
-      </li>
-      <li class="{{ request()->is('chuyen-muc/cau-chuyen*') ? 'active' : '' }}">
-        <a href="{{ route('category', 'cau-chuyen-agu') }}">Câu chuyện AGU</a>
-      </li>
-      <li class="{{ request()->is('chuyen-muc/goc-nhin*') ? 'active' : '' }}">
-        <a href="{{ route('category', 'goc-nhin') }}">Góc nhìn</a>
-      </li>
-      <li class="{{ request()->is('chuyen-muc/tan-man*') ? 'active' : '' }}">
-        <a href="{{ route('category', 'tan-man') }}">Tản mạn</a>
-      </li>
-      <li class="{{ request()->is('chuyen-muc/guong-mat*') ? 'active' : '' }}">
-        <a href="{{ route('category', 'guong-mat-agu') }}">Gương mặt AGU</a>
-      </li>
-      <li class="{{ request()->is('chuyen-muc/sv-clb*') ? 'active' : '' }}">
-        <a href="{{ route('category', 'sv-clb') }}">SV với Câu lạc bộ</a>
-      </li>
-      <li class="{{ request()->is('chuyen-muc/enews-ban-doc*') ? 'active' : '' }}">
-        <a href="{{ route('category', 'enews-ban-doc') }}">eNews và Bạn đọc</a>
-      </li>
-      <li class="{{ request()->is('chuyen-muc/luot-web*') ? 'active' : '' }}">
-        <a href="{{ route('category', 'luot-web-cung-sv') }}">Lướt web cùng SV</a>
-      </li>
+      @endforeach
     </ul>
+    {{-- Search icon at end of nav --}}
+    <div class="cat-nav-search" id="catNavSearch">
+      <button onclick="toggleAdvSearch()" title="Tìm kiếm nâng cao" style="background:none;border:none;color:#fff;cursor:pointer;padding:0 12px;font-size:1rem;line-height:1;">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
   </nav>
+
+  {{-- ═══ ADVANCED SEARCH PANEL (dropdown from search icon) ═══ --}}
+  <div id="advSearchPanel" style="display:none; background:#fff; border-bottom:3px solid var(--primary,#2a7a27); box-shadow:0 4px 16px rgba(0,0,0,.12); padding:16px 20px; position:relative; z-index:999;">
+    <form action="{{ route('search') }}" method="GET">
+      <div style="display:flex; flex-wrap:wrap; gap:10px; align-items:flex-end;">
+        <div style="flex:2; min-width:180px;">
+          <label style="font-size:.75rem;font-weight:700;color:#555;display:block;margin-bottom:4px;">Từ khóa</label>
+          <input type="text" name="keyword" placeholder="Nội dung, tiêu đề..." value="{{ request('keyword') }}"
+                 style="width:100%;border:1.5px solid #d0d0d0;border-radius:6px;padding:7px 10px;font-size:.82rem;outline:none;">
+        </div>
+        <div style="flex:1; min-width:140px;">
+          <label style="font-size:.75rem;font-weight:700;color:#555;display:block;margin-bottom:4px;">Tác giả</label>
+          <input type="text" name="author" placeholder="Tên tác giả..." value="{{ request('author') }}"
+                 style="width:100%;border:1.5px solid #d0d0d0;border-radius:6px;padding:7px 10px;font-size:.82rem;outline:none;">
+        </div>
+        <div style="flex:1.2; min-width:140px;">
+          <label style="font-size:.75rem;font-weight:700;color:#555;display:block;margin-bottom:4px;">Chuyên mục</label>
+          <select name="category_id" style="width:100%;border:1.5px solid #d0d0d0;border-radius:6px;padding:7px 10px;font-size:.82rem;outline:none;background:#fff;">
+            <option value="">-- Tất cả --</option>
+            @foreach($navCategories as $cat)
+            <option value="{{ $cat->id }}" {{ request('category_id') == $cat->id ? 'selected' : '' }}>{{ $cat->name }}</option>
+            @endforeach
+          </select>
+        </div>
+        <div style="flex:1; min-width:130px;">
+          <label style="font-size:.75rem;font-weight:700;color:#555;display:block;margin-bottom:4px;">Từ ngày</label>
+          <input type="date" name="date_from" value="{{ request('date_from') }}"
+                 style="width:100%;border:1.5px solid #d0d0d0;border-radius:6px;padding:7px 10px;font-size:.82rem;outline:none;">
+        </div>
+        <div style="flex:1; min-width:130px;">
+          <label style="font-size:.75rem;font-weight:700;color:#555;display:block;margin-bottom:4px;">Đến ngày</label>
+          <input type="date" name="date_to" value="{{ request('date_to') }}"
+                 style="width:100%;border:1.5px solid #d0d0d0;border-radius:6px;padding:7px 10px;font-size:.82rem;outline:none;">
+        </div>
+        <div>
+          <button type="submit" style="background:var(--primary,#2a7a27);color:#fff;border:none;border-radius:6px;padding:8px 20px;font-size:.82rem;font-weight:700;cursor:pointer;">
+            <i class="bi bi-search me-1"></i> Tìm
+          </button>
+          <a href="{{ route('search') }}" style="margin-left:6px;font-size:.75rem;color:#888;text-decoration:none;">Xóa bộ lọc</a>
+        </div>
+      </div>
+    </form>
+  </div>
+
 
   {{-- ═══ PAGE CONTENT ═══ --}}
   <div class="main-content-area">
@@ -139,6 +165,21 @@
 </div>{{-- /page-wrapper --}}
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+function toggleAdvSearch() {
+  const panel = document.getElementById('advSearchPanel');
+  if (panel) {
+    const isVisible = panel.style.display !== 'none';
+    panel.style.display = isVisible ? 'none' : 'block';
+    if (!isVisible) panel.querySelector('input[name="keyword"]')?.focus();
+  }
+}
+// Auto-open if there are active search filters
+@if(request()->anyFilled(['keyword','author','date_from','date_to','category_id']))
+document.addEventListener('DOMContentLoaded', () => { toggleAdvSearch(); });
+@endif
+</script>
 @stack('scripts')
 </body>
 </html>
+
