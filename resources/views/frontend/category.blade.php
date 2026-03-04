@@ -44,7 +44,7 @@
             &nbsp;·&nbsp;
             <i class="bi bi-calendar3" style="margin-right:3px;"></i>{{ $post->published_at?->format('d/m/Y') }}
           </div>
-          <a href="{{ route('article', $post->slug) }}"
+          <a href="{{ route('post.show', $post->slug) }}"
              style="font-size:.88rem; font-weight:700; color:#1a1a1a; line-height:1.45; display:block; text-decoration:none;
                     display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden;">
             {{ $post->title }}
