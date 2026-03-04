@@ -37,7 +37,21 @@ class PostController extends Controller
             ->limit(4)
             ->get();
 
-        return view('posts.show', compact('post', 'relatedPosts'));
+        // Sidebar: 6 bài mới nhất (toàn site)
+        $recentPosts = Post::published()
+            ->where('id', '!=', $post->id)
+            ->with(['category:id,name,slug'])
+            ->latest()
+            ->limit(6)
+            ->get();
+
+        // Sidebar: tất cả chuyên mục với số bài
+        $allCategories = \App\Models\Category::where('is_active', true)
+            ->withCount(['posts' => fn($q) => $q->where('status','published')])
+            ->orderByDesc('posts_count')
+            ->get();
+
+        return view('posts.show', compact('post', 'relatedPosts', 'recentPosts', 'allCategories'));
     }
 
     /**
