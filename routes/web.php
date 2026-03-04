@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\SearchController;
+use App\Http\Controllers\PostController;
 
 // ─── Frontend ────────────────────────────────────────────────
 Route::get('/', function () {
@@ -15,9 +16,13 @@ Route::get('/tim-kiem', [SearchController::class, 'index'])->name('search');
 Route::get('/chuyen-muc/{slug}', [CategoryController::class, 'show'])->name('category');
 
 
-Route::get('/bai-viet/{slug}', function ($slug) {
-    return view('frontend.article', compact('slug'));
-})->name('article');
+// Trang chi tiết bài viết — dùng Route Model Binding theo slug
+Route::get('/bai-viet/{post:slug}', [PostController::class, 'show'])->name('post.show');
+
+// Gửi bình luận (yêu cầu đăng nhập)
+Route::post('/bai-viet/{post:slug}/binh-luan', [PostController::class, 'storeComment'])
+     ->name('post.comment')
+     ->middleware('auth');
 
 // ─── Auth: đăng nhập / đăng xuất ────────────────────────────
 use App\Http\Controllers\Auth\LoginController;

@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Post extends Model
 {
@@ -25,6 +26,11 @@ class Post extends Model
     public function category(): BelongsTo
     {
         return $this->belongsTo(Category::class);
+    }
+
+    public function comments(): HasMany
+    {
+        return $this->hasMany(Comment::class)->latest();
     }
 
     // ─── Scopes ──────────────────────────────────────────────────────────────
@@ -85,7 +91,7 @@ class Post extends Model
 
     public function getUrlAttribute(): string
     {
-        return route('article', $this->slug);
+        return route('post.show', $this->slug);
     }
 
     public function getThumbnailUrlAttribute(): string
