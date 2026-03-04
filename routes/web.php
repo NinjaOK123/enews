@@ -10,12 +10,18 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\EditorController;
 use App\Http\Controllers\ContributorController;
+use App\Http\Controllers\PageController;
 
 // ─── Frontend (Public) ──────────────────────────────────────────
 Route::get('/',  [HomeController::class, 'index'])->name('home');
 Route::get('/tim-kiem', [SearchController::class, 'index'])->name('search');
 Route::get('/chuyen-muc/{slug}', [CategoryController::class, 'show'])->name('category');
 Route::get('/bai-viet/{post:slug}', [PostController::class, 'show'])->name('post.show');
+
+// ─── Trang tĩnh ─────────────────────────────────────────────────
+Route::get('/gioi-thieu',         [PageController::class, 'gioiThieu'])->name('about');
+Route::get('/quy-dinh',           [PageController::class, 'quyDinh'])->name('rules');
+Route::get('/lien-he',            [PageController::class, 'lienHe'])->name('contact');
 
 // ─── Bình luận (yêu cầu đăng nhập) ────────────────────────────
 Route::post('/bai-viet/{post:slug}/binh-luan', [PostController::class, 'storeComment'])

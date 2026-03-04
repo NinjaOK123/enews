@@ -41,21 +41,21 @@
 
     {{-- Main navigation --}}
     <nav class="header-nav d-none d-lg-flex">
-      <a href="{{ url('/') }}" class="header-nav-item {{ request()->is('/') ? 'active' : '' }}">
-        <i class="bi bi-house-door"></i>
+      <a href="{{ route('about') }}" class="header-nav-item {{ request()->routeIs('about') ? 'active' : '' }}">
+        <i class="bi bi-info-circle"></i>
         <span>Giới thiệu</span>
       </a>
-      <a href="{{ url('/quy-dinh') }}" class="header-nav-item {{ request()->is('quy-dinh') ? 'active' : '' }}">
+      <a href="{{ route('rules') }}" class="header-nav-item {{ request()->routeIs('rules') ? 'active' : '' }}">
         <i class="bi bi-file-earmark-text"></i>
         <span>Quy định</span>
       </a>
-      <a href="{{ url('/lien-he') }}" class="header-nav-item {{ request()->is('lien-he') ? 'active' : '' }}">
+      <a href="{{ route('contact') }}" class="header-nav-item {{ request()->routeIs('contact') ? 'active' : '' }}">
         <i class="bi bi-envelope"></i>
         <span>Liên hệ</span>
       </a>
       <a href="{{ url('/enews-doc-va-suy-ngam') }}" class="header-nav-item {{ request()->is('enews-doc-va-suy-ngam') ? 'active' : '' }}">
         <i class="bi bi-book"></i>
-        <span>eNews - Đọc & Suy ngẫm</span>
+        <span>eNews - Đọc &amp; Suy ngẫm</span>
       </a>
     </nav>
 
