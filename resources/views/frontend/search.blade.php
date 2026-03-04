@@ -118,7 +118,7 @@
       <article style="display:flex; gap:14px; background:#fff; border-radius:8px; overflow:hidden; box-shadow:0 1px 6px rgba(0,0,0,.07); padding:0; transition:box-shadow .2s;"
                onmouseover="this.style.boxShadow='0 3px 14px rgba(0,0,0,.12)'" onmouseout="this.style.boxShadow='0 1px 6px rgba(0,0,0,.07)'">
         {{-- Thumbnail --}}
-        <a href="{{ route('article', $post->slug) }}" style="flex-shrink:0;">
+        <a href="{{ route('post.show', $post->slug) }}" style="flex-shrink:0;">
           <img src="{{ $post->thumbnail_url }}"
                alt="{{ $post->title }}"
                style="width:160px; height:110px; object-fit:cover; display:block;" loading="lazy">
@@ -131,7 +131,7 @@
             {{ $post->category->name ?? '' }}
           </a>
           {{-- Title --}}
-          <a href="{{ route('article', $post->slug) }}"
+          <a href="{{ route('post.show', $post->slug) }}"
              style="display:block; font-size:.95rem; font-weight:700; color:#1a1a1a; line-height:1.45; text-decoration:none; margin-bottom:5px;
                     display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">
             {{ $post->title }}

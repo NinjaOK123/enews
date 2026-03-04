@@ -34,7 +34,7 @@
       @foreach($posts as $post)
       <article style="background:#fff; border-radius:8px; overflow:hidden; box-shadow:0 1px 8px rgba(0,0,0,.07); transition:box-shadow .2s;"
                onmouseover="this.style.boxShadow='0 4px 16px rgba(0,0,0,.14)'" onmouseout="this.style.boxShadow='0 1px 8px rgba(0,0,0,.07)'">
-        <a href="{{ route('article', $post->slug) }}">
+        <a href="{{ route('post.show', $post->slug) }}">
           <img src="{{ $post->thumbnail_url }}" alt="{{ $post->title }}"
                style="width:100%; height:170px; object-fit:cover; display:block;" loading="lazy">
         </a>
