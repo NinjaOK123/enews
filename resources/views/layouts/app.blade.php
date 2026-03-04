@@ -39,15 +39,7 @@
       </div>
     </a>
 
-    {{-- Search bar --}}
-    <div class="header-search">
-      <form action="{{ route('search') }}" method="GET">
-        <div class="search-wrap">
-          <input type="text" name="q" placeholder="Tìm kiếm tin tức..." value="{{ request('q') }}" autocomplete="off">
-          <button class="search-btn" type="submit"><i class="bi bi-search"></i></button>
-        </div>
-      </form>
-    </div>
+    {{-- Main navigation --}}
 
     {{-- Quick desktop nav --}}
     <nav class="header-nav d-none d-lg-flex">
