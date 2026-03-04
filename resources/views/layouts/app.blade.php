@@ -40,23 +40,22 @@
     </a>
 
     {{-- Main navigation --}}
-
-    {{-- Quick desktop nav --}}
     <nav class="header-nav d-none d-lg-flex">
-      <a href="{{ route('home') }}" class="header-nav-item {{ request()->routeIs('home') ? 'active' : '' }}">
-        <i class="bi bi-house-door"></i>Trang chủ
+      <a href="{{ url('/') }}" class="nav-item {{ request()->is('/') ? 'active' : '' }}">
+        <i class="bi bi-house-door"></i>
+        <span>Giới thiệu</span>
       </a>
-      <a href="#cat-nav" class="header-nav-item">
-        <i class="bi bi-grid-3x3-gap"></i>Chuyên mục
+      <a href="{{ url('/quy-dinh') }}" class="nav-item {{ request()->is('quy-dinh') ? 'active' : '' }}">
+        <i class="bi bi-file-earmark-text"></i>
+        <span>Quy định</span>
       </a>
-      <a href="{{ route('search') }}" class="header-nav-item {{ request()->routeIs('search') ? 'active' : '' }}">
-        <i class="bi bi-newspaper"></i>Tin mới nhất
+      <a href="{{ url('/lien-he') }}" class="nav-item {{ request()->is('lien-he') ? 'active' : '' }}">
+        <i class="bi bi-envelope"></i>
+        <span>Liên hệ</span>
       </a>
-      <a href="#events" class="header-nav-item">
-        <i class="bi bi-calendar-event"></i>Sự kiện
-      </a>
-      <a href="#footer" class="header-nav-item">
-        <i class="bi bi-envelope"></i>Liên hệ
+      <a href="{{ url('/enews-doc-va-suy-ngam') }}" class="nav-item {{ request()->is('enews-doc-va-suy-ngam') ? 'active' : '' }}">
+        <i class="bi bi-book"></i>
+        <span>eNews - Đọc & Suy ngẫm</span>
       </a>
     </nav>
 
