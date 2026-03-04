@@ -1,115 +1,75 @@
 @extends('layouts.app')
 
 @section('title', 'Trang Chủ')
+@section('meta_description', 'E-News AGU — Trang tin điện tử Trường Đại học An Giang. Cập nhật tin tức, sự kiện, nghiên cứu khoa học và hoạt động sinh viên.')
 
 @section('content')
 
 {{-- ═══ HERO + SIDEBAR ROW ═══ --}}
 <div class="hero-area">
 
-  {{-- HERO SLIDER --}}
+  {{-- HERO SLIDER — dữ liệu thật từ DB --}}
   <div class="hero-slider-wrap">
+    @if($heroPosts->isNotEmpty())
     <div id="heroCarousel" class="carousel slide" data-bs-ride="carousel">
       <div class="carousel-inner">
-
-        <div class="carousel-item active">
+        @foreach($heroPosts as $i => $hero)
+        <div class="carousel-item {{ $i === 0 ? 'active' : '' }}">
           <div class="hero-slide">
-            <img src="https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=700&q=80"
-                 alt="Sinh viên ngành Triết học và Giáo dục chính trị nghiên cứu thực tế tại Đà Lạt">
-            <div class="hero-badge-label">Tin nổi bật</div>
+            <a href="{{ route('post.show', $hero->slug) }}">
+              <img src="{{ $hero->thumbnail_url }}" alt="{{ $hero->title }}">
+            </a>
+            <div class="hero-badge-label">{{ $hero->category->name ?? 'Tin nổi bật' }}</div>
             <div class="hero-caption">
-              <div class="hero-caption-text">Sinh viên ngành Triết học và Giáo dục chính trị nghiên cứu thực tế tại Đà Lạt</div>
+              <a href="{{ route('post.show', $hero->slug) }}" class="hero-caption-text" style="text-decoration:none;color:#fff;">
+                {{ $hero->title }}
+              </a>
+              <div style="font-size:.72rem; color:rgba(255,255,255,.7); margin-top:6px; display:flex; gap:12px;">
+                <span><i class="bi bi-person"></i> {{ $hero->author->name ?? 'Ban Biên tập' }}</span>
+                <span><i class="bi bi-calendar3"></i> {{ $hero->published_at?->format('d/m/Y') }}</span>
+                <span><i class="bi bi-eye"></i> {{ number_format($hero->view_count) }}</span>
+              </div>
             </div>
           </div>
         </div>
-
-        <div class="carousel-item">
-          <div class="hero-slide">
-            <img src="https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=700&q=80"
-                 alt="Hội thảo Khoa học Quốc tế về Nông nghiệp Bền vững tại ĐBSCL 2024">
-            <div class="hero-badge-label">Tin nổi bật</div>
-            <div class="hero-caption">
-              <div class="hero-caption-text">Hội thảo Khoa học Quốc tế về Nông nghiệp Bền vững tại ĐBSCL 2024</div>
-            </div>
-          </div>
-        </div>
-
-        <div class="carousel-item">
-          <div class="hero-slide">
-            <img src="https://images.unsplash.com/photo-1517486808906-6ca8b3f04846?w=700&q=80"
-                 alt="Sinh viên AGU giành giải Nhất cuộc thi Khởi nghiệp Sáng tạo Quốc gia">
-            <div class="hero-badge-label">Tin nổi bật</div>
-            <div class="hero-caption">
-              <div class="hero-caption-text">Sinh viên AGU giành giải Nhất cuộc thi Khởi nghiệp Sáng tạo Quốc gia năm 2024</div>
-            </div>
-          </div>
-        </div>
-
-        <div class="carousel-item">
-          <div class="hero-slide">
-            <img src="https://images.unsplash.com/photo-1580582932707-520aed937b7b?w=700&q=80"
-                 alt="Đoàn Trường Đại học An Giang triển khai các hoạt động cao điểm Tháng Thanh niên năm 2026">
-            <div class="hero-badge-label">Tin nổi bật</div>
-            <div class="hero-caption">
-              <div class="hero-caption-text">Đoàn Trường Đại học An Giang triển khai các hoạt động cao điểm Tháng Thanh niên năm 2026</div>
-            </div>
-          </div>
-        </div>
-
-        <div class="carousel-item">
-          <div class="hero-slide">
-            <img src="https://images.unsplash.com/photo-1574943320219-553eb213f72d?w=700&q=80"
-                 alt="Nghiên cứu phát triển giống lúa thích ứng biến đổi khí hậu tại An Giang">
-            <div class="hero-badge-label">Tin nổi bật</div>
-            <div class="hero-caption">
-              <div class="hero-caption-text">Nghiên cứu phát triển giống lúa thích ứng biến đổi khí hậu tại An Giang</div>
-            </div>
-          </div>
-        </div>
-
+        @endforeach
       </div>
 
-      {{-- Prev/Next Controls --}}
+      {{-- Controls --}}
       <button class="carousel-control-prev" type="button" data-bs-target="#heroCarousel" data-bs-slide="prev"
-              style="width:30px; background:rgba(0,0,0,.3); border-radius:0 3px 3px 0; left:0; top:auto; bottom:10px; height:30px; top:40%;">
+              style="width:30px; background:rgba(0,0,0,.3); border-radius:0 3px 3px 0; left:0; height:30px; top:40%;">
         <span class="carousel-control-prev-icon" style="width:16px;height:16px;"></span>
       </button>
       <button class="carousel-control-next" type="button" data-bs-target="#heroCarousel" data-bs-slide="next"
-              style="width:30px; background:rgba(0,0,0,.3); border-radius:3px 0 0 3px; right:0; top:auto; height:30px; top:40%;">
+              style="width:30px; background:rgba(0,0,0,.3); border-radius:3px 0 0 3px; right:0; height:30px; top:40%;">
         <span class="carousel-control-next-icon" style="width:16px;height:16px;"></span>
       </button>
     </div>
 
-    {{-- Numbered dots (1 2 3 4 5) --}}
+    {{-- Numbered dots --}}
     <div class="hero-dots" id="heroDots">
-      <span class="active" data-slide="0">1</span>
-      <span data-slide="1">2</span>
-      <span data-slide="2">3</span>
-      <span data-slide="3">4</span>
-      <span data-slide="4">5</span>
+      @foreach($heroPosts as $i => $hero)
+      <span class="{{ $i === 0 ? 'active' : '' }}" data-slide="{{ $i }}">{{ $i + 1 }}</span>
+      @endforeach
     </div>
+    @else
+    <div style="height:360px; background:#f0f4f0; border-radius:10px; display:flex; align-items:center; justify-content:center; color:#aaa;">
+      <p>Chưa có bài viết nào.</p>
+    </div>
+    @endif
   </div>
 
-  {{-- SIDEBAR: Mới nhất --}}
+  {{-- SIDEBAR: Mới nhất — dữ liệu thật --}}
   <div class="sidebar-latest">
-    <div class="widget-title">Mới nhất</div>
+    <div class="widget-title"><i class="bi bi-lightning-fill"></i> Mới nhất</div>
     <div class="latest-list">
-      @php
-      $latestItems = [
-        'Một mùi hương ký ức',
-        'Tuyên dương gương người tốt việc tốt',
-        'Tuyên dương gương người tốt việc tốt',
-        'Tết và Me',
-        'Đoàn Trường Đại học An Giang triển khai các hoạt động cao điểm Tháng Thanh niên năm 2026',
-        'Sinh viên AGU tham gia hiến máu tình nguyện đợt 1 năm 2026',
-        'Hội nghị khoa học sinh viên lần thứ 18 — AGU',
-        'Câu chuyện về những người "giữ lửa" văn hóa dân tộc',
-        'Ký ức mùa thi không thể quên của sinh viên AGU',
-      ];
-      @endphp
-      @foreach($latestItems as $item)
-        <a href="#" class="latest-item">{{ $item }}</a>
-      @endforeach
+      @forelse($sidebarLatest as $item)
+      <a href="{{ route('post.show', $item->slug) }}" class="latest-item">
+        {{ $item->title }}
+      </a>
+      @empty
+      <p style="padding:10px; font-size:.8rem; color:#aaa;">Chưa có bài viết.</p>
+      @endforelse
     </div>
   </div>
 
@@ -117,183 +77,83 @@
 
 <hr class="agu">
 
-{{-- ═══ SECTION ROW 1: Bản tin AGU + SV với Câu lạc bộ ═══ --}}
+{{-- ═══ MACRO: hiển thị 1 section-widget từ $sections[$slug] ═══ --}}
+@php
+/**
+ * Helper: render một section widget
+ * $slug       — slug của category
+ * $label      — Tên hiển thị
+ * $posts      — Collection bài viết (limit 4)
+ */
+function renderSection(string $slug, string $label, \Illuminate\Database\Eloquent\Collection $posts): string { return ''; }
+@endphp
+
+{{-- ═══ SECTION ROW 1: Bản tin AGU + SV với CLB ═══ --}}
 <div class="sections-row">
 
   {{-- BẢN TIN AGU --}}
-  <div class="section-widget">
-    <div class="section-widget-title">
-      Bản tin AGU
-      <a href="{{ route('category', 'ban-tin-agu') }}" class="more-link">» Xem thêm</a>
-    </div>
-    <div class="section-widget-body">
-      {{-- Featured top article --}}
-      <div class="featured-article">
-        <a href="#">
-          <img src="https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=500&q=80"
-               alt="Lễ tốt nghiệp đại học chính quy năm 2024" loading="lazy">
-        </a>
-        <div class="featured-article-title">
-          <a href="#">Trường Đại học An Giang tổ chức Lễ tốt nghiệp Đại học chính quy năm 2024</a>
-        </div>
-        <div class="featured-article-meta">04/03/2024 &nbsp;·&nbsp; Phòng Truyền thông</div>
-      </div>
-      {{-- List articles --}}
-      @php $bantinItems = [
-        ['img'=>'https://images.unsplash.com/photo-1560439514-4e9645039924?w=200&q=70','title'=>'Lễ ký kết hợp tác giữa AGU và Công ty FPT Software','date'=>'03/03/2024'],
-        ['img'=>'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=200&q=70','title'=>'Thông báo lịch thi kết thúc học phần HK II năm học 2023–2024','date'=>'01/03/2024'],
-        ['img'=>'https://images.unsplash.com/photo-1521587760476-6c12a4b040da?w=200&q=70','title'=>'Kết quả xét chọn học bổng khuyến khích học tập HK I 2023–2024','date'=>'28/02/2024'],
-      ]; @endphp
-      @foreach($bantinItems as $item)
-      <div class="news-list-item">
-        <a href="#"><img src="{{ $item['img'] }}" class="news-list-thumb" alt="{{ $item['title'] }}" loading="lazy"></a>
-        <div>
-          <div class="news-list-title"><a href="#">{{ $item['title'] }}</a></div>
-          <div class="news-list-meta">{{ $item['date'] }}</div>
-        </div>
-      </div>
-      @endforeach
-    </div>
-  </div>
+  @include('partials.home-section', [
+    'slug'  => 'ban-tin-agu',
+    'label' => 'Bản tin AGU',
+    'posts' => $sections['ban-tin-agu'],
+  ])
 
-  {{-- SV VỚI CÂU LẠC BỘ --}}
-  <div class="section-widget">
-    <div class="section-widget-title">
-      SV với Câu lạc bộ
-      <a href="{{ route('category', 'sv-clb') }}" class="more-link">» Xem thêm</a>
-    </div>
-    <div class="section-widget-body">
-      <div class="featured-article">
-        <a href="#">
-          <img src="https://images.unsplash.com/photo-1517486808906-6ca8b3f04846?w=500&q=80"
-               alt="CLB Võ thuật AGU đoạt huy chương vàng" loading="lazy">
-        </a>
-        <div class="featured-article-title">
-          <a href="#">CLB Võ thuật AGU đoạt Huy chương Vàng tại giải vô địch tỉnh An Giang năm 2024</a>
-        </div>
-        <div class="featured-article-meta">03/03/2024 &nbsp;·&nbsp; Đoàn Thanh niên</div>
-      </div>
-      @php $svclbItems = [
-        ['img'=>'https://images.unsplash.com/photo-1609220136736-443140cfeaa8?w=200&q=70','title'=>'CLB Tình nguyện AGU tổ chức hiến máu nhân đạo đợt 1 năm 2024','date'=>'02/03/2024'],
-        ['img'=>'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&q=70','title'=>'CLB Tiếng Anh AGU English câu lạc bộ kỷ niệm 5 năm thành lập','date'=>'28/02/2024'],
-        ['img'=>'https://images.unsplash.com/photo-1631217868264-e5b90bb7e133?w=200&q=70','title'=>'Sinh viên AGU tham gia Festival Cờ đỏ Sao vàng tỉnh An Giang','date'=>'25/02/2024'],
-      ]; @endphp
-      @foreach($svclbItems as $item)
-      <div class="news-list-item">
-        <a href="#"><img src="{{ $item['img'] }}" class="news-list-thumb" alt="{{ $item['title'] }}" loading="lazy"></a>
-        <div>
-          <div class="news-list-title"><a href="#">{{ $item['title'] }}</a></div>
-          <div class="news-list-meta">{{ $item['date'] }}</div>
-        </div>
-      </div>
-      @endforeach
-    </div>
-  </div>
+  {{-- SV VỚI CLB --}}
+  @include('partials.home-section', [
+    'slug'  => 'sv-clb',
+    'label' => 'SV với Câu lạc bộ',
+    'posts' => $sections['sv-clb'],
+  ])
 
-</div>{{-- /sections-row --}}
+</div>
 
 <hr class="agu">
 
 {{-- ═══ SECTION ROW 2: Gương mặt AGU + eNews và Bạn đọc ═══ --}}
 <div class="sections-row">
 
-  {{-- GƯƠNG MẶT AGU --}}
-  <div class="section-widget">
-    <div class="section-widget-title">
-      Gương mặt AGU
-      <a href="{{ route('category', 'guong-mat-agu') }}" class="more-link">» Xem thêm</a>
-    </div>
-    <div class="section-widget-body">
-      <div class="featured-article">
-        <a href="#">
-          <img src="https://images.unsplash.com/photo-1580582932707-520aed937b7b?w=500&q=80"
-               alt="Gương mặt sinh viên tiêu biểu" loading="lazy">
-        </a>
-        <div class="featured-article-title">
-          <a href="#">Nguyễn Thị Thanh Thảo — Nữ sinh viên xuất sắc vượt khó vươn lên trong học tập</a>
-        </div>
-        <div class="featured-article-meta">01/03/2024 &nbsp;·&nbsp; Ban Biên tập</div>
-      </div>
-      @php $guongmatItems = [
-        ['img'=>'https://images.unsplash.com/photo-1579621970563-ebec7560ff3e?w=200&q=70','title'=>'Thầy Lê Minh Tú — 20 năm gắn bó với bục giảng Đại học An Giang','date'=>'27/02/2024'],
-        ['img'=>'https://images.unsplash.com/photo-1531545514256-b1400bc00f31?w=200&q=70','title'=>'Chàng sinh viên ngành CNTT khởi nghiệp với ứng dụng quản lý nông nghiệp','date'=>'22/02/2024'],
-        ['img'=>'https://images.unsplash.com/photo-1524178232363-1fb2b075b655?w=200&q=70','title'=>'Cô gái dân tộc Khmer nỗ lực trở thành kỹ sư nông nghiệp','date'=>'18/02/2024'],
-      ]; @endphp
-      @foreach($guongmatItems as $item)
-      <div class="news-list-item">
-        <a href="#"><img src="{{ $item['img'] }}" class="news-list-thumb" alt="{{ $item['title'] }}" loading="lazy"></a>
-        <div>
-          <div class="news-list-title"><a href="#">{{ $item['title'] }}</a></div>
-          <div class="news-list-meta">{{ $item['date'] }}</div>
-        </div>
-      </div>
-      @endforeach
-    </div>
-  </div>
+  @include('partials.home-section', [
+    'slug'  => 'guong-mat-agu',
+    'label' => 'Gương mặt AGU',
+    'posts' => $sections['guong-mat-agu'],
+  ])
 
-  {{-- ENEWS VÀ BẠN ĐỌC --}}
-  <div class="section-widget">
-    <div class="section-widget-title">
-      eNews và Bạn đọc
-      <a href="{{ route('category', 'enews-ban-doc') }}" class="more-link">» Xem thêm</a>
-    </div>
-    <div class="section-widget-body">
-      <div class="featured-article">
-        <a href="#">
-          <img src="https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=500&q=80"
-               alt="Thư bạn đọc - Ký ức mùa thi" loading="lazy">
-        </a>
-        <div class="featured-article-title">
-          <a href="#">"Ký ức mùa thi" — Cảm xúc của một sinh viên năm cuối nhìn lại hành trình</a>
-        </div>
-        <div class="featured-article-meta">02/03/2024 &nbsp;·&nbsp; Bạn đọc gửi</div>
-      </div>
-      @php $enewsItems = [
-        ['img'=>'https://images.unsplash.com/photo-1455390582262-044cdead277a?w=200&q=70','title'=>'Một mùi hương ký ức — Tản văn của sinh viên Khoa Văn hóa học','date'=>'28/02/2024'],
-        ['img'=>'https://images.unsplash.com/photo-1544027993-37dbfe43562a?w=200&q=70','title'=>'Tết và Mẹ — Câu chuyện xúc động từ sinh viên Khoa Sư phạm','date'=>'24/02/2024'],
-        ['img'=>'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&q=70','title'=>'Ngày về thăm thầy — Kỷ niệm không quên của lớp K20 Quản trị kinh doanh','date'=>'20/02/2024'],
-      ]; @endphp
-      @foreach($enewsItems as $item)
-      <div class="news-list-item">
-        <a href="#"><img src="{{ $item['img'] }}" class="news-list-thumb" alt="{{ $item['title'] }}" loading="lazy"></a>
-        <div>
-          <div class="news-list-title"><a href="#">{{ $item['title'] }}</a></div>
-          <div class="news-list-meta">{{ $item['date'] }}</div>
-        </div>
-      </div>
-      @endforeach
-    </div>
-  </div>
+  @include('partials.home-section', [
+    'slug'  => 'enews-ban-doc',
+    'label' => 'eNews và Bạn đọc',
+    'posts' => $sections['enews-ban-doc'],
+  ])
 
-</div>{{-- /sections-row --}}
+</div>
 
 <hr class="agu">
 
-{{-- ═══ PHÓNG SỰ ẢNH (Photo strip) ═══ --}}
+{{-- ═══ PHÓNG SỰ ẢNH ═══ --}}
+@php $photosPosts = $sections['phong-su-anh']; @endphp
 <div class="section-widget" style="margin-bottom:10px;">
   <div class="section-widget-title">
     Phóng sự Ảnh
     <a href="{{ route('category', 'phong-su-anh') }}" class="more-link">» Xem thêm</a>
   </div>
   <div class="section-widget-body">
+    @if($photosPosts->isNotEmpty())
     <div class="photo-strip">
-      @php $photos = [
-        ['src'=>'https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=300&q=75','caption'=>'Lễ tốt nghiệp 2024'],
-        ['src'=>'https://images.unsplash.com/photo-1517486808906-6ca8b3f04846?w=300&q=75','caption'=>'Hội nghị KH sinh viên'],
-        ['src'=>'https://images.unsplash.com/photo-1574943320219-553eb213f72d?w=300&q=75','caption'=>'Thực tế đồng ruộng'],
-        ['src'=>'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=300&q=75','caption'=>'Ngày hội nghề nghiệp'],
-        ['src'=>'https://images.unsplash.com/photo-1580582932707-520aed937b7b?w=300&q=75','caption'=>'Học bổng khuyến học'],
-        ['src'=>'https://images.unsplash.com/photo-1521587760476-6c12a4b040da?w=300&q=75','caption'=>'Thư viện AGU'],
-        ['src'=>'https://images.unsplash.com/photo-1609220136736-443140cfeaa8?w=300&q=75','caption'=>'Hiến máu tình nguyện'],
-        ['src'=>'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&q=75','caption'=>'Tư vấn tuyển sinh 2024'],
-      ]; @endphp
-      @foreach($photos as $photo)
-      <a href="#" class="photo-strip-item">
-        <img src="{{ $photo['src'] }}" alt="{{ $photo['caption'] }}" loading="lazy">
-        <div class="photo-strip-caption">{{ $photo['caption'] }}</div>
+      @foreach($photosPosts as $p)
+      <a href="{{ route('post.show', $p->slug) }}" class="photo-strip-item">
+        <img src="{{ $p->thumbnail_url }}" alt="{{ $p->title }}" loading="lazy">
+        <div class="photo-strip-caption">{{ Str::limit($p->title, 40) }}</div>
       </a>
       @endforeach
+      {{-- Fill remaining slots với placeholder nếu ít hơn 4 bài --}}
+      @for($i = $photosPosts->count(); $i < 4; $i++)
+      <div class="photo-strip-item" style="background:#f0f0f0; display:flex; align-items:center; justify-content:center; min-height:96px; border-radius:8px;">
+        <i class="bi bi-image text-muted" style="font-size:1.5rem;"></i>
+      </div>
+      @endfor
     </div>
+    @else
+    <p style="color:#aaa; text-align:center; padding:20px; font-size:.85rem;">Chưa có ảnh phóng sự.</p>
+    @endif
   </div>
 </div>
 
@@ -302,57 +162,19 @@
 {{-- ═══ SECTION ROW 3: Câu chuyện AGU + Khoa học với AGU ═══ --}}
 <div class="sections-row">
 
-  {{-- CÂU CHUYỆN AGU --}}
-  <div class="section-widget">
-    <div class="section-widget-title">
-      Câu chuyện AGU
-      <a href="{{ route('category', 'cau-chuyen-agu') }}" class="more-link">» Xem thêm</a>
-    </div>
-    <div class="section-widget-body">
-      @php $cauchuyenItems = [
-        ['img'=>'https://images.unsplash.com/photo-1544027993-37dbfe43562a?w=200&q=70','title'=>'Câu chuyện về những người "giữ lửa" văn hóa dân tộc Khmer tại An Giang','date'=>'03/03/2024'],
-        ['img'=>'https://images.unsplash.com/photo-1455390582262-044cdead277a?w=200&q=70','title'=>'Hành trình khởi nghiệp từ trong trường đại học của cựu sinh viên AGU','date'=>'28/02/2024'],
-        ['img'=>'https://images.unsplash.com/photo-1579621970563-ebec7560ff3e?w=200&q=70','title'=>'Thầy giáo vùng cao — Hành trình mang chữ đến vùng biên giới','date'=>'22/02/2024'],
-        ['img'=>'https://images.unsplash.com/photo-1524178232363-1fb2b075b655?w=200&q=70','title'=>'Câu chuyện bảo tồn giống cây ăn quả đặc sản tại ĐBSCL của nhóm SV','date'=>'18/02/2024'],
-      ]; @endphp
-      @foreach($cauchuyenItems as $item)
-      <div class="news-list-item">
-        <a href="#"><img src="{{ $item['img'] }}" class="news-list-thumb" alt="{{ $item['title'] }}" loading="lazy"></a>
-        <div>
-          <div class="news-list-title"><a href="#">{{ $item['title'] }}</a></div>
-          <div class="news-list-meta">{{ $item['date'] }}</div>
-        </div>
-      </div>
-      @endforeach
-    </div>
-  </div>
+  @include('partials.home-section', [
+    'slug'  => 'cau-chuyen-agu',
+    'label' => 'Câu chuyện AGU',
+    'posts' => $sections['cau-chuyen-agu'],
+  ])
 
-  {{-- KHOA HỌC VỚI AGU --}}
-  <div class="section-widget">
-    <div class="section-widget-title">
-      Khoa học với AGU
-      <a href="{{ route('category', 'khoa-hoc-voi-agu') }}" class="more-link">» Xem thêm</a>
-    </div>
-    <div class="section-widget-body">
-      @php $khoahocItems = [
-        ['img'=>'https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=200&q=70','title'=>'Ứng dụng AI trong dự báo lũ lụt tại ĐBSCL — Nghiên cứu của nhóm SV Khoa CNTT','date'=>'04/03/2024'],
-        ['img'=>'https://images.unsplash.com/photo-1574943320219-553eb213f72d?w=200&q=70','title'=>'Nghiên cứu giống lúa chịu mặn ứng phó biến đổi khí hậu vùng ven biển ĐBSCL','date'=>'01/03/2024'],
-        ['img'=>'https://images.unsplash.com/photo-1446776811953-b23d57bd21aa?w=200&q=70','title'=>'Hệ thống quan trắc môi trường nước tự động tại các kênh rạch tỉnh An Giang','date'=>'25/02/2024'],
-        ['img'=>'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=200&q=70','title'=>'Điều tra đa dạng sinh học vùng Tứ giác Long Xuyên: 340 loài ghi nhận mới','date'=>'20/02/2024'],
-      ]; @endphp
-      @foreach($khoahocItems as $item)
-      <div class="news-list-item">
-        <a href="#"><img src="{{ $item['img'] }}" class="news-list-thumb" alt="{{ $item['title'] }}" loading="lazy"></a>
-        <div>
-          <div class="news-list-title"><a href="#">{{ $item['title'] }}</a></div>
-          <div class="news-list-meta">{{ $item['date'] }}</div>
-        </div>
-      </div>
-      @endforeach
-    </div>
-  </div>
+  @include('partials.home-section', [
+    'slug'  => 'khoa-hoc-voi-agu',
+    'label' => 'Khoa học với AGU',
+    'posts' => $sections['khoa-hoc-voi-agu'],
+  ])
 
-</div>{{-- /sections-row --}}
+</div>
 
 <hr class="agu">
 
@@ -361,61 +183,55 @@
 
   {{-- GÓC NHÌN --}}
   <div class="section-widget">
-    <div class="section-widget-title">Góc nhìn <a href="{{ route('category', 'goc-nhin') }}" class="more-link">» Thêm</a></div>
+    <div class="section-widget-title">
+      Góc nhìn <a href="{{ route('category', 'goc-nhin') }}" class="more-link">» Thêm</a>
+    </div>
     <div class="section-widget-body">
-      @php $gocnhinItems = [
-        'Giáo dục đại học trong kỷ nguyên trí tuệ nhân tạo — cơ hội và thách thức',
-        'Văn hóa ứng xử của sinh viên thời đại 4.0',
-        'Môi trường học thuật lành mạnh — nền tảng cho sự phát triển bền vững',
-        'Học đại học để làm gì? — Góc nhìn từ một sinh viên năm 4',
-      ]; @endphp
-      @foreach($gocnhinItems as $item)
+      @forelse($sections['goc-nhin'] as $p)
       <div class="news-list-item" style="display:block; padding:6px 0; border-bottom:1px dashed var(--border);">
-        <a href="#" style="font-size:.80rem; font-weight:600; color:var(--text); line-height:1.4; display:block;">
-          » {{ $item }}
+        <a href="{{ route('post.show', $p->slug) }}" style="font-size:.80rem; font-weight:600; color:var(--text); line-height:1.4; display:block;">
+          » {{ $p->title }}
         </a>
       </div>
-      @endforeach
+      @empty
+      <p style="font-size:.8rem; color:#aaa; padding:8px 0;">Chưa có bài viết.</p>
+      @endforelse
     </div>
   </div>
 
   {{-- TẢN MẠN --}}
   <div class="section-widget">
-    <div class="section-widget-title">Tản mạn <a href="{{ route('category', 'tan-man') }}" class="more-link">» Thêm</a></div>
+    <div class="section-widget-title">
+      Tản mạn <a href="{{ route('category', 'tan-man') }}" class="more-link">» Thêm</a>
+    </div>
     <div class="section-widget-body">
-      @php $tanmanItems = [
-        'Nhớ về ngôi trường cũ — Tản văn của cựu sinh viên AGU',
-        'Chiều tà bên bờ sông Hậu — Những suy tư của người con đất An Giang',
-        'Tết ở ký túc xá — Ký ức không thể quên của sinh viên xa nhà',
-        'Mùa sen nở trên cánh đồng Tứ giác Long Xuyên',
-      ]; @endphp
-      @foreach($tanmanItems as $item)
+      @forelse($sections['tan-man'] as $p)
       <div class="news-list-item" style="display:block; padding:6px 0; border-bottom:1px dashed var(--border);">
-        <a href="#" style="font-size:.80rem; font-weight:600; color:var(--text); line-height:1.4; display:block;">
-          » {{ $item }}
+        <a href="{{ route('post.show', $p->slug) }}" style="font-size:.80rem; font-weight:600; color:var(--text); line-height:1.4; display:block;">
+          » {{ $p->title }}
         </a>
       </div>
-      @endforeach
+      @empty
+      <p style="font-size:.8rem; color:#aaa; padding:8px 0;">Chưa có bài viết.</p>
+      @endforelse
     </div>
   </div>
 
   {{-- LƯỚT WEB CÙNG SV --}}
   <div class="section-widget">
-    <div class="section-widget-title">Lướt web cùng SV <a href="{{ route('category', 'luot-web-cung-sv') }}" class="more-link">» Thêm</a></div>
+    <div class="section-widget-title">
+      Lướt web cùng SV <a href="{{ route('category', 'luot-web-cung-sv') }}" class="more-link">» Thêm</a>
+    </div>
     <div class="section-widget-body">
-      @php $luotwebItems = [
-        '10 kỹ năng mềm sinh viên cần chuẩn bị trước khi ra trường',
-        'Ứng dụng ChatGPT hỗ trợ học tập: Góc nhìn từ sinh viên AGU',
-        'Review sách: "Đắc Nhân Tâm" — Kim chỉ nam cho thế hệ trẻ',
-        'Podcast học tiếng Anh tốt nhất cho sinh viên Việt Nam',
-      ]; @endphp
-      @foreach($luotwebItems as $item)
+      @forelse($sections['luot-web-cung-sv'] as $p)
       <div class="news-list-item" style="display:block; padding:6px 0; border-bottom:1px dashed var(--border);">
-        <a href="#" style="font-size:.80rem; font-weight:600; color:var(--text); line-height:1.4; display:block;">
-          » {{ $item }}
+        <a href="{{ route('post.show', $p->slug) }}" style="font-size:.80rem; font-weight:600; color:var(--text); line-height:1.4; display:block;">
+          » {{ $p->title }}
         </a>
       </div>
-      @endforeach
+      @empty
+      <p style="font-size:.8rem; color:#aaa; padding:8px 0;">Chưa có bài viết.</p>
+      @endforelse
     </div>
   </div>
 
@@ -425,7 +241,6 @@
 
 @push('scripts')
 <script>
-// Numbered dot sync with Bootstrap carousel
 const carousel = document.getElementById('heroCarousel');
 const dots = document.querySelectorAll('#heroDots span');
 
@@ -440,8 +255,6 @@ if (carousel && dots.length) {
       if (bs) bs.to(parseInt(this.dataset.slide));
     });
   });
-
-  // Auto play
   new bootstrap.Carousel(carousel, { interval: 5000, ride: 'carousel' });
 }
 </script>

@@ -6,10 +6,10 @@ use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\PostController;
 
+use App\Http\Controllers\HomeController;
+
 // ─── Frontend ────────────────────────────────────────────────
-Route::get('/', function () {
-    return view('frontend.home');
-})->name('home');
+Route::get('/', [HomeController::class, 'index'])->name('home');
 
 Route::get('/tim-kiem', [SearchController::class, 'index'])->name('search');
 
