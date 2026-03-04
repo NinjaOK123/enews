@@ -59,11 +59,92 @@
       </a>
     </nav>
 
-    {{-- Login + Bell --}}
+    {{-- Auth section: Login button hoặc User Dropdown --}}
     <div class="header-actions">
+      @auth
+      {{-- ── User dropdown khi đã đăng nhập ── --}}
+      <div class="dropdown" style="position:relative;">
+        <button onclick="toggleUserMenu()" id="userMenuBtn"
+                style="display:flex;align-items:center;gap:8px;background:none;border:1.5px solid #e0e0e0;
+                       border-radius:8px;padding:6px 12px;cursor:pointer;font-size:.80rem;font-family:inherit;
+                       color:#333; transition:border-color .18s;"
+                onmouseover="this.style.borderColor='#2a7a27'" onmouseout="this.style.borderColor='#e0e0e0'">
+          {{-- Avatar chữ cái --}}
+          <div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#2a7a27,#388e3c);
+                      color:#fff;display:flex;align-items:center;justify-content:center;
+                      font-size:.75rem;font-weight:800;flex-shrink:0;">
+            {{ strtoupper(mb_substr(auth()->user()->name, 0, 1)) }}
+          </div>
+          <div style="text-align:left;line-height:1.3;">
+            <div style="font-weight:700;max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+              {{ auth()->user()->name }}
+            </div>
+            <div style="font-size:.65rem;color:#2a7a27;font-weight:600;">{{ auth()->user()->roleLabel() }}</div>
+          </div>
+          <i class="bi bi-chevron-down" style="font-size:.70rem;color:#aaa;"></i>
+        </button>
+
+        {{-- Dropdown menu --}}
+        <div id="userDropdown"
+             style="display:none;position:absolute;right:0;top:calc(100% + 8px);
+                    min-width:210px;background:#fff;border:1px solid #e4e4e4;border-radius:10px;
+                    box-shadow:0 8px 32px rgba(0,0,0,.12);z-index:9999;overflow:hidden;">
+          {{-- User info header --}}
+          <div style="padding:14px 16px;background:#f3fbf2;border-bottom:1px solid #e0e0e0;">
+            <div style="font-weight:800;font-size:.85rem;color:#111;">{{ auth()->user()->name }}</div>
+            <div style="font-size:.72rem;color:#666;">{{ auth()->user()->email }}</div>
+            <span style="display:inline-block;margin-top:4px;background:#2a7a27;color:#fff;
+                         font-size:.62rem;font-weight:700;padding:1px 9px;border-radius:20px;">
+              {{ auth()->user()->roleLabel() }}
+            </span>
+          </div>
+          {{-- Dashboard link theo role --}}
+          @php
+            $dashUrl = match(auth()->user()->role) {
+              'admin'       => route('admin.dashboard'),
+              'editor'      => route('editor.dashboard'),
+              'contributor' => route('contributor.dashboard'),
+              default       => route('home'),
+            };
+            $dashLabel = match(auth()->user()->role) {
+              'admin'       => 'Admin Dashboard',
+              'editor'      => 'Editor Dashboard',
+              'contributor' => 'Dashboard của tôi',
+              default       => 'Trang chủ',
+            };
+          @endphp
+          <a href="{{ $dashUrl }}"
+             style="display:flex;align-items:center;gap:10px;padding:11px 16px;font-size:.82rem;
+                    color:#333;text-decoration:none;border-bottom:1px solid #f5f5f5;transition:background .15s;"
+             onmouseover="this.style.background='#f3fbf2'" onmouseout="this.style.background=''">
+            <i class="bi bi-speedometer2" style="color:#2a7a27;"></i> {{ $dashLabel }}
+          </a>
+          <a href="{{ route('home') }}"
+             style="display:flex;align-items:center;gap:10px;padding:11px 16px;font-size:.82rem;
+                    color:#333;text-decoration:none;border-bottom:1px solid #f5f5f5;transition:background .15s;"
+             onmouseover="this.style.background='#f3fbf2'" onmouseout="this.style.background=''">
+            <i class="bi bi-house-fill" style="color:#555;"></i> Trang chủ
+          </a>
+          {{-- Logout --}}
+          <form method="POST" action="{{ route('logout') }}" style="margin:0;">
+            @csrf
+            <button type="submit"
+                    style="display:flex;align-items:center;gap:10px;padding:11px 16px;font-size:.82rem;
+                           color:#c62828;background:none;border:none;width:100%;cursor:pointer;
+                           transition:background .15s;font-family:inherit;"
+                    onmouseover="this.style.background='#fff5f5'" onmouseout="this.style.background=''">
+              <i class="bi bi-box-arrow-right"></i> Đăng xuất
+            </button>
+          </form>
+        </div>
+      </div>
+      @else
+      {{-- ── Nút đăng nhập cho guest ── --}}
       <a href="{{ route('login') }}" class="btn-login">
         <i class="bi bi-person-circle"></i> Đăng nhập
       </a>
+      @endauth
+
       <a href="#" class="action-icon" title="Thông báo">
         <i class="bi bi-bell"></i>
       </a>
@@ -165,10 +246,26 @@ function toggleAdvSearch() {
     if (!isVisible) panel.querySelector('input[name="keyword"]')?.focus();
   }
 }
-// Auto-open if there are active search filters
 @if(request()->anyFilled(['keyword','author','date_from','date_to','category_id']))
 document.addEventListener('DOMContentLoaded', () => { toggleAdvSearch(); });
 @endif
+
+// ── User dropdown ─────────────────────────────────────────
+function toggleUserMenu() {
+  const menu = document.getElementById('userDropdown');
+  if (!menu) return;
+  const isOpen = menu.style.display === 'block';
+  menu.style.display = isOpen ? 'none' : 'block';
+}
+// Close when clicking outside
+document.addEventListener('click', function(e) {
+  const btn  = document.getElementById('userMenuBtn');
+  const menu = document.getElementById('userDropdown');
+  if (!menu || !btn) return;
+  if (!btn.contains(e.target) && !menu.contains(e.target)) {
+    menu.style.display = 'none';
+  }
+});
 </script>
 @stack('scripts')
 </body>

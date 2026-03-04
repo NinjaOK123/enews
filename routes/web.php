@@ -1,56 +1,62 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\AuthController;
+use App\Http\Controllers\HomeController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\PostController;
+use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\AuthController;
+use App\Http\Controllers\AdminController;
+use App\Http\Controllers\EditorController;
+use App\Http\Controllers\ContributorController;
 
-use App\Http\Controllers\HomeController;
-
-// ─── Frontend ────────────────────────────────────────────────
-Route::get('/', [HomeController::class, 'index'])->name('home');
-
+// ─── Frontend (Public) ──────────────────────────────────────────
+Route::get('/',  [HomeController::class, 'index'])->name('home');
 Route::get('/tim-kiem', [SearchController::class, 'index'])->name('search');
-
 Route::get('/chuyen-muc/{slug}', [CategoryController::class, 'show'])->name('category');
-
-
-// Trang chi tiết bài viết — dùng Route Model Binding theo slug
 Route::get('/bai-viet/{post:slug}', [PostController::class, 'show'])->name('post.show');
 
-// Gửi bình luận (yêu cầu đăng nhập)
+// ─── Bình luận (yêu cầu đăng nhập) ────────────────────────────
 Route::post('/bai-viet/{post:slug}/binh-luan', [PostController::class, 'storeComment'])
      ->name('post.comment')
      ->middleware('auth');
 
-// ─── Auth: đăng nhập / đăng xuất ────────────────────────────
-use App\Http\Controllers\Auth\LoginController;
-
-Route::get('/login',  [LoginController::class, 'showLoginForm'])->name('login');
-Route::post('/login', [LoginController::class, 'login']);
-Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
-
-// ─── Role-based Dashboards ──────────────────────────────────
-
-Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
-    Route::get('/dashboard', function () {
-        return 'Admin Dashboard - Thống kê, Quản lý bài viết, User, v.v.';
-    })->name('dashboard');
+// ─── Auth: Đăng nhập / Đăng xuất ───────────────────────────────
+Route::middleware('guest')->group(function () {
+    Route::get('/login',  [LoginController::class, 'showLoginForm'])->name('login');
+    Route::post('/login', [LoginController::class, 'login'])->name('login.post');
 });
+Route::post('/logout', [LoginController::class, 'logout'])->name('logout')->middleware('auth');
 
-Route::middleware(['auth', 'role:editor'])->prefix('editor')->name('editor.')->group(function () {
-    Route::get('/dashboard', function () {
-        return 'Editor Dashboard - Duyệt bài, chỉnh sửa, v.v.';
-    })->name('dashboard');
-});
+// ─── Role-based Dashboards ──────────────────────────────────────
 
-Route::middleware(['auth', 'role:contributor'])->prefix('contributor')->name('contributor.')->group(function () {
-    Route::get('/dashboard', function () {
-        return 'Contributor Dashboard - Viết bài, gửi duyệt, v.v.';
-    })->name('dashboard');
-});
+// Admin
+Route::prefix('admin')
+     ->name('admin.')
+     ->middleware(['auth', 'role:admin'])
+     ->group(function () {
+         Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
+     });
 
-// ─── Auth: Google OAuth2 ─────────────────────────────────────
+// Editor
+Route::prefix('editor')
+     ->name('editor.')
+     ->middleware(['auth', 'role:editor'])
+     ->group(function () {
+         Route::get('/dashboard', [EditorController::class, 'dashboard'])->name('dashboard');
+     });
+
+// Contributor
+Route::prefix('contributor')
+     ->name('contributor.')
+     ->middleware(['auth', 'role:contributor'])
+     ->group(function () {
+         Route::get('/dashboard', [ContributorController::class, 'dashboard'])->name('dashboard');
+     });
+
+// ─── Google OAuth ───────────────────────────────────────────────
 Route::get('/auth/google',          [AuthController::class, 'redirectToGoogle'])->name('auth.google');
 Route::get('/auth/google/callback', [AuthController::class, 'handleGoogleCallback'])->name('auth.google.callback');
+
+
