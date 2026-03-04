@@ -20,4 +20,9 @@ class PageController extends Controller
     {
         return view('pages.lien-he');
     }
+
+    public function docVaSuyNgam(): View
+    {
+        return view('pages.doc-suy-ngam');
+    }
 }

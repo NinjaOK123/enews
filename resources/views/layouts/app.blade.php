@@ -53,7 +53,7 @@
         <i class="bi bi-envelope"></i>
         <span>Liên hệ</span>
       </a>
-      <a href="{{ url('/enews-doc-va-suy-ngam') }}" class="header-nav-item {{ request()->is('enews-doc-va-suy-ngam') ? 'active' : '' }}">
+      <a href="{{ route('doc-suy-ngam') }}" class="header-nav-item {{ request()->routeIs('doc-suy-ngam') ? 'active' : '' }}">
         <i class="bi bi-book"></i>
         <span>eNews - Đọc &amp; Suy ngẫm</span>
       </a>
