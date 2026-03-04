@@ -35,4 +35,12 @@ return [
         ],
     ],
 
+    // Google OAuth2 (Gmail AGU Login)
+    'google' => [
+        'client_id'     => env('GOOGLE_CLIENT_ID'),
+        'client_secret' => env('GOOGLE_CLIENT_SECRET'),
+        'redirect'      => env('GOOGLE_REDIRECT_URI', '/auth/google/callback'),
+        'allowed_domains' => env('GOOGLE_ALLOWED_DOMAINS', 'student.agu.edu.vn,agu.edu.vn'),
+    ],
+
 ];
