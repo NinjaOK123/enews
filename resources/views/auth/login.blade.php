@@ -156,7 +156,7 @@
 
     {{-- Google Login Section --}}
     <div class="section-label">Đăng nhập qua:</div>
-    <a href="#" class="btn-google">
+    <a href="{{ route('auth.google') }}" class="btn-google">
       <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="G" style="width: 18px; margin-right: 5px;"> Gmail AGU
     </a>
 

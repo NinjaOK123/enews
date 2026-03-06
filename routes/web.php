@@ -36,6 +36,11 @@ Route::middleware('guest')->group(function () {
 });
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout')->middleware('auth');
 
+Route::middleware('auth')->group(function () {
+    Route::get('/profile', [App\Http\Controllers\ProfileController::class, 'index'])->name('profile');
+    Route::post('/profile/avatar', [App\Http\Controllers\ProfileController::class, 'updateAvatar'])->name('profile.avatar');
+});
+
 // ─── Role-based Dashboards ──────────────────────────────────────
 
 // Admin
@@ -60,7 +65,27 @@ Route::prefix('contributor')
      ->middleware(['auth', 'role:contributor'])
      ->group(function () {
          Route::get('/dashboard', [ContributorController::class, 'dashboard'])->name('dashboard');
+         
+         // Posts management
+         Route::get('/posts/create', [App\Http\Controllers\Contributor\PostController::class, 'create'])->name('posts.create');
+         Route::post('/posts', [App\Http\Controllers\Contributor\PostController::class, 'store'])->name('posts.store');
+         Route::get('/posts/{post}/edit', [App\Http\Controllers\Contributor\PostController::class, 'edit'])->name('posts.edit');
+         Route::post('/posts/{post}/update', [App\Http\Controllers\Contributor\PostController::class, 'update'])->name('posts.update');
+         Route::post('/posts/{post}/submit', [App\Http\Controllers\Contributor\PostController::class, 'submit'])->name('posts.submit');
+         Route::post('/posts/{post}/autosave', [App\Http\Controllers\Contributor\PostController::class, 'autosave'])->name('posts.autosave');
+         Route::post('/posts/import-word', [App\Http\Controllers\Contributor\PostController::class, 'importWord'])->name('posts.import-word');
+         
+         // Media management
+         Route::post('/media/upload', [App\Http\Controllers\Contributor\PostController::class, 'uploadMedia'])->name('media.upload');
+         Route::get('/media/personal', [App\Http\Controllers\Contributor\MediaController::class, 'getPersonalMedia'])->name('media.personal');
+         Route::get('/media/shared', [App\Http\Controllers\Contributor\MediaController::class, 'getSharedMedia'])->name('media.shared');
+         Route::get('/media/{media}/view', [App\Http\Controllers\Contributor\MediaController::class, 'show'])->name('media.view');
      });
+
+// AI endpoints
+Route::middleware(['auth'])->group(function () {
+    Route::post('/ai/generate-post', [App\Http\Controllers\AIController::class, 'generatePost'])->name('ai.generate-post');
+});
 
 // ─── Google OAuth ───────────────────────────────────────────────
 Route::get('/auth/google',          [AuthController::class, 'redirectToGoogle'])->name('auth.google');

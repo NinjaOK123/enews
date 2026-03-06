@@ -9,6 +9,49 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
   <link href="{{ asset('css/app.css') }}" rel="stylesheet">
   @stack('styles')
+  <style>
+    /* Notification Bell Ring Animation */
+    @keyframes ring {
+      0% { transform: rotate(0); }
+      5% { transform: rotate(30deg); }
+      10% { transform: rotate(-28deg); }
+      15% { transform: rotate(34deg); }
+      20% { transform: rotate(-32deg); }
+      25% { transform: rotate(30deg); }
+      30% { transform: rotate(-28deg); }
+      35% { transform: rotate(26deg); }
+      40% { transform: rotate(-24deg); }
+      45% { transform: rotate(22deg); }
+      50% { transform: rotate(-20deg); }
+      55% { transform: rotate(18deg); }
+      60% { transform: rotate(-16deg); }
+      65% { transform: rotate(14deg); }
+      70% { transform: rotate(-12deg); }
+      75% { transform: rotate(10deg); }
+      80% { transform: rotate(-8deg); }
+      85% { transform: rotate(6deg); }
+      90% { transform: rotate(-4deg); }
+      95% { transform: rotate(2deg); }
+      100% { transform: rotate(0); }
+    }
+    .action-icon.ringing .bi-bell {
+      display: inline-block;
+      animation: ring 2s ease infinite;
+      transform-origin: top center;
+    }
+    
+    /* Red dot badge */
+    .notif-badge {
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 8px;
+      height: 8px;
+      background-color: #dc3545;
+      border-radius: 50%;
+      border: 1.5px solid #fff;
+    }
+  </style>
 </head>
 <body>
 <div class="page-wrapper">
@@ -20,8 +63,12 @@
       <span>Trường Đại học An Giang — VNU-HCM</span>
     </div>
     <div class="top-bar-right">
+      {{-- Chọn ngôn ngữ (đặt trước ngày tháng) --}}
+      <div class="top-bar-lang">
+        <div id="google_translate_element"></div>
+      </div>
       <i class="bi bi-calendar3"></i>
-      <span>{{ \Carbon\Carbon::now('Asia/Ho_Chi_Minh')->isoFormat('dddd, D [tháng] M, YYYY') }}</span>
+      <span>{{ \Carbon\Carbon::now('Asia/Ho_Chi_Minh')->locale('vi')->isoFormat('dddd, D [tháng] M, YYYY') }}</span>
     </div>
   </div>
 
@@ -41,6 +88,10 @@
 
     {{-- Main navigation --}}
     <nav class="header-nav d-none d-lg-flex">
+      <a href="{{ route('home') }}" class="header-nav-item {{ request()->routeIs('home') ? 'active' : '' }}">
+        <i class="bi bi-house"></i>
+        <span>Trang chủ</span>
+      </a>
       <a href="{{ route('about') }}" class="header-nav-item {{ request()->routeIs('about') ? 'active' : '' }}">
         <i class="bi bi-info-circle"></i>
         <span>Giới thiệu</span>
@@ -62,92 +113,73 @@
     {{-- Auth section: Login button hoặc User Dropdown --}}
     <div class="header-actions">
       @auth
-      {{-- ── User dropdown khi đã đăng nhập ── --}}
-      <div class="dropdown" style="position:relative;">
-        <button onclick="toggleUserMenu()" id="userMenuBtn"
-                style="display:flex;align-items:center;gap:8px;background:none;border:1.5px solid #e0e0e0;
-                       border-radius:8px;padding:6px 12px;cursor:pointer;font-size:.80rem;font-family:inherit;
-                       color:#333; transition:border-color .18s;"
-                onmouseover="this.style.borderColor='#2a7a27'" onmouseout="this.style.borderColor='#e0e0e0'">
-          {{-- Avatar chữ cái --}}
-          <div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#2a7a27,#388e3c);
-                      color:#fff;display:flex;align-items:center;justify-content:center;
-                      font-size:.75rem;font-weight:800;flex-shrink:0;">
-            {{ strtoupper(mb_substr(auth()->user()->name, 0, 1)) }}
-          </div>
-          <div style="text-align:left;line-height:1.3;">
-            <div style="font-weight:700;max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
-              {{ auth()->user()->name }}
-            </div>
-            <div style="font-size:.65rem;color:#2a7a27;font-weight:600;">{{ auth()->user()->roleLabel() }}</div>
-          </div>
-          <i class="bi bi-chevron-down" style="font-size:.70rem;color:#aaa;"></i>
-        </button>
-
-        {{-- Dropdown menu --}}
-        <div id="userDropdown"
-             style="display:none;position:absolute;right:0;top:calc(100% + 8px);
-                    min-width:210px;background:#fff;border:1px solid #e4e4e4;border-radius:10px;
-                    box-shadow:0 8px 32px rgba(0,0,0,.12);z-index:9999;overflow:hidden;">
-          {{-- User info header --}}
-          <div style="padding:14px 16px;background:#f3fbf2;border-bottom:1px solid #e0e0e0;">
-            <div style="font-weight:800;font-size:.85rem;color:#111;">{{ auth()->user()->name }}</div>
-            <div style="font-size:.72rem;color:#666;">{{ auth()->user()->email }}</div>
-            <span style="display:inline-block;margin-top:4px;background:#2a7a27;color:#fff;
-                         font-size:.62rem;font-weight:700;padding:1px 9px;border-radius:20px;">
-              {{ auth()->user()->roleLabel() }}
-            </span>
-          </div>
-          {{-- Dashboard link theo role --}}
-          @php
-            $dashUrl = match(auth()->user()->role) {
-              'admin'       => route('admin.dashboard'),
-              'editor'      => route('editor.dashboard'),
-              'contributor' => route('contributor.dashboard'),
-              default       => route('home'),
-            };
-            $dashLabel = match(auth()->user()->role) {
-              'admin'       => 'Admin Dashboard',
-              'editor'      => 'Editor Dashboard',
-              'contributor' => 'Dashboard của tôi',
-              default       => 'Trang chủ',
-            };
-          @endphp
-          <a href="{{ $dashUrl }}"
-             style="display:flex;align-items:center;gap:10px;padding:11px 16px;font-size:.82rem;
-                    color:#333;text-decoration:none;border-bottom:1px solid #f5f5f5;transition:background .15s;"
-             onmouseover="this.style.background='#f3fbf2'" onmouseout="this.style.background=''">
-            <i class="bi bi-speedometer2" style="color:#2a7a27;"></i> {{ $dashLabel }}
+      {{-- ── User dropdown khi đã đăng nhập (Bootstrap 5) ── --}}
+      <ul class="navbar-nav mb-0">
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false" style="color: #333; padding-right: 0;">
+            @if(auth()->user()->avatar)
+              <img src="{{ asset('storage/' . auth()->user()->avatar) }}" alt="Avatar" class="rounded-circle me-2" width="32" height="32" style="object-fit: cover;">
+            @else
+              <img src="https://ui-avatars.com/api/?name={{ urlencode(auth()->user()->name) }}&background=0D8ABC&color=fff" alt="Avatar" class="rounded-circle me-2" width="32" height="32">
+            @endif
+            <span class="fw-semibold">{{ auth()->user()->name ?? 'Người dùng' }}</span>
           </a>
-          <a href="{{ route('home') }}"
-             style="display:flex;align-items:center;gap:10px;padding:11px 16px;font-size:.82rem;
-                    color:#333;text-decoration:none;border-bottom:1px solid #f5f5f5;transition:background .15s;"
-             onmouseover="this.style.background='#f3fbf2'" onmouseout="this.style.background=''">
-            <i class="bi bi-house-fill" style="color:#555;"></i> Trang chủ
-          </a>
-          {{-- Logout --}}
-          <form method="POST" action="{{ route('logout') }}" style="margin:0;">
-            @csrf
-            <button type="submit"
-                    style="display:flex;align-items:center;gap:10px;padding:11px 16px;font-size:.82rem;
-                           color:#c62828;background:none;border:none;width:100%;cursor:pointer;
-                           transition:background .15s;font-family:inherit;"
-                    onmouseover="this.style.background='#fff5f5'" onmouseout="this.style.background=''">
-              <i class="bi bi-box-arrow-right"></i> Đăng xuất
-            </button>
-          </form>
-        </div>
-      </div>
+          <ul class="dropdown-menu dropdown-menu-end shadow-sm" aria-labelledby="userDropdown" style="position: absolute; border-radius: 8px;">
+            <li><a class="dropdown-item py-2 {{ request()->routeIs('home') ? 'active' : '' }}" href="/"><i class="bi bi-house me-2" style="color: #555;"></i>Trang chủ</a></li>
+            <li><a class="dropdown-item py-2 {{ request()->routeIs('profile') ? 'active' : '' }}" href="{{ route('profile') }}"><i class="bi bi-person me-2" style="color: #555;"></i>Thông tin cá nhân</a></li>
+            @if(auth()->user()->role !== 'reader')
+              @php
+                $dashUrl = match(auth()->user()->role) {
+                  'admin'       => route('admin.dashboard'),
+                  'editor'      => route('editor.dashboard'),
+                  'contributor' => route('contributor.dashboard'),
+                  default       => route('home'),
+                };
+              @endphp
+              <li><a class="dropdown-item py-2" href="{{ $dashUrl }}"><i class="bi bi-speedometer2 me-2" style="color: #2a7a27;"></i>Dashboard</a></li>
+            @endif
+            <li><hr class="dropdown-divider"></li>
+            <li>
+              <form method="POST" action="{{ route('logout') }}" id="logout-form" class="m-0 p-0">
+                @csrf
+                <button type="submit" class="dropdown-item py-2 text-danger" onclick="return confirm('Bạn có chắc muốn đăng xuất?')">
+                  <i class="bi bi-box-arrow-right me-2"></i>Đăng xuất
+                </button>
+              </form>
+            </li>
+          </ul>
+        </li>
+      </ul>
       @else
       {{-- ── Nút đăng nhập cho guest ── --}}
-      <a href="{{ route('login') }}" class="btn-login">
-        <i class="bi bi-person-circle"></i> Đăng nhập
+      <a href="{{ route('login') }}" class="btn btn-primary btn-sm rounded-pill px-3 fw-semibold" style="background-color: var(--primary, #2a7a27); border-color: var(--primary, #2a7a27);">
+        <i class="bi bi-person-circle me-1"></i> Đăng nhập
       </a>
       @endauth
 
-      <a href="#" class="action-icon" title="Thông báo">
-        <i class="bi bi-bell"></i>
-      </a>
+      {{-- ── Notification Bell (Animated) ── --}}
+      <div class="nav-item dropdown ms-3">
+        <a href="#" class="action-icon ringing position-relative" id="notifDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false" title="Thông báo" style="display:flex; align-items:center; justify-content:center; width:36px; height:36px; color:#555; text-decoration:none; font-size:1.15rem;">
+          <i class="bi bi-bell"></i>
+          <span class="notif-badge"></span>
+        </a>
+        <ul class="dropdown-menu dropdown-menu-end shadow-sm" aria-labelledby="notifDropdown" style="width: 320px; border-radius: 12px; padding: 0; overflow: hidden; border: 1px solid rgba(0,0,0,0.08);">
+          <li style="padding: 12px 16px; background: #fafafa; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center;">
+            <span class="fw-bold" style="font-size: 0.95rem; color: #333;">Thông báo</span>
+            <span style="font-size: 0.75rem; color: var(--primary, #2a7a27); font-weight: 600; cursor: pointer;">Đánh dấu đã đọc</span>
+          </li>
+          <li>
+            <div style="padding: 40px 20px; text-align: center;">
+              <i class="bi bi-bell-slash" style="font-size: 2.5rem; color: #ccc; margin-bottom: 12px; display: block;"></i>
+              <div style="font-weight: 600; color: #555; font-size: 0.9rem;">Không có thông báo mới</div>
+              <div style="font-size: 0.8rem; color: #888; margin-top: 4px;">Hiện tại bạn chưa có thông báo nào cần xem.</div>
+            </div>
+          </li>
+          <li style="border-top: 1px solid #eee; background: #fff; text-align: center;">
+            <a href="#" style="display: block; padding: 10px; font-size: 0.85rem; color: var(--primary, #2a7a27); text-decoration: none; font-weight: 600;">Xem tất cả</a>
+          </li>
+        </ul>
+      </div>
     </div>
 
   </header>
@@ -422,23 +454,60 @@ function toggleAdvSearch() {
 document.addEventListener('DOMContentLoaded', () => { toggleAdvSearch(); });
 @endif
 
-// ── User dropdown ─────────────────────────────────────────
-function toggleUserMenu() {
-  const menu = document.getElementById('userDropdown');
-  if (!menu) return;
-  const isOpen = menu.style.display === 'block';
-  menu.style.display = isOpen ? 'none' : 'block';
-}
-// Close when clicking outside
-document.addEventListener('click', function(e) {
-  const btn  = document.getElementById('userMenuBtn');
-  const menu = document.getElementById('userDropdown');
-  if (!menu || !btn) return;
-  if (!btn.contains(e.target) && !menu.contains(e.target)) {
-    menu.style.display = 'none';
-  }
-});
+// Cấu hình JS (nếu có)
 </script>
+
+{{-- Script Google Translate --}}
+<script type="text/javascript">
+function googleTranslateElementInit() {
+  new google.translate.TranslateElement({
+    pageLanguage: 'vi',
+    // Không dùng includedLanguages để hiển thị Full ngôn ngữ 
+    // Không khai báo layout để hiển thị thẻ Dropdown Select (kéo xuống)
+    autoDisplay: false
+  }, 'google_translate_element');
+}
+</script>
+<script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+
+<style>
+/* Ẩn thanh Google Translate banner phía trên cùng làm đẩy trang xuống */
+.goog-te-banner-frame.skiptranslate { display: none !important; }
+body { top: 0px !important; }
+
+/* Ẩn chữ "Powered by Google Translate" */
+.goog-te-gadget { font-size: 0px !important; color: transparent !important; }
+.goog-te-gadget span { display: none !important; }
+
+/* Thanh xanh trên: dropdown ngôn ngữ — nền tối, chữ sáng */
+.top-bar .top-bar-lang { display: inline-flex; align-items: center; margin-right: 14px; }
+.top-bar .goog-te-combo {
+  border-radius: 6px;
+  border: 1px solid rgba(255,255,255,.35);
+  padding: 4px 10px;
+  outline: none;
+  font-size: 0.8rem;
+  color: #fff;
+  background-color: rgba(255,255,255,.15);
+  cursor: pointer;
+  max-width: 140px;
+}
+.top-bar .goog-te-combo option { background: #1b5e20; color: #fff; }
+
+/* Dropdown ngôn ngữ ở header trắng (dự phòng) */
+.goog-te-combo {
+  border-radius: 6px;
+  border: 1px solid #c2e1c2;
+  padding: 4px 8px;
+  outline: none;
+  font-size: 0.85rem;
+  color: #1b5e20;
+  font-weight: 500;
+  background-color: #f6fdf6;
+  cursor: pointer;
+}
+</style>
+
 @stack('scripts')
 </body>
 </html>
