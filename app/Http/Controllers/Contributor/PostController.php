@@ -38,10 +38,10 @@ class PostController extends Controller
         $post->title = $validated['title'];
         $post->slug = Str::slug($validated['title']) . '-' . uniqid();
         $post->category_id = $validated['category_id'];
-        $post->user_id = auth()->id();
+        $post->author_id = auth()->id();
         $post->content = $validated['content'];
         $post->excerpt = Str::limit(strip_tags($validated['content']), 150);
-        $post->status = 'draft';
+        $post->status = $request->input('action') === 'pending' ? 'pending' : 'draft';
 
         if ($request->hasFile('thumbnail')) {
             $post->thumbnail = $this->processThumbnail($request->file('thumbnail'));
@@ -51,6 +51,10 @@ class PostController extends Controller
 
         // Save initial revision
         $this->saveRevision($post);
+
+        if ($post->status === 'pending') {
+            return redirect()->route('contributor.dashboard')->with('success', 'Đã lưu và gửi bài viết chờ duyệt thành công.');
+        }
 
         return redirect()->route('contributor.posts.edit', $post)->with('success', 'Đã lưu nháp bài viết.');
     }
@@ -86,12 +90,19 @@ class PostController extends Controller
             $post->thumbnail = $this->processThumbnail($request->file('thumbnail'));
         }
 
+        if ($request->has('action') && $request->input('action') === 'pending') {
+            $post->status = 'pending';
+        }
+
         $post->save();
 
         // Save revision
         $this->saveRevision($post);
 
-        // if the request comes from ajax autosave, maybe it doesn't hit this update method, but we have autosave method below.
+        if ($post->status === 'pending') {
+             return redirect()->route('contributor.dashboard')->with('success', 'Đã cập nhật và gửi bài viết chờ duyệt thành công.');
+        }
+
         return redirect()->route('contributor.posts.edit', $post)->with('success', 'Đã cập nhật bài viết nháp.');
     }
 
@@ -103,6 +114,17 @@ class PostController extends Controller
         $post->save();
 
         return redirect()->route('contributor.dashboard')->with('success', 'Đã gửi bài viết chờ duyệt.');
+    }
+
+    public function destroy(Post $post)
+    {
+        $this->authorize('delete', $post);
+        
+        // Cập nhật trạng thái hoặc xoá cứng tuỳ chọn. Hiện tại dùng delete mềm nhờ SoftDeletes nếu có, hoặc delete hard luôn.
+        // Tốt nhất nếu $post->delete() thì sẽ xoá.
+        $post->delete();
+
+        return redirect()->route('contributor.dashboard')->with('success', 'Đã xóa bài viết nháp thành công.');
     }
 
     public function autosave(Request $request, Post $post)

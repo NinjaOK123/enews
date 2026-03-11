@@ -16,15 +16,15 @@
         @foreach($heroPosts as $i => $hero)
         <div class="carousel-item {{ $i === 0 ? 'active' : '' }}">
           <div class="hero-slide">
-            <a href="{{ route('post.show', $hero->slug) }}">
+            <a href="{{ route('post.show', $hero->slug) }}" style="display: block;">
               <img src="{{ $hero->thumbnail_url }}" alt="{{ $hero->title }}">
             </a>
-            <div class="hero-badge-label">{{ $hero->category->name ?? 'Tin nổi bật' }}</div>
-            <div class="hero-caption">
-              <a href="{{ route('post.show', $hero->slug) }}" class="hero-caption-text" style="text-decoration:none;color:#fff;">
+            <div class="hero-content">
+              <div class="hero-cat-badge">{{ $hero->category->name ?? 'Tin nổi bật' }}</div>
+              <a href="{{ route('post.show', $hero->slug) }}" class="hero-title" style="text-decoration:none; display:block;">
                 {{ $hero->title }}
               </a>
-              <div style="font-size:.72rem; color:rgba(255,255,255,.7); margin-top:6px; display:flex; gap:12px;">
+              <div class="hero-meta">
                 <span><i class="bi bi-person"></i> {{ $hero->author->name ?? 'Ban Biên tập' }}</span>
                 <span><i class="bi bi-calendar3"></i> {{ $hero->published_at?->format('d/m/Y') }}</span>
                 <span><i class="bi bi-eye"></i> {{ number_format($hero->view_count) }}</span>

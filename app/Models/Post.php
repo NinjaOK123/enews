@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Post extends Model
@@ -12,9 +13,13 @@ class Post extends Model
     protected $fillable = [
         'title', 'slug', 'excerpt', 'content', 'thumbnail',
         'author_id', 'category_id', 'status', 'published_at', 'view_count',
+        'is_featured', 'meta_desc', 'meta_key',
     ];
 
-    protected $casts = ['published_at' => 'datetime'];
+    protected $casts = [
+        'published_at' => 'datetime',
+        'is_featured'  => 'boolean',
+    ];
 
     // ─── Relationships ────────────────────────────────────────────────────────
 
@@ -33,6 +38,16 @@ class Post extends Model
         return $this->hasMany(Comment::class)->latest();
     }
 
+    public function approvedComments(): HasMany
+    {
+        return $this->hasMany(Comment::class)->where('is_approved', true)->latest();
+    }
+
+    public function tags(): BelongsToMany
+    {
+        return $this->belongsToMany(Tag::class);
+    }
+
     // ─── Scopes ──────────────────────────────────────────────────────────────
 
     public function scopePublished(Builder $query): Builder
@@ -43,6 +58,11 @@ class Post extends Model
     public function scopeLatest(Builder $query): Builder
     {
         return $query->orderByDesc('published_at');
+    }
+
+    public function scopeFeatured(Builder $query): Builder
+    {
+        return $query->where('is_featured', true);
     }
 
     // ─── Advanced Search ─────────────────────────────────────────────────────
@@ -98,6 +118,10 @@ class Post extends Model
     {
         if ($this->thumbnail && str_starts_with($this->thumbnail, 'http')) {
             return $this->thumbnail;
+        }
+        // Legacy import (Joomla): thumbnail có thể là đường dẫn tương đối kiểu "images/..."
+        if ($this->thumbnail && (str_starts_with($this->thumbnail, 'images/') || str_starts_with($this->thumbnail, '/images/'))) {
+            return asset(ltrim($this->thumbnail, '/'));
         }
         return $this->thumbnail
             ? asset('storage/' . $this->thumbnail)

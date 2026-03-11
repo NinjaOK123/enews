@@ -1,87 +1,124 @@
-@extends('layouts.app')
+@extends('layouts.admin')
 @section('title', 'Cộng tác viên Dashboard')
 @section('content')
 
 @php $user = auth()->user(); @endphp
 
-<div style="max-width:900px; margin:24px auto; padding:0 16px;">
+<div style="max-width:1180px; margin:32px auto; padding:0 24px;">
 
-  {{-- Welcome --}}
-  <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:22px; flex-wrap:wrap; gap:10px;">
-    <div>
-      <h1 style="font-size:1.35rem; font-weight:900; color:#111; margin:0;">
-        <i class="bi bi-person-workspace" style="color:#2a7a27;"></i>
-        Cộng tác viên Dashboard
-      </h1>
-      <p style="font-size:.80rem; color:#888; margin:4px 0 0;">
-        Xin chào, <strong style="color:#2a7a27;">{{ $user->name }}</strong> &nbsp;·&nbsp;
-        {{ now()->locale('vi')->isoFormat('dddd, D/M/YYYY') }}
-      </p>
-    </div>
-    <form method="POST" action="{{ route('logout') }}">
-      @csrf
-      <button type="submit" style="display:flex;align-items:center;gap:6px;padding:8px 16px;background:#fff;border:1.5px solid #ddd;border-radius:8px;font-size:.78rem;font-weight:700;color:#555;cursor:pointer;">
-        <i class="bi bi-box-arrow-right"></i> Đăng xuất
-      </button>
-    </form>
+  <!-- Welcome Header Area -->
+  <div class="row mb-4 align-items-center">
+      <div class="col-md-7 mb-3 mb-md-0">
+          <h2 class="fw-bold mb-1" style="font-weight: 900 !important; color:#111;">Cổng thông tin Cộng Tác Viên</h2>
+          <p class="text-muted mb-0" style="font-size: 0.9rem;">
+              Xin chào, <strong class="text-dark">{{ $user->name ?? 'Cộng Tác Viên' }}</strong> • 
+              <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-2 py-1">Cộng Tác Viên</span> • 
+              {{ now()->locale('vi')->isoFormat('dddd, D/M/YYYY') }}
+          </p>
+      </div>
+      <div class="col-md-5 text-md-end d-flex justify-content-md-end gap-2">
+          <a href="{{ route('home') }}" class="btn btn-outline-success rounded-pill fw-semibold shadow-sm px-4 hover-lift">
+              <i class="bi bi-house-door-fill me-1"></i> Trang chủ
+          </a>
+          <a href="{{ route('contributor.posts.create') }}" class="btn btn-success rounded-pill fw-semibold shadow-sm px-4 hover-lift">
+              <i class="bi bi-pencil-square me-1"></i> Viết bài mới
+          </a>
+      </div>
   </div>
 
-  {{-- Stats --}}
-  <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:12px; margin-bottom:24px;">
+  {{-- ── Stat cards ───────────────────────────────────────── --}}
+  <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:20px; margin-bottom:32px;">
     @foreach([
-      ['label'=>'Tổng bài đã viết','value'=>$stats['total'],'icon'=>'bi-file-earmark-text','color'=>'#2a7a27','bg'=>'#f3fbf2'],
-      ['label'=>'Đã đăng','value'=>$stats['published'],'icon'=>'bi-check-circle-fill','color'=>'#1565c0','bg'=>'#e8f0fe'],
-      ['label'=>'Chờ duyệt','value'=>$stats['pending'],'icon'=>'bi-hourglass-split','color'=>'#FF6600','bg'=>'#fff8f4'],
-      ['label'=>'Bản nháp','value'=>$stats['draft'],'icon'=>'bi-file-earmark','color'=>'#888','bg'=>'#f8f8f8'],
-      ['label'=>'Tổng lượt xem','value'=>number_format($stats['total_views']),'icon'=>'bi-eye-fill','color'=>'#c62828','bg'=>'#fff5f5'],
+      ['label'=>'Tổng đã viết','value'=>$stats['total'],'icon'=>'bi-file-earmark-text','cx'=>'#2a7a27'],
+      ['label'=>'Đã đăng','value'=>$stats['published'],'icon'=>'bi-check-circle-fill','cx'=>'#1565c0'],
+      ['label'=>'Chờ duyệt','value'=>$stats['pending'],'icon'=>'bi-hourglass-split','cx'=>'#FF6600'],
+      ['label'=>'Bản nháp','value'=>$stats['draft'],'icon'=>'bi-file-earmark','cx'=>'#888'],
+      ['label'=>'Tổng lượt xem','value'=>number_format($stats['total_views']),'icon'=>'bi-eye-fill','cx'=>'#c62828'],
     ] as $c)
-    <div style="background:{{ $c['bg'] }};border:1px solid {{ $c['color'] }}22;border-radius:10px;padding:14px 12px;text-align:center;">
-      <i class="bi {{ $c['icon'] }}" style="font-size:1.5rem;color:{{ $c['color'] }};display:block;margin-bottom:6px;"></i>
-      <div style="font-size:1.35rem;font-weight:900;color:#111;">{{ $c['value'] }}</div>
-      <div style="font-size:.70rem;color:#777;font-weight:600;">{{ $c['label'] }}</div>
+    <div style="background:#fff; border:1px solid rgba(0,0,0,.04); border-radius:16px; padding:20px; box-shadow:0 4px 20px rgba(0,0,0,.03); position:relative; overflow:hidden;">
+      <div style="position:absolute; top:0; right:0; width:60px; height:60px; background:{{ $c['cx'] }}; opacity:0.04; border-bottom-left-radius:60px;"></div>
+      
+      <div style="width:40px; height:40px; border-radius:10px; background:{{ $c['cx'] }}15; color:{{ $c['cx'] }}; display:flex; align-items:center; justify-content:center; font-size:1.2rem; margin-bottom:16px;">
+        <i class="bi {{ $c['icon'] }}"></i>
+      </div>
+      <div style="font-size:1.8rem; font-weight:800; color:#111; line-height:1;">{{ $c['value'] }}</div>
+      <div style="font-size:.78rem; color:#777; font-weight:600; margin-top:8px;">{{ $c['label'] }}</div>
     </div>
     @endforeach
   </div>
 
-  {{-- My posts --}}
-  <div style="border:1px solid #e4e4e4;border-radius:10px;overflow:hidden;background:#fff;">
-    <div style="background:linear-gradient(135deg,#1b5e20,#2a7a27);color:#fff;padding:12px 16px;font-size:.82rem;font-weight:800;display:flex;align-items:center;justify-content:space-between;">
-      <span><i class="bi bi-file-earmark-text-fill" style="color:#f5d400;"></i> BÀI VIẾT CỦA TÔI ({{ $stats['total'] }})</span>
+  {{-- ── My Posts Grid ──────────────── --}}
+  <div style="background:#fff; border:1px solid rgba(0,0,0,.05); border-radius:16px; box-shadow:0 4px 24px rgba(0,0,0,.02); padding:24px; margin-bottom:32px;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+      <h3 style="font-size:1.15rem; font-weight:800; color:#111; margin:0;"><i class="bi bi-file-earmark-text-fill" style="color:#2a7a27; margin-right:8px;"></i>Bài viết của tôi ({{ $stats['total'] }})</h3>
     </div>
 
-    @forelse($myPosts as $p)
-    <div style="padding:12px 16px;border-bottom:1px solid #f5f5f5;display:flex;align-items:flex-start;gap:12px;">
-      <div style="flex:1;min-width:0;">
-        <a href="{{ route('post.show', $p->slug) }}" style="font-size:.85rem;font-weight:700;color:#222;text-decoration:none;line-height:1.4;display:block;">
-          {{ $p->title }}
-        </a>
-        <div style="font-size:.72rem;color:#aaa;margin-top:4px;display:flex;gap:12px;flex-wrap:wrap;">
-          <span><i class="bi bi-folder"></i> {{ $p->category->name ?? 'Chưa phân loại' }}</span>
-          <span><i class="bi bi-eye"></i> {{ number_format($p->view_count) }} lượt xem</span>
-          <span><i class="bi bi-clock"></i> {{ $p->created_at->locale('vi')->diffForHumans() }}</span>
-        </div>
-      </div>
-      @php
-        $statusMap = [
-          'published' => ['bg'=>'#e8f5e9','color'=>'#2a7a27','label'=>'Đã đăng'],
-          'pending'   => ['bg'=>'#fff8e1','color'=>'#f57f17','label'=>'Chờ duyệt'],
-          'draft'     => ['bg'=>'#f5f5f5','color'=>'#777',   'label'=>'Nháp'],
-        ];
-        $st = $statusMap[$p->status] ?? $statusMap['draft'];
-      @endphp
-      <span style="background:{{ $st['bg'] }};color:{{ $st['color'] }};font-size:.68rem;font-weight:800;padding:3px 10px;border-radius:20px;white-space:nowrap;align-self:center;">
-        {{ $st['label'] }}
-      </span>
+    <div style="overflow-x:auto;">
+      <table style="width:100%; border-collapse:collapse; text-align:left;">
+        <thead>
+          <tr style="border-bottom:2px solid #f1f3f5;">
+            <th style="padding:12px 8px; font-size:.75rem; color:#888; text-transform:uppercase; font-weight:700;">Tiêu đề</th>
+            <th style="padding:12px 8px; font-size:.75rem; color:#888; text-transform:uppercase; font-weight:700;">Thống kê</th>
+            <th style="padding:12px 8px; font-size:.75rem; color:#888; text-transform:uppercase; font-weight:700;">Ngày cập nhật</th>
+            <th style="padding:12px 8px; font-size:.75rem; color:#888; text-transform:uppercase; font-weight:700;">Trạng thái</th>
+            <th style="padding:12px 8px; font-size:.75rem; color:#888; text-transform:uppercase; font-weight:700; text-align:right;">Thao tác</th>
+          </tr>
+        </thead>
+        <tbody>
+          @forelse($myPosts as $p)
+          <tr style="border-bottom:1px solid #f8f9fa;">
+            <td style="padding:16px 8px; width:40%;">
+              <a href="{{ route('post.show', $p->slug) }}" style="font-size:.9rem; font-weight:600; color:#222; text-decoration:none; line-height:1.4; display:block; margin-bottom:4px;">{{ Str::limit($p->title, 70) }}</a>
+              <div style="font-size:.75rem; color:#888;"><i class="bi bi-folder"></i> {{ $p->category->name ?? 'Chưa phân loại' }}</div>
+            </td>
+            <td style="padding:16px 8px; font-size:.85rem; color:#555;">
+              <span style="display:inline-flex; align-items:center; gap:4px; background:#f8f9fa; padding:2px 8px; border-radius:12px; font-size:.75rem;"><i class="bi bi-eye"></i> {{ number_format($p->view_count) }}</span>
+            </td>
+            <td style="padding:16px 8px; font-size:.85rem; color:#555;">{{ $p->updated_at->format('d/m/Y H:i') }}</td>
+            <td style="padding:16px 8px;">
+              @php
+                $statusMap = [
+                  'published' => ['bg'=>'rgba(42,122,39,.1)', 'color'=>'#2a7a27', 'label'=>'Đã đăng'],
+                  'pending'   => ['bg'=>'rgba(255,102,0,.1)', 'color'=>'#FF6600', 'label'=>'Chờ duyệt'],
+                  'draft'     => ['bg'=>'#f1f3f5', 'color'=>'#6c757d', 'label'=>'Nháp'],
+                  'rejected'  => ['bg'=>'rgba(198,40,40,.1)', 'color'=>'#c62828', 'label'=>'Từ chối'],
+                ];
+                $st = $statusMap[$p->status] ?? $statusMap['draft'];
+              @endphp
+              <span style="background:{{ $st['bg'] }}; color:{{ $st['color'] }}; font-size:.75rem; font-weight:700; padding:4px 12px; border-radius:20px; white-space:nowrap;">{{ $st['label'] }}</span>
+            </td>
+            <td style="padding:16px 8px; text-align:right;">
+              <div style="display:flex; justify-content:flex-end; gap:8px;">
+                @if(in_array($p->status, ['draft', 'rejected']))
+                  <a href="{{ route('contributor.posts.edit', $p) }}" style="width:32px; height:32px; border-radius:8px; display:flex; align-items:center; justify-content:center; background:#f8f9fa; color:#444; border:1px solid #e9ecef; text-decoration:none; transition:bg .2s;" title="Sửa"><i class="bi bi-pencil"></i></a>
+                  <form action="{{ route('contributor.posts.destroy', $p) }}" method="POST" onsubmit="return confirm('Bạn có chắc chắn muốn xóa bài viết này không?');">
+                    @csrf @method('DELETE')
+                    <button type="submit" style="width:32px; height:32px; border-radius:8px; display:flex; align-items:center; justify-content:center; background:#fff; color:#c62828; border:1px solid #ffcdd2; cursor:pointer;" title="Xóa"><i class="bi bi-trash"></i></button>
+                  </form>
+                @else
+                  <a href="{{ route('post.show', $p->slug) }}" target="_blank" style="padding:6px 12px; border-radius:8px; background:#f8f9fa; color:#444; border:1px solid #e9ecef; font-size:.75rem; font-weight:600; text-decoration:none;"><i class="bi bi-eye"></i> Xem</a>
+                @endif
+              </div>
+            </td>
+          </tr>
+          @empty
+          <tr>
+            <td colspan="5" style="padding:40px 20px; text-align:center;">
+              <div style="width:48px; height:48px; border-radius:50%; background:#f8f9fa; color:#999; display:flex; align-items:center; justify-content:center; font-size:1.5rem; margin:0 auto 12px;"><i class="bi bi-pencil-square"></i></div>
+              <div style="font-size:.9rem; font-weight:600; color:#444;">Bạn chưa có bài viết nào</div>
+              <div style="font-size:.75rem; color:#999; margin-top:4px;">Hãy bắt đầu viết bài đầu tiên của bạn!</div>
+            </td>
+          </tr>
+          @endforelse
+        </tbody>
+      </table>
     </div>
-    @empty
-    <div style="padding:40px;text-align:center;color:#bbb;">
-      <i class="bi bi-pencil-square" style="font-size:2.5rem;display:block;margin-bottom:10px;color:#ddd;"></i>
-      <p>Bạn chưa có bài viết nào.<br>Hãy bắt đầu viết bài đầu tiên!</p>
+    
+    <div style="margin-top:20px;">
+      {{ $myPosts->links() }}
     </div>
-    @endforelse
-
-    <div style="padding:10px 16px;">{{ $myPosts->links() }}</div>
   </div>
 
 </div>
 @endsection
+

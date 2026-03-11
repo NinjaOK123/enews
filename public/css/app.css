@@ -349,6 +349,34 @@ img {
   border-right: none;
 }
 
+/* Icon kính lúp: nằm cùng hàng, sau mục "Lướt web cùng SV" */
+.cat-nav-search-li {
+  margin-left: auto;
+}
+
+.cat-nav-search-li .cat-nav-search-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  padding: 9px 14px;
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, .9);
+  font-size: .88rem;
+  cursor: pointer;
+  transition: background .15s, color .15s;
+}
+
+.cat-nav-search-li .cat-nav-search-btn i {
+  opacity: 0.95;
+}
+
+.cat-nav-search-li .cat-nav-search-btn:hover {
+  background: rgba(0, 0, 0, .20);
+  color: var(--yellow);
+}
+
 .cat-nav ul li a:hover,
 .cat-nav ul li.active a {
   background: rgba(0, 0, 0, .20);
@@ -441,6 +469,7 @@ img {
   position: absolute;
   inset: 0;
   background: linear-gradient(to top, rgba(0, 10, 40, .85) 0%, rgba(0, 10, 40, .3) 55%, transparent 100%);
+  pointer-events: none;
 }
 
 .hero-content {

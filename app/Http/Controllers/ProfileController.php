@@ -11,23 +11,58 @@ use Intervention\Image\Drivers\Gd\Driver;
 class ProfileController extends Controller
 {
     /**
-     * Hiển thị trang thông tin cá nhân của người dùng đã đăng nhập.
+     * Hiển thị trang thông tin cá nhân.
      */
-    public function index()
+    public function show($id = null)
     {
-        return view('profile.index', ['user' => auth()->user()]);
+        $user = $id ? \App\Models\User::findOrFail($id) : auth()->user();
+        
+        // Bảo mật: Nếu xem profile người khác mà không phải Admin thì chặn
+        if ($user->id !== auth()->id() && auth()->user()->role !== 'admin') {
+            abort(403, 'Bạn không có quyền xem thông tin của người dùng này.');
+        }
+
+        // Cấp quyền sửa (isEditable)
+        $isEditable = ($user->id === auth()->id() || auth()->user()->role === 'admin');
+
+        // Render giao diện theo role (vai trò)
+        if ($user->role === 'reader') {
+            return view('profile.roles.reader', compact('user', 'isEditable'));
+        } elseif ($user->role === 'contributor') {
+            $articlesCount = $user->posts()->count();
+            $totalViews = $user->posts()->sum('view_count');
+            $posts = $user->posts()->latest()->take(10)->get();
+            return view('profile.roles.contributor', compact('user', 'isEditable', 'articlesCount', 'totalViews', 'posts'));
+        } elseif ($user->role === 'editor' || $user->role === 'admin') {
+            // Lấy thống kê duyệt bài
+            $toReviewCount = \App\Models\Post::where('status', 'pending')->count();
+            $approvedCount = \App\Models\Post::where('status', 'published')->whereBetween('updated_at', [now()->startOfWeek(), now()->endOfWeek()])->count();
+            // Lịch sử duyệt bài
+            $recentActivities = \App\Models\Post::with(['category:id,name,slug', 'author:id,name'])
+                ->whereNotNull('updated_at')
+                ->latest('updated_at')
+                ->take(5)
+                ->get();
+            return view('profile.roles.editor', compact('user', 'isEditable', 'toReviewCount', 'approvedCount', 'recentActivities'));
+        }
+
+        return view('profile.index', compact('user', 'isEditable')); // fallback
     }
 
     /**
      * Cập nhật avatar của user
      */
-    public function updateAvatar(Request $request)
+    public function updateAvatar(Request $request, $id)
     {
+        $user = \App\Models\User::findOrFail($id);
+
+        if ($user->id !== auth()->id() && auth()->user()->role !== 'admin') {
+            abort(403, 'Bạn không có quyền chỉnh sửa ảnh đại diện của người dùng này.');
+        }
+
         $request->validate([
             'avatar' => 'required|image|mimes:jpeg,png,jpg,gif|max:5120',
         ]);
-
-        $user = auth()->user();
 
         if ($request->hasFile('avatar')) {
             $file = $request->file('avatar');
@@ -41,7 +76,7 @@ class ProfileController extends Controller
             $path = 'avatars/' . $filename;
 
             // Xoá ảnh cũ (nếu có và không phải ảnh mặc định từ ngoài)
-            if ($user->avatar && Storage::disk('public')->exists($user->avatar)) {
+            if ($user->avatar && str_starts_with($user->avatar, 'avatars/') && Storage::disk('public')->exists($user->avatar)) {
                 Storage::disk('public')->delete($user->avatar);
             }
 

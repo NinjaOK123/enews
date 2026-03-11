@@ -1,4 +1,4 @@
-@extends('layouts.app') <!-- Please adjust if layout name differs -->
+@extends('layouts.admin') <!-- Please adjust if layout name differs -->
 
 @section('content')
 <div class="container mt-4">
@@ -87,26 +87,17 @@
                 </div>
 
                 <div class="d-flex gap-2">
-                    <button type="submit" class="btn btn-primary" id="btnSaveDraft">
+                    <button type="submit" name="action" value="draft" class="btn btn-primary" id="btnSaveDraft">
                         <i class="bi bi-save"></i> Lưu nháp
                     </button>
 
-                    @if(isset($post))
-                        <button type="button" class="btn btn-success" id="btnSubmitReview">
-                            <i class="bi bi-send-check"></i> Gửi duyệt
-                        </button>
-                    @endif
+                    <button type="submit" name="action" value="pending" class="btn btn-success" id="btnSubmitReview">
+                        <i class="bi bi-send-check"></i> Gửi bài chờ duyệt
+                    </button>
                 </div>
 
                 <span id="autoSaveStatus" class="ms-3 text-muted" style="font-size: 0.9em;"></span>
             </form>
-
-            @if(isset($post))
-                <!-- Hidden form for Submit Review -->
-                <form id="submitReviewForm" action="{{ route('contributor.posts.submit', $post) }}" method="POST" class="d-none">
-                    @csrf
-                </form>
-            @endif
         </div>
     </div>
 </div>
@@ -359,12 +350,12 @@
         });
     }
 
-    // --- SUBMIT REVIEW ---
+    // Cảnh báo trước khi nộp bài
     const btnSubmitReview = document.getElementById('btnSubmitReview');
     if(btnSubmitReview) {
-        btnSubmitReview.addEventListener('click', function() {
-            if(confirm('Bạn có chắc chắn muốn gửi bài viết này để chờ duyệt?')) {
-                document.getElementById('submitReviewForm').submit();
+        btnSubmitReview.addEventListener('click', function(e) {
+            if(!confirm('Bạn có chắc chắn muốn gửi bài viết này để chờ duyệt? Bạn sẽ không thể sửa bài sau khi gửi.')) {
+                e.preventDefault();
             }
         });
     }
@@ -397,3 +388,4 @@
     }
 </script>
 @endpush
+

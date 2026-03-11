@@ -16,8 +16,8 @@ class MediaController extends Controller
     {
         // Chỉ cấp quyền xem nếu media là của user hiện tại hoặc admin đã share
         if ($media->user_id === auth()->id() || $media->is_shared) {
-            $path = storage_path('app/public/' . $media->file_path);
-            
+            $path = $media->absolutePath();
+
             if (!file_exists($path)) {
                 abort(404);
             }

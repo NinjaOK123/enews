@@ -153,6 +153,50 @@
   display: block;
   box-shadow: 0 2px 12px rgba(0,0,0,.10);
 }
+
+/* Ghi chú ảnh (Image captions) */
+.article-body figure,
+.article-body figure.image {
+  margin: 1.5rem auto;
+  text-align: center;
+}
+.article-body figure img,
+.article-body figure.image img {
+  margin-bottom: 8px;
+}
+.article-body figure figcaption,
+.article-body figure.image figcaption,
+.article-body figcaption {
+  font-size: 0.9rem;
+  color: #555;
+  font-style: italic;
+  text-align: center;
+  margin-top: 8px;
+  display: block;
+}
+
+/* Fallback: Nếu ảnh nằm trong thẻ P, căn giữa ảnh */
+.article-body p:has(img) {
+  text-align: center;
+}
+/* Fallback: Nếu chú thích ảnh nằm ở thẻ P tiếp theo, in nghiêng */
+.article-body p:has(img) + p:has(em),
+.article-body p:has(img) + p:has(i) {
+  text-align: center;
+  font-size: 0.9rem;
+  color: #555;
+  margin-top: -0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+/* Tên tác giả ở cuối bài viết (Author signature) */
+.article-body > p:last-child {
+  text-align: right;
+  font-weight: bold;
+  margin-top: 2.5rem;
+  color: #111;
+}
+
 .article-body blockquote {
   border-left: 4px solid var(--orange,#FF6600);
   padding: 12px 20px;
@@ -477,6 +521,16 @@
   transition: width .1s;
 }
 
+/* ── TTS Highlight Active ─────────────────────────────────── */
+.tts-active {
+  background-color: rgba(245, 212, 0, 0.2) !important;
+  border-left: 4px solid var(--orange, #FF6600) !important;
+  padding-left: 10px !important;
+  border-radius: 4px;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
 @media (max-width: 900px) {
   .article-page    { flex-direction: column; }
   .article-sidebar { width: 100%; position: static; }
@@ -491,6 +545,39 @@
 <div id="readProgress"></div>
 
 <div class="article-page">
+
+  {{-- ════════════════════════════════════════════════
+       EDITOR/ADMIN REVIEW BAR (Only for pending posts)
+  ════════════════════════════════════════════════════ --}}
+  @auth
+    @if(in_array(auth()->user()->role, ['admin', 'editor']))
+      @if($post->status === 'pending')
+      <div style="width: 100%; background: #fff8e1; border: 1px solid #ffc107; border-radius: 8px; padding: 12px 16px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+        <div>
+          <strong style="color: #f57f17; font-size: .95rem;"><i class="bi bi-shield-lock-fill"></i> Chế độ Kiểm duyệt</strong>
+          <span style="font-size: .8rem; color: #666; margin-left: 8px;">Bài viết đang chờ duyệt. Vui lòng đọc kỹ trước khi quyết định.</span>
+        </div>
+        <div style="display: flex; gap: 8px;">
+          <form action="{{ route('editor.posts.approve', $post) }}" method="POST">
+            @csrf
+            <button type="submit" style="background: var(--green,#2a7a27); color: #fff; border: none; padding: 6px 16px; border-radius: 6px; font-weight: 700; font-size: .8rem; cursor: pointer;">
+              <i class="bi bi-check-circle"></i> Duyệt bài
+            </button>
+          </form>
+          <form action="{{ route('editor.posts.reject', $post) }}" method="POST">
+            @csrf
+            <button type="submit" style="background: #e53935; color: #fff; border: none; padding: 6px 16px; border-radius: 6px; font-weight: 700; font-size: .8rem; cursor: pointer;">
+              <i class="bi bi-x-circle"></i> Từ chối
+            </button>
+          </form>
+          <a href="{{ route('contributor.posts.edit', $post) }}" style="background: #fff; color: #333; border: 1px solid #ccc; padding: 6px 16px; border-radius: 6px; font-weight: 700; font-size: .8rem; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 4px;">
+            <i class="bi bi-pencil-square"></i> Sửa bài
+          </a>
+        </div>
+      </div>
+      @endif
+    @endif
+  @endauth
 
   {{-- ════════════════════════════════════════════════
        MAIN CONTENT COLUMN
@@ -541,6 +628,16 @@
         <i class="bi bi-chat-dots-fill"></i>
         {{ $post->comments->count() }} bình luận
       </div>
+      
+      {{-- Nút nghe bài viết (Text-To-Speech) --}}
+      <div class="article-meta-item tts-action" style="margin-left: auto; border-right: none; display: flex; gap: 8px;">
+        <button id="tts-play-btn" class="btn btn-sm btn-outline-success rounded-pill fw-semibold" style="padding: 4px 14px; font-size: 0.75rem; transition: all 0.2s;">
+          <i class="bi bi-play-circle-fill me-1"></i> <span id="tts-play-text">Nghe bài viết</span>
+        </button>
+        <button id="tts-stop-btn" class="btn btn-sm btn-danger rounded-pill fw-semibold shadow-sm" style="padding: 4px 14px; font-size: 0.75rem; display: none; transition: all 0.2s;">
+          <i class="bi bi-stop-circle-fill me-1"></i> Dừng hẳn
+        </button>
+      </div>
     </div>
 
     {{-- Hero image --}}
@@ -556,6 +653,153 @@
     <article class="article-body" id="articleBody">
       {!! $post->content !!}
     </article>
+    
+    {{-- Web Speech API Script --}}
+    @push('scripts')
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const synth = window.speechSynthesis;
+            const playBtn = document.getElementById('tts-play-btn');
+            const stopBtn = document.getElementById('tts-stop-btn');
+            const playText = document.getElementById('tts-play-text');
+            const playIcon = playBtn.querySelector('i');
+            
+            if (!synth) {
+                playBtn.style.display = 'none';
+                return;
+            }
+
+            let isReading = false;
+            let currentUtteranceIndex = 0;
+            let readableElements = [];
+            let isPaused = false;
+            
+            function initReadableElements() {
+                readableElements = [];
+                const titleEl = document.querySelector('.article-title');
+                const leadEl = document.querySelector('.article-lead');
+                const bodyElements = document.querySelectorAll('#articleBody p, #articleBody h2, #articleBody h3, #articleBody blockquote, #articleBody li');
+                
+                if (titleEl) readableElements.push(titleEl);
+                if (leadEl) readableElements.push(leadEl);
+                bodyElements.forEach(el => {
+                    if (el.innerText.trim().length > 0) readableElements.push(el);
+                });
+            }
+
+            function resetUI() {
+                playText.textContent = 'Nghe bài viết';
+                playIcon.className = 'bi bi-play-circle-fill me-1';
+                playBtn.classList.replace('btn-success', 'btn-outline-success');
+                playBtn.classList.replace('btn-warning', 'btn-outline-success');
+                playBtn.classList.remove('text-white');
+                stopBtn.style.display = 'none'; // Ẩn nút Stop
+                readableElements.forEach(e => e.classList.remove('tts-active'));
+                isReading = false;
+                isPaused = false;
+                currentUtteranceIndex = 0;
+            }
+
+            function speakNext() {
+                if (currentUtteranceIndex >= readableElements.length) {
+                    resetUI();
+                    return;
+                }
+
+                if (!isReading) return;
+
+                const el = readableElements[currentUtteranceIndex];
+                const text = el.innerText.trim();
+
+                // Highlight phần text đang được đọc và cuộn tới đó
+                readableElements.forEach(e => e.classList.remove('tts-active'));
+                el.classList.add('tts-active');
+                
+                // Tránh giật cuộn trên cuộn, chỉ cuộn khi el không ở trong view viewport
+                const rect = el.getBoundingClientRect();
+                if(rect.top < 0 || rect.bottom > window.innerHeight) {
+                    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'vi-VN'; 
+                utterance.rate = 1.0;     
+                utterance.pitch = 1.0;    
+                utterance.volume = 1.0;
+
+                const voices = synth.getVoices();
+                const viVoice = voices.find(v => v.lang === 'vi-VN');
+                if (viVoice) utterance.voice = viVoice;
+
+                utterance.onend = () => {
+                    if (isReading) {
+                        currentUtteranceIndex++;
+                        speakNext();
+                    }
+                };
+                
+                utterance.onerror = (e) => {
+                    if (e.error !== 'canceled') {
+                        resetUI();
+                    }
+                };
+
+                synth.speak(utterance);
+            }
+
+            playBtn.addEventListener('click', () => {
+                // Đang đọc -> Tạm dừng
+                if (isReading && !isPaused) {
+                    synth.pause();
+                    isPaused = true;
+                    playText.textContent = 'Tiếp tục';
+                    playIcon.className = 'bi bi-play-circle-fill me-1';
+                    playBtn.classList.replace('btn-success', 'btn-warning');
+                    return;
+                }
+                
+                // Đang tạm dừng -> Đọc tiếp
+                if (isReading && isPaused) {
+                    synth.resume();
+                    isPaused = false;
+                    playText.textContent = 'Tạm dừng';
+                    playIcon.className = 'bi bi-pause-circle-fill me-1';
+                    playBtn.classList.replace('btn-warning', 'btn-success');
+                    return;
+                }
+
+                // Cảnh báo: Bắt đầu đọc mới
+                synth.cancel(); // Clears queue
+                initReadableElements();
+                if (readableElements.length > 0) {
+                    isReading = true;
+                    isPaused = false;
+                    currentUtteranceIndex = 0;
+                    
+                    playText.textContent = 'Tạm dừng';
+                    playIcon.className = 'bi bi-pause-circle-fill me-1';
+                    playBtn.classList.replace('btn-outline-success', 'btn-success');
+                    playBtn.classList.add('text-white');
+                    stopBtn.style.display = 'inline-block'; // Hiện nút Stop
+                    
+                    speakNext();
+                }
+            });
+
+            stopBtn.addEventListener('click', () => {
+                synth.cancel();
+                resetUI();
+            });
+
+            synth.onvoiceschanged = () => {};
+            
+            // Dừng speech khi rời trang
+            window.addEventListener('beforeunload', () => {
+                synth.cancel();
+            });
+        });
+    </script>
+    @endpush
 
     {{-- Tags --}}
     @if($post->category)

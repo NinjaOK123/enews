@@ -7,7 +7,7 @@
   <title>@yield('title', 'Trang chủ') — Trang báo Sinh viên Đại học An Giang</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
-  <link href="{{ asset('css/app.css') }}" rel="stylesheet">
+  <link href="{{ asset('css/app.css') }}?v={{ filemtime(public_path('css/app.css')) }}" rel="stylesheet">
   @stack('styles')
   <style>
     /* Notification Bell Ring Animation */
@@ -68,7 +68,11 @@
         <div id="google_translate_element"></div>
       </div>
       <i class="bi bi-calendar3"></i>
-      <span>{{ \Carbon\Carbon::now('Asia/Ho_Chi_Minh')->locale('vi')->isoFormat('dddd, D [tháng] M, YYYY') }}</span>
+      @php
+        $topBarDate = \Carbon\Carbon::now('Asia/Ho_Chi_Minh')->locale('vi');
+        $topBarDateStr = ucwords($topBarDate->isoFormat('dddd')) . ', ' . $topBarDate->isoFormat('D [tháng] M, YYYY');
+      @endphp
+      <span>{{ $topBarDateStr }}</span>
     </div>
   </div>
 
@@ -118,7 +122,7 @@
         <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false" style="color: #333; padding-right: 0;">
             @if(auth()->user()->avatar)
-              <img src="{{ asset('storage/' . auth()->user()->avatar) }}" alt="Avatar" class="rounded-circle me-2" width="32" height="32" style="object-fit: cover;">
+              <img src="{{ filter_var(auth()->user()->avatar, FILTER_VALIDATE_URL) ? auth()->user()->avatar : asset('storage/' . auth()->user()->avatar) }}" alt="Avatar" class="rounded-circle me-2" width="32" height="32" style="object-fit: cover;">
             @else
               <img src="https://ui-avatars.com/api/?name={{ urlencode(auth()->user()->name) }}&background=0D8ABC&color=fff" alt="Avatar" class="rounded-circle me-2" width="32" height="32">
             @endif
@@ -193,13 +197,15 @@
         <a href="{{ route('category', $cat->slug) }}">{{ $cat->name }}</a>
       </li>
       @endforeach
+      {{-- Icon tìm kiếm nằm sau mục cuối (Lướt web cùng SV) --}}
+      <li class="cat-nav-search-li" style="margin-left: auto; display: flex; align-items: center;">
+        <button type="button" onclick="toggleAdvSearch()" title="Tìm kiếm" class="cat-nav-search-btn d-flex align-items-center justify-content-center" style="background: transparent; border: none; outline: none; color: rgba(255,255,255,0.9); padding: 9px 14px; cursor: pointer;">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" style="width: 17px; height: 17px;">
+            <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+          </svg>
+        </button>
+      </li>
     </ul>
-    {{-- Search icon at end of nav --}}
-    <div class="cat-nav-search" id="catNavSearch">
-      <button onclick="toggleAdvSearch()" title="Tìm kiếm nâng cao" style="background:none;border:none;color:#fff;cursor:pointer;padding:0 12px;font-size:1rem;line-height:1;">
-        <i class="bi bi-search"></i>
-      </button>
-    </div>
   </nav>
 
   {{-- ═══ ADVANCED SEARCH PANEL (dropdown from search icon) ═══ --}}
@@ -467,13 +473,27 @@ function googleTranslateElementInit() {
     autoDisplay: false
   }, 'google_translate_element');
 }
+
+// Khắc phục lỗi mất nút Translate khi người dùng ấn Back (lỗi bfcache)
+window.addEventListener('pageshow', function (event) {
+  if (event.persisted) {
+    window.location.reload();
+  }
+});
 </script>
 <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 
 <style>
 /* Ẩn thanh Google Translate banner phía trên cùng làm đẩy trang xuống */
-.goog-te-banner-frame.skiptranslate { display: none !important; }
-body { top: 0px !important; }
+.goog-te-banner-frame.skiptranslate, 
+iframe.goog-te-banner-frame { display: none !important; }
+.VIpgJd-ZVi9od-ORHb-OEVmcd { display: none !important; }
+body { top: 0px !important; position: static !important; }
+html { margin-top: 0px !important; height: auto !important; }
+
+/* Ẩn popup tooltip khi hover vào text đã dịch */
+#goog-gt-tt, .goog-te-balloon-frame { display: none !important; }
+.goog-text-highlight { background-color: transparent !important; box-shadow: none !important; }
 
 /* Ẩn chữ "Powered by Google Translate" */
 .goog-te-gadget { font-size: 0px !important; color: transparent !important; }

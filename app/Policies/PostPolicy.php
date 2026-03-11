@@ -37,7 +37,7 @@ class PostPolicy
      */
     public function update(User $user, Post $post): bool
     {
-        return $post->user_id === $user->id && $post->status === 'draft';
+        return $post->author_id === $user->id && in_array($post->status, ['draft', 'rejected']);
     }
 
     /**
@@ -45,7 +45,7 @@ class PostPolicy
      */
     public function delete(User $user, Post $post): bool
     {
-        return $post->user_id === $user->id && $post->status === 'draft';
+        return $post->author_id === $user->id && in_array($post->status, ['draft', 'rejected']);
     }
 
     /**

@@ -22,4 +22,21 @@ class Media extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    public function absolutePath(): string
+    {
+        $path = (string) $this->file_path;
+
+        // Pattern A (contributor flow): "media/123/file.jpg" stored on disk "public"
+        if ($path !== '' && !str_starts_with($path, '/')) {
+            return storage_path('app/public/' . $path);
+        }
+
+        // Pattern B (admin legacy flow): "/storage/media/shared/xxx.jpg"
+        if (str_starts_with($path, '/storage/')) {
+            return public_path($path);
+        }
+
+        return public_path($path);
+    }
 }

@@ -27,8 +27,20 @@ class DatabaseSeeder extends Seeder
                 'role'     => User::ROLE_EDITOR,
             ],
             [
-                'name'     => 'Cộng Tác Viên',
+                'name'     => 'Cộng Tác Viên 1',
                 'email'    => 'contributor@agu.edu.vn',
+                'password' => Hash::make('password'),
+                'role'     => User::ROLE_CONTRIBUTOR,
+            ],
+            [
+                'name'     => 'Cộng Tác Viên 2',
+                'email'    => 'ctv2@agu.edu.vn',
+                'password' => Hash::make('password'),
+                'role'     => User::ROLE_CONTRIBUTOR,
+            ],
+            [
+                'name'     => 'Cộng Tác Viên 3',
+                'email'    => 'ctv3@agu.edu.vn',
                 'password' => Hash::make('password'),
                 'role'     => User::ROLE_CONTRIBUTOR,
             ],
@@ -52,5 +64,13 @@ class DatabaseSeeder extends Seeder
                 $userData
             );
         }
+
+        // Seeder dữ liệu mẫu
+        $this->call([
+            CategorySeeder::class,
+            PostSeeder::class,
+            NotificationSeeder::class,
+            CommentSeeder::class,
+        ]);
     }
 }

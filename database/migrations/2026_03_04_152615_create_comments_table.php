@@ -13,7 +13,7 @@ return new class extends Migration
             $table->foreignId('post_id')->constrained()->cascadeOnDelete();
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
             $table->text('content');
-            $table->boolean('is_approved')->default(true); // auto-approve for now
+            $table->boolean('is_approved')->nullable()->default(null); // null: pending, true: approved, false: rejected
             $table->timestamps();
 
             $table->index(['post_id', 'is_approved', 'created_at']);

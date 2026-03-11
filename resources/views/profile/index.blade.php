@@ -31,23 +31,40 @@
                         </div>
                     @enderror
                     
-                    <div class="mb-4 position-relative d-inline-block">
-                        <div style="cursor: pointer; position: relative" onclick="document.getElementById('avatarInput').click();" title="Nhấp để thay đổi ảnh đại diện">
-                            @if($user->avatar)
-                                <img src="{{ asset('storage/' . $user->avatar) }}" alt="Avatar" class="rounded-circle shadow-sm" width="120" height="120" style="object-fit: cover; border: 4px solid #fff;">
-                            @else
-                                <img src="https://ui-avatars.com/api/?name={{ urlencode($user->name) }}&background=0D8ABC&color=fff&size=200" alt="Avatar" class="rounded-circle shadow-sm" width="120" height="120" style="border: 4px solid #fff;">
-                            @endif
-                            <div class="position-absolute bottom-0 end-0 bg-primary text-white rounded-circle p-2 shadow-sm" style="transform: translate(-10%, -10%); border: 2px solid white;">
-                                <i class="bi bi-camera-fill" style="font-size: 1rem;"></i>
+                    <div class="mb-4 d-flex flex-column align-items-center">
+                        <div style="cursor: pointer; position: relative; display: inline-block;" onclick="document.getElementById('avatarInput').click();" title="Nhấp để thay đổi ảnh đại diện">
+                            <div style="width: 120px; height: 120px;">
+                                @if($user->avatar)
+                                    <img id="avatarPreview" src="{{ filter_var($user->avatar, FILTER_VALIDATE_URL) ? $user->avatar : asset('storage/' . $user->avatar) }}" alt="Avatar" class="rounded-circle shadow-sm w-100 h-100" style="object-fit: cover; border: 4px solid #fff;">
+                                @else
+                                    <img id="avatarPreview" src="https://ui-avatars.com/api/?name={{ urlencode($user->name) }}&background=0D8ABC&color=fff&size=200" alt="Avatar" class="rounded-circle shadow-sm w-100 h-100" style="object-fit: cover; border: 4px solid #fff;">
+                                @endif
+                            </div>
+                            <div class="mt-2 text-primary fw-medium text-center" style="font-size: 0.85rem;">
+                                <i class="bi bi-camera-fill me-1"></i>Thay đổi ảnh
                             </div>
                         </div>
                     </div>
 
                     <form id="avatarForm" action="{{ route('profile.avatar') }}" method="POST" enctype="multipart/form-data" class="d-none">
                         @csrf
-                        <input type="file" name="avatar" id="avatarInput" accept="image/*" onchange="document.getElementById('avatarForm').submit();">
+                        <input type="file" name="avatar" id="avatarInput" accept="image/*" onchange="previewAndSubmitAvatar(this);">
                     </form>
+                    
+                    <script>
+                        function previewAndSubmitAvatar(input) {
+                            if (input.files && input.files[0]) {
+                                var reader = new FileReader();
+                                reader.onload = function(e) {
+                                    document.getElementById('avatarPreview').src = e.target.result;
+                                };
+                                reader.readAsDataURL(input.files[0]);
+                                
+                                // Auto submit form after picking
+                                document.getElementById('avatarForm').submit();
+                            }
+                        }
+                    </script>
 
                     <h5 class="fw-bold mb-1">{{ $user->name }}</h5>
                     <p class="text-muted mb-4">{{ $user->email }}</p>

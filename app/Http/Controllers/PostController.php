@@ -15,11 +15,21 @@ class PostController extends Controller
      */
     public function show(Post $post): \Illuminate\View\View
     {
-        // Chỉ hiện bài đã publish
-        abort_if($post->status !== 'published', 404);
-
-        // Tăng lượt xem mỗi lần vào trang
-        $post->increment('view_count');
+        // Kiểm tra quyền xem bài viết:
+        // Nếu bài viết đã publish thì ai cũng xem được.
+        // Còn chưa publish, thì tác giả, Editor, Admin có quyền xem.
+        if ($post->status !== 'published') {
+            if (!auth()->check()) {
+                abort(404);
+            }
+            $user = auth()->user();
+            if ($post->author_id !== $user->id && $user->role !== 'admin' && $user->role !== 'editor') {
+                abort(404);
+            }
+        } else {
+            // Tăng lượt xem mỗi lần vào trang (chỉ cho bài public)
+            $post->increment('view_count');
+        }
 
         // Load quan hệ đầy đủ tránh N+1 query
         $post->load([
@@ -78,12 +88,13 @@ class PostController extends Controller
             'post_id'     => $post->id,
             'user_id'     => auth()->id(),
             'content'     => $request->content,
-            'is_approved' => true,
+            // null = pending (để Admin duyệt); true/false = approved/rejected
+            'is_approved' => null,
         ]);
 
         return redirect()
             ->route('post.show', $post->slug)
-            ->with('success', 'Bình luận của bạn đã được gửi thành công!')
+            ->with('success', 'Bình luận của bạn đã được gửi và đang chờ duyệt.')
             ->withFragment('comments');
     }
 }

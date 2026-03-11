@@ -24,31 +24,22 @@ class AuthController extends Controller
             'password' => 'required|string',
         ]);
 
-        $demoAccounts = [
-            ['username' => 'admin', 'password' => 'admin123', 'name' => 'Quan tri vien', 'role' => 'admin'],
-            ['username' => 'bientapvien', 'password' => 'btv123', 'name' => 'Bien tap vien', 'role' => 'editor'],
-            ['username' => 'congtacvien', 'password' => 'ctv123', 'name' => 'Cong tac vien', 'role' => 'contributor'],
-        ];
+        $email = $request->username;
+        if (!str_contains($email, '@')) {
+            $email .= '@agu.edu.vn';
+        }
 
-        foreach ($demoAccounts as $account) {
-            if ($request->username === $account['username']
-                && $request->password === $account['password']) {
-                Session::put('user', [
-                    'name' => $account['name'],
-                    'email' => $account['username'] . '@agu.edu.vn',
-                    'role' => $account['role'],
-                    'avatar' => null,
-                    'auth' => 'password',
-                ]);
+        if (Auth::attempt(['email' => $email, 'password' => $request->password])) {
+            $request->session()->regenerate();
+            Session::forget('user'); // Xoá session custom cũ nếu có
 
-                return redirect()->route('home')
-                    ->with('success', 'Chao mung ' . $account['name'] . '!');
-            }
+            return redirect()->route('home')
+                ->with('success', 'Chào mừng ' . Auth::user()->name . '!');
         }
 
         return back()
             ->withInput(['username' => $request->username])
-            ->with('error', 'Ten tai khoan hoac mat khau khong dung. Vui long thu lai.');
+            ->with('error', 'Tên tài khoản hoặc mật khẩu không đúng. Vui lòng thử lại.');
     }
 
     public function redirectToGoogle()

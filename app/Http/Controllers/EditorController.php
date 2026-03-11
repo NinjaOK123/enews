@@ -33,4 +33,30 @@ class EditorController extends Controller
 
         return view('dashboard.editor', compact('pendingPosts', 'recentPublished', 'stats'));
     }
+
+    /**
+     * Editor duyệt bài viết.
+     */
+    public function approve(Post $post)
+    {
+        // Chức năng này trong tương lai có thể kiểm tra policy if needed
+        $post->update([
+            'status' => 'published',
+            'published_at' => now(),
+        ]);
+
+        return back()->with('success', 'Đã duyệt bài viết thành công.');
+    }
+
+    /**
+     * Editor từ chối bài viết.
+     */
+    public function reject(Post $post)
+    {
+        $post->update([
+            'status' => 'rejected',
+        ]);
+
+        return back()->with('success', 'Đã từ chối bài viết.');
+    }
 }

@@ -47,7 +47,7 @@ class AdminController extends Controller
         // 5 user mới đăng ký
         $latestUsers = User::latest()->limit(5)->get();
 
-        return view('dashboard.admin', compact(
+        return view('admin.dashboard', compact(
             'stats', 'usersByRole', 'latestPosts', 'pendingPosts', 'latestUsers'
         ));
     }
