@@ -191,12 +191,30 @@
   {{-- ═══ CATEGORY NAV (AGU green sticky bar) ═══ --}}
   <nav class="cat-nav" id="cat-nav">
     <ul>
-      @php $navCategories = $navCategories ?? \App\Models\Category::active()->roots()->get(); @endphp
-      @foreach($navCategories as $cat)
+      @php 
+        $allNavCategories = $navCategories ?? \App\Models\Category::active()->roots()->get(); 
+        $mainNavCategories = $allNavCategories->take(8);
+        $moreNavCategories = $allNavCategories->skip(8);
+      @endphp
+      @foreach($mainNavCategories as $cat)
       <li class="{{ request()->is('chuyen-muc/'.$cat->slug.'*') ? 'active' : '' }}">
         <a href="{{ route('category', $cat->slug) }}">{{ $cat->name }}</a>
       </li>
       @endforeach
+
+      @if($moreNavCategories->count() > 0)
+      <li class="nav-item dropdown" style="position:relative;">
+        <a class="nav-link dropdown-toggle" href="#" id="moreNavDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false" style="color:rgba(255,255,255,0.9); padding:10px 14px;">
+          Khác
+        </a>
+        <ul class="dropdown-menu shadow-sm" aria-labelledby="moreNavDropdown" style="margin-top:0; border-radius:4px; border:none; border-top:3px solid var(--primary,#2a7a27);">
+          @foreach($moreNavCategories as $mCat)
+          <li><a class="dropdown-item" href="{{ route('category', $mCat->slug) }}" style="font-size:0.85rem; padding:8px 16px; color:#333;">{{ $mCat->name }}</a></li>
+          @endforeach
+        </ul>
+      </li>
+      @endif
+
       {{-- Icon tìm kiếm nằm sau mục cuối (Lướt web cùng SV) --}}
       <li class="cat-nav-search-li" style="margin-left: auto; display: flex; align-items: center;">
         <button type="button" onclick="toggleAdvSearch()" title="Tìm kiếm" class="cat-nav-search-btn d-flex align-items-center justify-content-center" style="background: transparent; border: none; outline: none; color: rgba(255,255,255,0.9); padding: 9px 14px; cursor: pointer;">
