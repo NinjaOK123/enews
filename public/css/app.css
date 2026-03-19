@@ -321,15 +321,50 @@ img {
   z-index: 100;
 }
 
-.cat-nav ul {
-  list-style: none;
+.cat-nav-inner {
   display: flex;
-  flex-wrap: wrap;
-  margin: 0;
-  padding: 0;
+  align-items: stretch;
 }
 
-.cat-nav ul li a {
+.cat-nav-scroll {
+  flex: 1;
+  min-width: 0;
+}
+
+.cat-nav-list {
+  list-style: none;
+  display: flex;
+  flex-wrap: nowrap;
+  margin: 0;
+  padding: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-gutter: stable;
+  -webkit-overflow-scrolling: touch;
+}
+
+.cat-nav-list li {
+  flex: 0 0 auto;
+}
+
+.cat-nav-list::-webkit-scrollbar {
+  height: 9px;
+}
+
+.cat-nav-list::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, .14);
+}
+
+.cat-nav-list::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, .45);
+  border-radius: 999px;
+}
+
+.cat-nav-list::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, .6);
+}
+
+.cat-nav-list li a {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -345,13 +380,18 @@ img {
   min-height: 40px;
 }
 
-.cat-nav ul li:last-child a {
+.cat-nav-list li:last-child a {
   border-right: none;
 }
 
 /* Icon kính lúp: nằm cùng hàng, sau mục "Lướt web cùng SV" */
 .cat-nav-search-li {
   margin-left: auto;
+  position: sticky;
+  right: 0;
+  z-index: 2;
+  background: var(--green);
+  border-left: 1px solid rgba(255, 255, 255, .18);
 }
 
 .cat-nav-search-li .cat-nav-search-btn {
@@ -377,10 +417,10 @@ img {
   color: var(--yellow);
 }
 
-.cat-nav ul li a:hover,
-.cat-nav ul li.active a {
-  background: rgba(0, 0, 0, .20);
-  color: var(--yellow);
+.cat-nav-list li a:hover,
+.cat-nav-list li.active a {
+  background: var(--white);
+  color: var(--green);
 }
 
 /* ═══════════════════════════════════════════════

@@ -13,7 +13,7 @@ class CommentController extends Controller
      */
     public function index(Request $request)
     {
-        $status = $request->input('status', 'pending'); // pending | approved | rejected | all
+        $status = $request->input('status', 'all'); // pending | approved | rejected | all
 
         $query = Comment::with(['user', 'post'])->latest();
 

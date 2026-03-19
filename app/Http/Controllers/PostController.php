@@ -88,13 +88,13 @@ class PostController extends Controller
             'post_id'     => $post->id,
             'user_id'     => auth()->id(),
             'content'     => $request->content,
-            // null = pending (để Admin duyệt); true/false = approved/rejected
-            'is_approved' => null,
+            // true = auto-approved (publicly visible like Facebook)
+            'is_approved' => true,
         ]);
 
         return redirect()
             ->route('post.show', $post->slug)
-            ->with('success', 'Bình luận của bạn đã được gửi và đang chờ duyệt.')
+            ->with('success', 'Bình luận của bạn đã được đăng thành công.')
             ->withFragment('comments');
     }
 }

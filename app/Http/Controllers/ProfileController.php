@@ -2,8 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
+use App\Models\Post;
+use App\Models\Collection;
 use Illuminate\Http\Request;
-
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Intervention\Image\ImageManager;
 use Intervention\Image\Drivers\Gd\Driver;
@@ -11,85 +14,129 @@ use Intervention\Image\Drivers\Gd\Driver;
 class ProfileController extends Controller
 {
     /**
-     * Hiển thị trang thông tin cá nhân.
+     * Profile riêng (yêu cầu đăng nhập).
      */
     public function show($id = null)
     {
-        $user = $id ? \App\Models\User::findOrFail($id) : auth()->user();
-        
-        // Bảo mật: Nếu xem profile người khác mà không phải Admin thì chặn
+        $user = $id ? User::findOrFail($id) : auth()->user();
+
+        // Chỉ xem profile của chính mình hoặc Admin
         if ($user->id !== auth()->id() && auth()->user()->role !== 'admin') {
-            abort(403, 'Bạn không có quyền xem thông tin của người dùng này.');
+            abort(403);
         }
 
-        // Cấp quyền sửa (isEditable)
-        $isEditable = ($user->id === auth()->id() || auth()->user()->role === 'admin');
-
-        // Render giao diện theo role (vai trò)
-        if ($user->role === 'reader') {
-            return view('profile.roles.reader', compact('user', 'isEditable'));
-        } elseif ($user->role === 'contributor') {
-            $articlesCount = $user->posts()->count();
-            $totalViews = $user->posts()->sum('view_count');
-            $posts = $user->posts()->latest()->take(10)->get();
-            return view('profile.roles.contributor', compact('user', 'isEditable', 'articlesCount', 'totalViews', 'posts'));
-        } elseif ($user->role === 'editor' || $user->role === 'admin') {
-            // Lấy thống kê duyệt bài
-            $toReviewCount = \App\Models\Post::where('status', 'pending')->count();
-            $approvedCount = \App\Models\Post::where('status', 'published')->whereBetween('updated_at', [now()->startOfWeek(), now()->endOfWeek()])->count();
-            // Lịch sử duyệt bài
-            $recentActivities = \App\Models\Post::with(['category:id,name,slug', 'author:id,name'])
-                ->whereNotNull('updated_at')
-                ->latest('updated_at')
-                ->take(5)
-                ->get();
-            return view('profile.roles.editor', compact('user', 'isEditable', 'toReviewCount', 'approvedCount', 'recentActivities'));
-        }
-
-        return view('profile.index', compact('user', 'isEditable')); // fallback
+        return $this->buildProfileView($user, isOwnProfile: true);
     }
 
     /**
-     * Cập nhật avatar của user
+     * Profile công khai (ai cũng xem được).
+     */
+    public function showPublic($id)
+    {
+        $user = User::findOrFail($id);
+        $isOwnProfile = auth()->check() && auth()->id() === $user->id;
+        return $this->buildProfileView($user, isOwnProfile: $isOwnProfile);
+    }
+
+    // ─── Helper ──────────────────────────────────────────────────────────────
+
+    private function buildProfileView(User $user, bool $isOwnProfile)
+    {
+        // Thống kê chung
+        $articlesCount = $user->posts()->published()->count();
+        $totalViews    = $user->posts()->sum('view_count');
+        $totalLikes    = DB::table('post_likes')
+            ->whereIn('post_id', $user->posts()->pluck('id'))
+            ->count();
+
+        // Bài viết (tab Bài viết)
+        $posts = $user->posts()
+            ->with('category')
+            ->published()
+            ->latest('published_at')
+            ->paginate(12);
+
+        // Bộ sưu tập (tab Đã lưu) — chỉ hiện bộ sưu tập công khai nếu không phải chủ sở hữu
+        $collections = $isOwnProfile
+            ? $user->collections()->withCount('posts')->get()
+            : $user->collections()->where('is_public', true)->withCount('posts')->get();
+
+        // Bài đã thích (tab Đã thích) — chỉ chủ sở hữu mới thấy
+        $likedPosts = $isOwnProfile
+            ? $user->likedPosts()->with('category')->take(12)->get()
+            : collect();
+
+        return view('profile.show', compact(
+            'user',
+            'isOwnProfile',
+            'articlesCount',
+            'totalViews',
+            'totalLikes',
+            'posts',
+            'collections',
+            'likedPosts'
+        ));
+    }
+
+    /**
+     * Cập nhật thông tin cá nhân.
+     */
+    public function update(Request $request)
+    {
+        $user = auth()->user();
+        $request->validate([
+            'name' => 'required|string|max:100',
+            'bio'  => 'nullable|string|max:300',
+        ]);
+
+        $user->update($request->only(['name', 'bio']));
+
+        return redirect()->back()->with('success', 'Cập nhật thông tin thành công!');
+    }
+
+    /**
+     * Cập nhật avatar.
      */
     public function updateAvatar(Request $request, $id)
     {
-        $user = \App\Models\User::findOrFail($id);
+        $user = User::findOrFail($id);
 
         if ($user->id !== auth()->id() && auth()->user()->role !== 'admin') {
-            abort(403, 'Bạn không có quyền chỉnh sửa ảnh đại diện của người dùng này.');
+            abort(403);
         }
 
         $request->validate([
-            'avatar' => 'required|image|mimes:jpeg,png,jpg,gif|max:5120',
+            'avatar' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
         ]);
 
         if ($request->hasFile('avatar')) {
-            $file = $request->file('avatar');
-            
-            // Xử lý ảnh: Crop vuông 200x200
-            $manager = new ImageManager(new Driver());
-            $image = $manager->read($file->getRealPath());
-            $image->coverDown(400, 400); // cover center 400x400
+            try {
+                $manager  = new ImageManager(new Driver());
+                $image    = $manager->read($request->file('avatar')->getRealPath());
+                // cover() tương thích cả v2 lẫn v3 của Intervention Image
+                $image->cover(400, 400);
 
-            $filename = 'avatar_' . $user->id . '_' . time() . '.jpg';
-            $path = 'avatars/' . $filename;
+                $filename = 'avatar_' . $user->id . '_' . time() . '.jpg';
+                $path     = 'avatars/' . $filename;
 
-            // Xoá ảnh cũ (nếu có và không phải ảnh mặc định từ ngoài)
-            if ($user->avatar && str_starts_with($user->avatar, 'avatars/') && Storage::disk('public')->exists($user->avatar)) {
-                Storage::disk('public')->delete($user->avatar);
+                // Xóa avatar cũ nếu có
+                if ($user->avatar && str_starts_with($user->avatar, 'avatars/') && Storage::disk('public')->exists($user->avatar)) {
+                    Storage::disk('public')->delete($user->avatar);
+                }
+
+                Storage::disk('public')->put($path, (string) $image->toJpeg(85));
+
+                // Lưu vào DB trực tiếp để chắc chắn
+                \DB::table('users')->where('id', $user->id)->update(['avatar' => $path]);
+
+                return redirect()->back()->with('success', 'Cập nhật ảnh đại diện thành công!');
+
+            } catch (\Throwable $e) {
+                \Log::error('Avatar upload error: ' . $e->getMessage());
+                return redirect()->back()->with('error', 'Lỗi khi xử lý ảnh: ' . $e->getMessage());
             }
-
-            // Lưu ảnh mới
-            Storage::disk('public')->put($path, (string) $image->toJpeg(80));
-
-            // Cập nhật database
-            $user->avatar = $path;
-            $user->save();
-
-            return redirect()->back()->with('success', 'Khoác áo mới thành công! (Cập nhật Avatar)');
         }
 
-        return redirect()->back()->with('error', 'Có lỗi khi tải ảnh lên.');
+        return redirect()->back()->with('error', 'Vui lòng chọn file ảnh.');
     }
 }

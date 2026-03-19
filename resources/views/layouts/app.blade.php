@@ -63,6 +63,28 @@
       <span>Trường Đại học An Giang — VNU-HCM</span>
     </div>
     <div class="top-bar-right">
+      {{-- Icon mạng xã hội --}}
+      <div style="display:flex;align-items:center;gap:6px;margin-right:10px;">
+        <a href="https://www.facebook.com/trangbaosinhvientruongdaihocangiang"
+           target="_blank" rel="noopener" title="Facebook eNews AGU"
+           style="display:flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:6px;background:rgba(255,255,255,.15);color:#fff;text-decoration:none;font-size:.9rem;transition:background .2s;"
+           onmouseover="this.style.background='#1877F2'" onmouseout="this.style.background='rgba(255,255,255,.15)'">
+          <i class="bi bi-facebook"></i>
+        </a>
+        <a href="https://www.youtube.com/@thuvienaihocangiang7831"
+           target="_blank" rel="noopener" title="YouTube Thư viện AGU"
+           style="display:flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:6px;background:rgba(255,255,255,.15);color:#fff;text-decoration:none;font-size:.9rem;transition:background .2s;"
+           onmouseover="this.style.background='#FF0000'" onmouseout="this.style.background='rgba(255,255,255,.15)'">
+          <i class="bi bi-youtube"></i>
+        </a>
+        <a href="mailto:enews@agu.edu.vn"
+           title="Email: enews@agu.edu.vn"
+           style="display:flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:6px;background:rgba(255,255,255,.15);color:#fff;text-decoration:none;font-size:.9rem;transition:background .2s;"
+           onmouseover="this.style.background='rgba(255,255,255,.35)'" onmouseout="this.style.background='rgba(255,255,255,.15)'">
+          <i class="bi bi-envelope-fill"></i>
+        </a>
+        <span style="width:1px;height:14px;background:rgba(255,255,255,.25);margin:0 4px;"></span>
+      </div>
       {{-- Chọn ngôn ngữ (đặt trước ngày tháng) --}}
       <div class="top-bar-lang">
         <div id="google_translate_element"></div>
@@ -161,69 +183,172 @@
       </a>
       @endauth
 
-      {{-- ── Notification Bell (Animated) ── --}}
-      <div class="nav-item dropdown ms-3">
-        <a href="#" class="action-icon ringing position-relative" id="notifDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false" title="Thông báo" style="display:flex; align-items:center; justify-content:center; width:36px; height:36px; color:#555; text-decoration:none; font-size:1.15rem;">
-          <i class="bi bi-bell"></i>
-          <span class="notif-badge"></span>
+      {{-- ── Notification Bell (Animated + Functional) ── --}}
+      <div class="nav-item dropdown ms-3" id="notifWrapper">
+        <a href="#" class="action-icon position-relative" id="notifDropdown" role="button"
+           data-bs-toggle="dropdown" aria-expanded="false" title="Thông báo"
+           style="display:flex;align-items:center;justify-content:center;width:36px;height:36px;color:#555;text-decoration:none;font-size:1.15rem;"
+           onclick="loadNotifications()">
+          <i class="bi bi-bell" id="bellIcon"></i>
+          <span id="notifBadge" class="notif-badge" style="display:none;"></span>
         </a>
-        <ul class="dropdown-menu dropdown-menu-end shadow-sm" aria-labelledby="notifDropdown" style="width: 320px; border-radius: 12px; padding: 0; overflow: hidden; border: 1px solid rgba(0,0,0,0.08);">
-          <li style="padding: 12px 16px; background: #fafafa; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center;">
-            <span class="fw-bold" style="font-size: 0.95rem; color: #333;">Thông báo</span>
-            <span style="font-size: 0.75rem; color: var(--primary, #2a7a27); font-weight: 600; cursor: pointer;">Đánh dấu đã đọc</span>
-          </li>
-          <li>
-            <div style="padding: 40px 20px; text-align: center;">
-              <i class="bi bi-bell-slash" style="font-size: 2.5rem; color: #ccc; margin-bottom: 12px; display: block;"></i>
-              <div style="font-weight: 600; color: #555; font-size: 0.9rem;">Không có thông báo mới</div>
-              <div style="font-size: 0.8rem; color: #888; margin-top: 4px;">Hiện tại bạn chưa có thông báo nào cần xem.</div>
+        <div class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="notifDropdown"
+             style="width:340px;border-radius:14px;padding:0;overflow:hidden;border:1px solid rgba(0,0,0,.08);">
+          {{-- Header --}}
+          <div style="padding:12px 16px;background:linear-gradient(135deg,#1a5c38,#2d9e60);display:flex;justify-content:space-between;align-items:center;">
+            <span style="font-weight:700;font-size:.95rem;color:#fff;display:flex;align-items:center;gap:7px;">
+              <i class="bi bi-bell-fill"></i> Thông báo
+            </span>
+            <button onclick="markAllRead(event)" style="background:rgba(255,255,255,.2);border:none;border-radius:6px;padding:3px 10px;font-size:.73rem;color:#fff;font-weight:600;cursor:pointer;">
+              ✓ Đọc tất cả
+            </button>
+          </div>
+          {{-- List --}}
+          <div id="notifList" style="max-height:380px;overflow-y:auto;">
+            <div id="notifLoading" style="padding:40px 20px;text-align:center;color:#bbb;">
+              <div class="spinner-border spinner-border-sm" role="status"></div>
+              <div style="margin-top:8px;font-size:.83rem;">Đang tải...</div>
             </div>
-          </li>
-          <li style="border-top: 1px solid #eee; background: #fff; text-align: center;">
-            <a href="#" style="display: block; padding: 10px; font-size: 0.85rem; color: var(--primary, #2a7a27); text-decoration: none; font-weight: 600;">Xem tất cả</a>
-          </li>
-        </ul>
+          </div>
+          {{-- Footer --}}
+          <div style="border-top:1px solid #f0f0f0;background:#fafafa;text-align:center;">
+            <a href="#" id="notifFooterLink" style="display:block;padding:10px;font-size:.83rem;color:var(--primary,#2a7a27);text-decoration:none;font-weight:600;">
+              Xem tất cả thông báo
+            </a>
+          </div>
+        </div>
       </div>
+
+      @auth
+      <script>
+      var _notifLoaded = false;
+      var _csrfToken  = '{{ csrf_token() }}';
+      var _notifUrl   = '{{ route('notifications.user.index') }}';
+      var _markReadUrl  = '/thong-bao/__ID__/doc';
+      var _markAllUrl   = '{{ route('notifications.user.markAllRead') }}';
+
+      // Load khi mở dropdown lần đầu
+      function loadNotifications(force) {
+        if (_notifLoaded && !force) return;
+        _notifLoaded = true;
+
+        fetch(_notifUrl, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+          .then(r => r.json())
+          .then(data => {
+            renderNotifications(data.notifications, data.unread_count);
+          })
+          .catch(() => {
+            document.getElementById('notifList').innerHTML =
+              '<div style="padding:30px;text-align:center;color:#ccc;font-size:.83rem;">Không thể tải thông báo.</div>';
+          });
+      }
+
+      function renderNotifications(items, unreadCount) {
+        const list = document.getElementById('notifList');
+        const badge = document.getElementById('notifBadge');
+        const bellIcon = document.getElementById('bellIcon');
+
+        // Cập nhật badge
+        if (unreadCount > 0) {
+          badge.textContent = unreadCount > 9 ? '9+' : unreadCount;
+          badge.style.display = 'flex';
+          bellIcon.classList.add('ringing');
+        } else {
+          badge.style.display = 'none';
+          bellIcon.classList.remove('ringing');
+        }
+
+        if (!items || items.length === 0) {
+          list.innerHTML = `
+            <div style="padding:40px 20px;text-align:center;">
+              <i class="bi bi-bell-slash" style="font-size:2.2rem;color:#ccc;display:block;margin-bottom:10px;"></i>
+              <div style="font-weight:600;color:#777;font-size:.88rem;">Không có thông báo mới</div>
+              <div style="color:#bbb;font-size:.78rem;margin-top:4px;">Khi có thông báo, chúng sẽ hiện ở đây.</div>
+            </div>`;
+          return;
+        }
+
+        list.innerHTML = items.map(n => `
+          <div class="notif-item ${n.is_read ? '' : 'unread'}" data-id="${n.id}"
+               onclick="markOneRead(${n.id}, this)"
+               style="padding:12px 16px;border-bottom:1px solid #f5f5f5;cursor:pointer;
+                      background:${n.is_read ? '#fff' : '#f0fdf4'};transition:background .2s;
+                      display:flex;gap:10px;align-items:flex-start;">
+            <div style="width:8px;height:8px;border-radius:50%;background:${n.is_read ? 'transparent' : '#16a34a'};
+                        flex-shrink:0;margin-top:6px;"></div>
+            <div style="flex:1;min-width:0;">
+              <div style="font-weight:${n.is_read ? '500' : '700'};font-size:.83rem;color:#222;
+                          white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${n.title}</div>
+              <div style="font-size:.75rem;color:#777;margin-top:2px;line-height:1.4;">${n.content}</div>
+              <div style="font-size:.68rem;color:#bbb;margin-top:4px;">${n.sent_at}</div>
+            </div>
+          </div>
+        `).join('');
+      }
+
+      function markOneRead(id, el) {
+        fetch(_markReadUrl.replace('__ID__', id), {
+          method: 'POST',
+          headers: { 'X-CSRF-TOKEN': _csrfToken, 'Content-Type': 'application/json' }
+        });
+        el.style.background = '#fff';
+        el.querySelector('div[style*="border-radius"]').style.background = 'transparent';
+        el.querySelector('div[style*="font-weight"]').style.fontWeight = '500';
+        el.classList.remove('unread');
+        // Cập nhật badge
+        _notifLoaded = false;
+        setTimeout(() => loadNotifications(true), 300);
+      }
+
+      function markAllRead(e) {
+        e.preventDefault(); e.stopPropagation();
+        fetch(_markAllUrl, {
+          method: 'POST',
+          headers: { 'X-CSRF-TOKEN': _csrfToken, 'Content-Type': 'application/json' }
+        }).then(() => {
+          _notifLoaded = false;
+          loadNotifications(true);
+        });
+      }
+
+      // Auto-load khi trang mở (để cập nhật badge ngay)
+      document.addEventListener('DOMContentLoaded', function() {
+        loadNotifications(true);
+      });
+      </script>
+      @endauth
     </div>
 
   </header>
 
   {{-- ═══ CATEGORY NAV (AGU green sticky bar) ═══ --}}
   <nav class="cat-nav" id="cat-nav">
-    <ul>
+    <div class="cat-nav-inner">
       @php 
         $allNavCategories = $navCategories ?? \App\Models\Category::active()->roots()->get(); 
-        $mainNavCategories = $allNavCategories->take(8);
-        $moreNavCategories = $allNavCategories->skip(8);
       @endphp
-      @foreach($mainNavCategories as $cat)
+      <div class="cat-nav-scroll" aria-label="Danh sách chuyên mục">
+        <ul class="cat-nav-list">
+      @foreach($allNavCategories as $cat)
+        @if(strtolower($cat->name) === 'chưa phân loại' || $cat->slug === 'chua-phan-loai')
+          @continue
+        @endif
       <li class="{{ request()->is('chuyen-muc/'.$cat->slug.'*') ? 'active' : '' }}">
         <a href="{{ route('category', $cat->slug) }}">{{ $cat->name }}</a>
       </li>
       @endforeach
-
-      @if($moreNavCategories->count() > 0)
-      <li class="nav-item dropdown" style="position:relative;">
-        <a class="nav-link dropdown-toggle" href="#" id="moreNavDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false" style="color:rgba(255,255,255,0.9); padding:10px 14px;">
-          Khác
-        </a>
-        <ul class="dropdown-menu shadow-sm" aria-labelledby="moreNavDropdown" style="margin-top:0; border-radius:4px; border:none; border-top:3px solid var(--primary,#2a7a27);">
-          @foreach($moreNavCategories as $mCat)
-          <li><a class="dropdown-item" href="{{ route('category', $mCat->slug) }}" style="font-size:0.85rem; padding:8px 16px; color:#333;">{{ $mCat->name }}</a></li>
-          @endforeach
         </ul>
-      </li>
-      @endif
+      </div>
 
       {{-- Icon tìm kiếm nằm sau mục cuối (Lướt web cùng SV) --}}
-      <li class="cat-nav-search-li" style="margin-left: auto; display: flex; align-items: center;">
+      <div class="cat-nav-search-li" style="margin-left: auto; display: flex; align-items: center;">
         <button type="button" onclick="toggleAdvSearch()" title="Tìm kiếm" class="cat-nav-search-btn d-flex align-items-center justify-content-center" style="background: transparent; border: none; outline: none; color: rgba(255,255,255,0.9); padding: 9px 14px; cursor: pointer;">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" style="width: 17px; height: 17px;">
             <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
           </svg>
         </button>
-      </li>
-    </ul>
+      </div>
+    </div>
   </nav>
 
   {{-- ═══ ADVANCED SEARCH PANEL (dropdown from search icon) ═══ --}}
@@ -244,7 +369,7 @@
           <label style="font-size:.75rem;font-weight:700;color:#555;display:block;margin-bottom:4px;">Chuyên mục</label>
           <select name="category_id" style="width:100%;border:1.5px solid #d0d0d0;border-radius:6px;padding:7px 10px;font-size:.82rem;outline:none;background:#fff;">
             <option value="">-- Tất cả --</option>
-            @foreach($navCategories as $cat)
+            @foreach($allNavCategories ?? [] as $cat)
             <option value="{{ $cat->id }}" {{ request('category_id') == $cat->id ? 'selected' : '' }}>{{ $cat->name }}</option>
             @endforeach
           </select>
@@ -547,6 +672,31 @@ html { margin-top: 0px !important; height: auto !important; }
 </style>
 
 @stack('scripts')
+<script>
+// ─── Lưu và phục hồi vị trí cuộn ngang của thanh chuyên mục ──────────
+(function() {
+    var NAV_KEY = 'catNavScrollLeft';
+    var navList = document.querySelector('.cat-nav-list');
+    if (!navList) return;
+
+    // Phục hồi vị trí scroll khi trang load
+    var saved = sessionStorage.getItem(NAV_KEY);
+    if (saved !== null) navList.scrollLeft = parseInt(saved, 10);
+
+    // Lưu vị trí scroll mỗi khi user kéo thanh nav
+    navList.addEventListener('scroll', function() {
+        sessionStorage.setItem(NAV_KEY, navList.scrollLeft);
+    });
+
+    // Cũng lưu ngay trước khi rời trang (bấm link)
+    navList.querySelectorAll('a').forEach(function(link) {
+        link.addEventListener('click', function() {
+            sessionStorage.setItem(NAV_KEY, navList.scrollLeft);
+        });
+    });
+})();
+</script>
+
 </body>
 </html>
 

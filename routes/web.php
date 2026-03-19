@@ -39,7 +39,24 @@ Route::post('/logout', [LoginController::class, 'logout'])->name('logout')->midd
 Route::middleware('auth')->group(function () {
     Route::get('/profile/{id?}', [App\Http\Controllers\ProfileController::class, 'show'])->name('profile');
     Route::post('/profile/{id}/avatar', [App\Http\Controllers\ProfileController::class, 'updateAvatar'])->name('profile.avatar');
+    Route::post('/profile/update', [App\Http\Controllers\ProfileController::class, 'update'])->name('profile.update');
+
+    // ─── Tính năng mạng xã hội ──────────────────────────────────────────
+    Route::post('/bai-viet/{post}/like', [App\Http\Controllers\LikeController::class, 'toggle'])->name('post.like');
+    Route::post('/bai-viet/{post}/luu', [App\Http\Controllers\SaveController::class, 'save'])->name('post.save');
+    Route::post('/bai-viet/{post}/luu-vao', [App\Http\Controllers\SaveController::class, 'saveToCollection'])->name('post.save.collection');
+    Route::get('/bo-suu-tap', [App\Http\Controllers\SaveController::class, 'collections'])->name('collections.index');
+    Route::post('/bo-suu-tap', [App\Http\Controllers\SaveController::class, 'createCollection'])->name('collections.store');
+    Route::delete('/bo-suu-tap/{collection}', [App\Http\Controllers\SaveController::class, 'deleteCollection'])->name('collections.destroy');
+
+    // ─── Thông báo (chuông) ──────────────────────────────────────────────
+    Route::get('/thong-bao', [App\Http\Controllers\NotificationUserController::class, 'index'])->name('notifications.user.index');
+    Route::post('/thong-bao/{id}/doc', [App\Http\Controllers\NotificationUserController::class, 'markRead'])->name('notifications.user.markRead');
+    Route::post('/thong-bao/doc-tat-ca', [App\Http\Controllers\NotificationUserController::class, 'markAllRead'])->name('notifications.user.markAllRead');
 });
+
+// Profile công khai (không cần đăng nhập)
+Route::get('/nguoi-dung/{id}', [App\Http\Controllers\ProfileController::class, 'showPublic'])->name('profile.user');
 
 // ─── Role-based Dashboards ──────────────────────────────────────
 

@@ -170,7 +170,7 @@
                                     @elseif($status === 'rejected')
                                         Tuyệt vời, không có bình luận nào bị từ chối!
                                     @else
-                                        Chưa có bình luận nào trong hệ thống.
+                                        Chưa có bình luận nào trong hệ thống, hoặc bạn chưa chọn bộ lọc.
                                     @endif
                                 </td>
                             </tr>

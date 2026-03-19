@@ -813,17 +813,32 @@
     </div>
     @endif
 
-    {{-- Share bar --}}
+    {{-- Action bar: Like / Lưu / Chia sẻ --}}
     @php $shareUrl = urlencode(route('post.show', $post->slug)); @endphp
-    <div class="share-bar">
+    <div class="share-bar" style="gap:12px; flex-wrap:wrap;">
+
+      {{-- Like button --}}
+      @auth
+      <button id="likeBtn" onclick="toggleLike()"
+        class="share-btn"
+        style="background:{{ $post->isLikedBy(auth()->user()) ? '#ef4444' : '#f3f4f6' }};color:{{ $post->isLikedBy(auth()->user()) ? '#fff' : '#555' }};border:1.5px solid {{ $post->isLikedBy(auth()->user()) ? '#ef4444' : '#ddd' }};transition:all .2s;">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="{{ $post->isLikedBy(auth()->user()) ? 'currentColor' : 'none' }}" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width:16px;height:16px;"><path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z" /></svg>
+        <span id="likeCount">{{ $post->like_count }}</span> Thích
+      </button>
+
+      {{-- Save button --}}
+      <button id="saveBtn" onclick="toggleSave()"
+        class="share-btn"
+        style="background:{{ $post->isSavedBy(auth()->user()) ? '#f59e0b' : '#f3f4f6' }};color:{{ $post->isSavedBy(auth()->user()) ? '#fff' : '#555' }};border:1.5px solid {{ $post->isSavedBy(auth()->user()) ? '#f59e0b' : '#ddd' }};transition:all .2s;">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="{{ $post->isSavedBy(auth()->user()) ? 'currentColor' : 'none' }}" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width:16px;height:16px;"><path stroke-linecap="round" stroke-linejoin="round" d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0 1 11.186 0Z" /></svg>
+        <span id="saveText">{{ $post->isSavedBy(auth()->user()) ? 'Đã lưu' : 'Lưu bài' }}</span>
+      </button>
+      @endauth
+
       <span class="share-label"><i class="bi bi-share-fill me-1"></i> Chia sẻ:</span>
       <a href="https://www.facebook.com/sharer/sharer.php?u={{ $shareUrl }}"
          target="_blank" rel="noopener" class="share-btn share-fb">
         <i class="bi bi-facebook"></i> Facebook
-      </a>
-      <a href="https://twitter.com/intent/tweet?text={{ urlencode($post->title) }}&url={{ $shareUrl }}"
-         target="_blank" rel="noopener" class="share-btn share-tw">
-        <i class="bi bi-twitter-x"></i> Twitter
       </a>
       <a href="https://zalo.me/share/url?url={{ $shareUrl }}&title={{ urlencode($post->title) }}"
          target="_blank" rel="noopener" class="share-btn share-zalo">
@@ -836,6 +851,59 @@
         <i class="bi bi-check2-circle"></i> Đã sao chép!
       </span>
     </div>
+
+    @push('scripts')
+    <script>
+    // Like toggle
+    function toggleLike() {
+        @if(!auth()->check())
+        window.location = '{{ route('login') }}';
+        return;
+        @endif
+        fetch('{{ route('post.like', $post) }}', {
+            method: 'POST',
+            headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Content-Type': 'application/json' },
+        }).then(r => r.json()).then(data => {
+            const btn = document.getElementById('likeBtn');
+            const icon = btn.querySelector('svg path');
+            document.getElementById('likeCount').textContent = data.count;
+            if (data.liked) {
+                btn.style.cssText = 'background:#ef4444;color:#fff;border:1.5px solid #ef4444;transition:all .2s;';
+                icon.setAttribute('fill', 'currentColor');
+            } else {
+                btn.style.cssText = 'background:#f3f4f6;color:#555;border:1.5px solid #ddd;transition:all .2s;';
+                icon.setAttribute('fill', 'none');
+            }
+        });
+    }
+
+    // Save toggle
+    function toggleSave() {
+        @if(!auth()->check())
+        window.location = '{{ route('login') }}';
+        return;
+        @endif
+        fetch('{{ route('post.save', $post) }}', {
+            method: 'POST',
+            headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Content-Type': 'application/json' },
+        }).then(r => r.json()).then(data => {
+            const btn = document.getElementById('saveBtn');
+            const icon = btn.querySelector('svg path');
+            const text = document.getElementById('saveText');
+            if (data.saved) {
+                btn.style.cssText = 'background:#f59e0b;color:#fff;border:1.5px solid #f59e0b;transition:all .2s;';
+                icon.setAttribute('fill', 'currentColor');
+                text.textContent = 'Đã lưu';
+            } else {
+                btn.style.cssText = 'background:#f3f4f6;color:#555;border:1.5px solid #ddd;transition:all .2s;';
+                icon.setAttribute('fill', 'none');
+                text.textContent = 'Lưu bài';
+            }
+        });
+    }
+    </script>
+    @endpush
+
 
     {{-- ══ Related Articles ══════════════════════════════════ --}}
     @if($relatedPosts->isNotEmpty())

@@ -48,6 +48,11 @@ class Post extends Model
         return $this->belongsToMany(Tag::class);
     }
 
+    public function likes(): HasMany
+    {
+        return $this->hasMany(PostLike::class);
+    }
+
     // ─── Scopes ──────────────────────────────────────────────────────────────
 
     public function scopePublished(Builder $query): Builder
@@ -131,5 +136,27 @@ class Post extends Model
     public function getExcerptShortAttribute(): string
     {
         return $this->excerpt ?: \Str::limit(strip_tags($this->content ?? ''), 120);
+    }
+
+    // ─── Social Helpers ──────────────────────────────────────────────────
+
+    public function getLikeCountAttribute(): int
+    {
+        return $this->likes()->count();
+    }
+
+    public function isLikedBy(?\App\Models\User $user): bool
+    {
+        if (!$user) return false;
+        return $this->likes()->where('user_id', $user->id)->exists();
+    }
+
+    public function isSavedBy(?\App\Models\User $user): bool
+    {
+        if (!$user) return false;
+        return \DB::table('post_saves')
+            ->where('user_id', $user->id)
+            ->where('post_id', $this->id)
+            ->exists();
     }
 }

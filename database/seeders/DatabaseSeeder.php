@@ -10,6 +10,7 @@ class DatabaseSeeder extends Seeder
 {
     /**
      * Seed the application's database.
+     * Chỉ tạo tài khoản mặc định — dữ liệu thật đã import từ Joomla.
      */
     public function run(): void
     {
@@ -33,24 +34,6 @@ class DatabaseSeeder extends Seeder
                 'role'     => User::ROLE_CONTRIBUTOR,
             ],
             [
-                'name'     => 'Cộng Tác Viên 2',
-                'email'    => 'ctv2@agu.edu.vn',
-                'password' => Hash::make('password'),
-                'role'     => User::ROLE_CONTRIBUTOR,
-            ],
-            [
-                'name'     => 'Cộng Tác Viên 3',
-                'email'    => 'ctv3@agu.edu.vn',
-                'password' => Hash::make('password'),
-                'role'     => User::ROLE_CONTRIBUTOR,
-            ],
-            [
-                'name'     => 'Người Xem Nội Bộ',
-                'email'    => 'viewer@agu.edu.vn',
-                'password' => Hash::make('password'),
-                'role'     => User::ROLE_VIEWER,
-            ],
-            [
                 'name'     => 'Người Dùng AGU',
                 'email'    => 'reader@agu.edu.vn',
                 'password' => Hash::make('password'),
@@ -64,13 +47,5 @@ class DatabaseSeeder extends Seeder
                 $userData
             );
         }
-
-        // Seeder dữ liệu mẫu
-        $this->call([
-            CategorySeeder::class,
-            PostSeeder::class,
-            NotificationSeeder::class,
-            CommentSeeder::class,
-        ]);
     }
 }

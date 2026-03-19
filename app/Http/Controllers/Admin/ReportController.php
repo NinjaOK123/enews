@@ -96,12 +96,12 @@ class ReportController extends Controller
     }
 
     /**
-     * Xuất dữ liệu thống kê ra file CSV / Excel.
+     * Xuất dữ liệu thống kê ra file Excel (.xlsx dạng SpreadsheetML).
      */
     public function exportCsv(Request $request)
     {
         $startDate = $request->input('start_date');
-        $endDate = $request->input('end_date');
+        $endDate   = $request->input('end_date');
         $dateRange = null;
 
         if ($startDate && $endDate) {
@@ -115,54 +115,81 @@ class ReportController extends Controller
             return $query;
         };
 
-        // Lấy danh sách bài viết theo khoảng thời gian
         $posts = $applyDateFilter(Post::with(['category', 'author']))->orderBy('created_at', 'desc')->get();
 
-        $filename = "bao_cao_he_thong_" . date('Ymd_Hi') . ".csv";
-
-        $headers = [
-            "Content-type"        => "text/csv; charset=UTF-8",
-            "Content-Disposition" => "attachment; filename=$filename",
-            "Pragma"              => "no-cache",
-            "Cache-Control"       => "must-revalidate, post-check=0, pre-check=0",
-            "Expires"             => "0"
+        $statusMap = [
+            'published' => 'Đã duyệt',
+            'pending'   => 'Chờ duyệt',
+            'draft'     => 'Nháp',
+            'rejected'  => 'Từ chối',
         ];
 
-        // Dùng closure stream để trả file csv
-        $callback = function() use($posts) {
-            $file = fopen('php://output', 'w');
-            // Thêm BOM UTF-8 để Excel đọc tiếng Việt không bị lỗi font
-            fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
+        // ── Xuất SpreadsheetML XML (Excel mở được, không cần ext-zip) ────
+        $filename = 'bao_cao_he_thong_' . date('Ymd_Hi') . '.xlsx';
 
-            // Header file
-            $columns = ['ID', 'Tiêu đề', 'Chuyên mục', 'Người đăng', 'Lượt xem', 'Trạng thái', 'Ngày đăng'];
-            fputcsv($file, $columns);
+        $xml  = '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
+        $xml .= '<?mso-application progid="Excel.Sheet"?>' . "\n";
+        $xml .= '<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"'
+              . ' xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet"'
+              . ' xmlns:x="urn:schemas-microsoft-com:office:excel">' . "\n";
 
-            $statusMap = [
-                'published' => 'Đã duyệt',
-                'pending'   => 'Chờ duyệt',
-                'draft'     => 'Nháp',
-                'rejected'  => 'Từ chối',
-            ];
+        // Style
+        $xml .= '<Styles>'
+              . '<Style ss:ID="header"><Alignment ss:WrapText="1" ss:Horizontal="Center"/>'
+              . '<Font ss:Bold="1" ss:Size="11" ss:Color="#FFFFFF"/>'
+              . '<Interior ss:Color="#198754" ss:Pattern="Solid"/>'
+              . '<Borders><Border ss:Position="Bottom" ss:Weight="2" ss:Color="#146c43"/></Borders>'
+              . '</Style>'
+              . '<Style ss:ID="row_even"><Interior ss:Color="#f8f9fa" ss:Pattern="Solid"/></Style>'
+              . '<Style ss:ID="row_odd"><Interior ss:Color="#FFFFFF" ss:Pattern="Solid"/></Style>'
+              . '<Style ss:ID="num"><NumberFormat ss:Format="#,##0"/></Style>'
+              . '</Styles>' . "\n";
 
-            foreach ($posts as $post) {
-                $statusName = $statusMap[$post->status] ?? $post->status;
-                $row = [
-                    $post->id,
-                    $post->title,
-                    $post->category ? $post->category->name : 'N/A',
-                    $post->author ? $post->author->name : 'N/A',
-                    $post->view_count,
-                    $statusName,
-                    $post->created_at->format('d/m/Y H:i')
-                ];
+        $xml .= '<Worksheet ss:Name="Báo cáo bài viết">' . "\n";
+        $xml .= '<Table>' . "\n";
 
-                fputcsv($file, $row);
-            }
+        // Độ rộng cột
+        $xml .= '<Column ss:Width="40"/>'    // ID
+              . '<Column ss:Width="280"/>'   // Tiêu đề
+              . '<Column ss:Width="130"/>'   // Chuyên mục
+              . '<Column ss:Width="130"/>'   // Người đăng
+              . '<Column ss:Width="80"/>'    // Lượt xem
+              . '<Column ss:Width="90"/>'    // Trạng thái
+              . '<Column ss:Width="120"/>'; // Ngày đăng
 
-            fclose($file);
-        };
+        // Header row
+        $headers = ['ID', 'Tiêu đề', 'Chuyên mục', 'Người đăng', 'Lượt xem', 'Trạng thái', 'Ngày đăng'];
+        $xml .= '<Row ss:Height="24">';
+        foreach ($headers as $h) {
+            $xml .= '<Cell ss:StyleID="header"><Data ss:Type="String">' . htmlspecialchars($h, ENT_XML1) . '</Data></Cell>';
+        }
+        $xml .= '</Row>' . "\n";
 
-        return response()->stream($callback, 200, $headers);
+        // Data rows
+        foreach ($posts as $i => $post) {
+            $style = ($i % 2 === 0) ? 'row_even' : 'row_odd';
+            $statusName = $statusMap[$post->status] ?? $post->status;
+            $xml .= '<Row ss:Height="18">';
+            $xml .= '<Cell ss:StyleID="' . $style . '"><Data ss:Type="Number">' . $post->id . '</Data></Cell>';
+            $xml .= '<Cell ss:StyleID="' . $style . '"><Data ss:Type="String">' . htmlspecialchars($post->title, ENT_XML1) . '</Data></Cell>';
+            $xml .= '<Cell ss:StyleID="' . $style . '"><Data ss:Type="String">' . htmlspecialchars($post->category ? $post->category->name : 'N/A', ENT_XML1) . '</Data></Cell>';
+            $xml .= '<Cell ss:StyleID="' . $style . '"><Data ss:Type="String">' . htmlspecialchars($post->author ? $post->author->name : 'N/A', ENT_XML1) . '</Data></Cell>';
+            $xml .= '<Cell ss:StyleID="num"><Data ss:Type="Number">' . $post->view_count . '</Data></Cell>';
+            $xml .= '<Cell ss:StyleID="' . $style . '"><Data ss:Type="String">' . htmlspecialchars($statusName, ENT_XML1) . '</Data></Cell>';
+            $xml .= '<Cell ss:StyleID="' . $style . '"><Data ss:Type="String">' . $post->created_at->format('d/m/Y H:i') . '</Data></Cell>';
+            $xml .= '</Row>' . "\n";
+        }
+
+        $xml .= '</Table>' . "\n";
+        $xml .= '<WorksheetOptions xmlns="urn:schemas-microsoft-com:office:excel"><FreezePanes/><FrozenNoSplit/><SplitHorizontal>1</SplitHorizontal><TopRowBottomPane>1</TopRowBottomPane></WorksheetOptions>' . "\n";
+        $xml .= '</Worksheet>' . "\n";
+        $xml .= '</Workbook>';
+
+        return response($xml, 200, [
+            'Content-Type'        => 'application/vnd.ms-excel; charset=UTF-8',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+            'Cache-Control'       => 'max-age=0',
+        ]);
     }
 }
+

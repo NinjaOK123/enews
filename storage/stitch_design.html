@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+
+<html lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>An Giang University e-News Home</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#0da540",
+                        "background-light": "#f6f8f6",
+                        "background-dark": "#102216",
+                    },
+                    fontFamily: {
+                        "display": ["Lexend"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 transition-colors duration-300">
+<!-- Top Navigation Bar -->
+<header class="sticky top-0 z-50 bg-white/80 dark:bg-background-dark/80 backdrop-blur-md border-b border-primary/10">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+<div class="flex items-center justify-between h-20">
+<!-- Logo -->
+<div class="flex items-center gap-3">
+<div class="bg-primary text-white p-2 rounded-lg">
+<span class="material-symbols-outlined text-3xl">school</span>
+</div>
+<div>
+<h1 class="text-xl font-bold tracking-tight text-slate-900 dark:text-white leading-none">ĐẠI HỌC AN GIANG</h1>
+<p class="text-primary text-xs font-semibold tracking-widest uppercase">E-NEWS PORTAL</p>
+</div>
+</div>
+<!-- Navigation Links -->
+<nav class="hidden lg:flex items-center gap-6">
+<a class="text-primary font-semibold text-sm hover:opacity-80" href="#">Trang chủ</a>
+<a class="text-slate-600 dark:text-slate-300 font-medium text-sm hover:text-primary" href="#">Bản tin AGU</a>
+<a class="text-slate-600 dark:text-slate-300 font-medium text-sm hover:text-primary" href="#">Khoa học</a>
+<a class="text-slate-600 dark:text-slate-300 font-medium text-sm hover:text-primary" href="#">Câu chuyện</a>
+<a class="text-slate-600 dark:text-slate-300 font-medium text-sm hover:text-primary" href="#">Phóng sự Ảnh</a>
+<a class="text-slate-600 dark:text-slate-300 font-medium text-sm hover:text-primary" href="#">Góc nhìn</a>
+</nav>
+<!-- Action Group -->
+<div class="flex items-center gap-4">
+<div class="relative hidden md:block">
+<span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400">
+<span class="material-symbols-outlined text-xl">search</span>
+</span>
+<input class="pl-10 pr-4 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-full text-sm focus:ring-2 focus:ring-primary w-64" placeholder="Tìm kiếm tin tức..." type="text"/>
+</div>
+<button class="p-2 text-slate-600 dark:text-slate-300 hover:bg-primary/10 rounded-full">
+<span class="material-symbols-outlined">person</span>
+</button>
+<button class="lg:hidden p-2 text-slate-600 dark:text-slate-300">
+<span class="material-symbols-outlined">menu</span>
+</button>
+</div>
+</div>
+</div>
+</header>
+<main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+<!-- Hero Section: Featured + Latest -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-12">
+<!-- Main Featured Carousel-style Image -->
+<div class="lg:col-span-8 relative group cursor-pointer overflow-hidden rounded-xl shadow-xl h-[500px]">
+<div class="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105" data-alt="Modern university campus building with green students area" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDif-j0Ps5hFVqpg_6hbo2CnGUz-MYIggWztrg9X2YqDEgtSzGNwblo_g_UueaMPLpJkUbWH0UJPOJ3OwlVT40eQhcBKGRd8p9CvW_759_lCufbmBuISsAB2900MF7ZkTu9drzUF4-WUDiLEJ6ZkIV584eM6fa89j-E33IvZlQ4LWYJkTcFUJSBQfY06BBpU07VqcyiI678x4LRYXrefsr5hLwAdRNa4IBn1eDQj5cBZ4Znd7QRhzL346-uA0pB7O40Kl6gokQ65J4')">
+</div>
+<div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent"></div>
+<div class="absolute bottom-0 left-0 p-8 w-full">
+<span class="bg-primary text-white text-xs font-bold px-3 py-1 rounded-full uppercase mb-4 inline-block tracking-wider">Tin nổi bật</span>
+<h2 class="text-3xl md:text-4xl font-bold text-white mb-4 leading-tight">Lễ Khai mạc Tuần lễ Văn hóa AGU 2024: Nơi hội tụ bản sắc và sáng tạo</h2>
+<div class="flex items-center gap-4 text-slate-300 text-sm">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-sm">calendar_today</span> 20/10/2023</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-sm">chat_bubble</span> 24 bình luận</span>
+</div>
+</div>
+</div>
+<!-- Latest News Sidebar -->
+<div class="lg:col-span-4 flex flex-col gap-4">
+<div class="flex items-center justify-between mb-2">
+<h3 class="text-lg font-bold flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">bolt</span> MỚI NHẤT
+                    </h3>
+<a class="text-primary text-sm font-semibold hover:underline" href="#">Xem tất cả</a>
+</div>
+<div class="space-y-4">
+<div class="flex gap-4 p-3 bg-white dark:bg-slate-900/50 rounded-lg hover:bg-primary/5 transition-colors border border-transparent hover:border-primary/20">
+<div class="w-24 h-20 rounded-lg bg-cover bg-center shrink-0" data-alt="Students discussing in a modern laboratory setting" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuB6T9t2uZwvHu-ngZ8Cnk6frUPnMitSexSUFysQrrhfFfsX4CdTPhiy4NW33uampDvSqPQj9yqUWqoYDdOPQgbJGWRCtaW5lolH1kD-cAxDkHn3jFddLyfF1LE7VmBkqOgu8TtMgaGCvBsiwHRxCJw--N4Q5TMSVLflpDoGerynlDAk-gNDEujL2gnaLEYh7ko7eELaCoAAmMHd3ofl2U1mB0tiDcfWyRs7qz3lJjkZWs2ydw6OsWWqc3RE9NgnqwesQcndA2mvmZM')"></div>
+<div>
+<h4 class="font-semibold text-sm line-clamp-2 leading-snug mb-1">Công bố 15 đề tài nghiên cứu khoa học sinh viên đạt loại Giỏi cấp trường</h4>
+<span class="text-slate-400 text-[11px] uppercase font-bold tracking-wider">2 giờ trước</span>
+</div>
+</div>
+<div class="flex gap-4 p-3 bg-white dark:bg-slate-900/50 rounded-lg hover:bg-primary/5 transition-colors border border-transparent hover:border-primary/20">
+<div class="w-24 h-20 rounded-lg bg-cover bg-center shrink-0" data-alt="Group of students working together on a project" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCCSAWyAqxQtQhOmjbm8riiCbzWJqzVXEt5UQCXUhPQiTGnT0RlOKQh6PKuYl0aj09_QclZ7m3cYszNQyVGbrVhVIjQQhLWpdiDLO1aze68HitDDcAHPq59JM312RvXdONl3x055-gVceYk66tEf15sO6pobYbarfANrS9JTyzy3UtsmYNBQlQN2t0XfQvLxboLyRvJoquSRLJTN1HkvTbF8fGYbN1Ghnv3d8aN9zlfwKBtQDOxk_AKzxQhEJlnkEs6F9V37LCOqUQ')"></div>
+<div>
+<h4 class="font-semibold text-sm line-clamp-2 leading-snug mb-1">Tuyển tình nguyện viên cho chiến dịch Mùa hè xanh tại vùng biên giới</h4>
+<span class="text-slate-400 text-[11px] uppercase font-bold tracking-wider">5 giờ trước</span>
+</div>
+</div>
+<div class="flex gap-4 p-3 bg-white dark:bg-slate-900/50 rounded-lg hover:bg-primary/5 transition-colors border border-transparent hover:border-primary/20">
+<div class="w-24 h-20 rounded-lg bg-cover bg-center shrink-0" data-alt="University administration meeting in a formal hall" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCn6MzyzgUL7rQ-CtioXesNHk3Lgl4vLiAzlq0f7A6gqso2OZjxwqeP05aY8TxQOlDw4HgQdcMxNPHaW-Tp-bePjHhMhEK3RGH0kb0RiHk9GOQNjX38OulBeaSXcPqMhasMolKzSvVUcL0wlJ8La3j_bHj34PYvNI_Mari5WmaTKvkBg71AxYOZxg7-7vsPUuYKQeF_wcxEj2o4lIyiD2x0S4_1V19Kf1UIqPGAv14bAjSTfAZJX2H2DLV00X5ahjCFF5FtDPcOFOs')"></div>
+<div>
+<h4 class="font-semibold text-sm line-clamp-2 leading-snug mb-1">Thông báo lịch nghỉ Tết Nguyên Đán 2024 dành cho sinh viên và cán bộ</h4>
+<span class="text-slate-400 text-[11px] uppercase font-bold tracking-wider">7 giờ trước</span>
+</div>
+</div>
+<div class="flex gap-4 p-3 bg-white dark:bg-slate-900/50 rounded-lg hover:bg-primary/5 transition-colors border border-transparent hover:border-primary/20">
+<div class="w-24 h-20 rounded-lg bg-cover bg-center shrink-0" data-alt="Professor teaching students in a bright classroom" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCB20mFtu6yaQg0D9qYHWS7Fh7R8D2bcunDZXWUrrK5-gWdo0osgd0Ib5X5HucOXGOBnlTsbX3ezjp0OIy-8p4J0AZ8dP_sPBgpdS1WeXq9srPgCpxbJez1g8C-6WNIc2EL7cITIB3C5tqS0ydJr0QKignrSvZ1ERpcd3riHaJboaKijoeCFoWQfgeZ22wRnR6xKlSMT6P4_cmipFwmbdv2sfKKzHZ-Q8uYkPENyS_Yu_Q1cAYaZsu7a4xfQpobp2magT2GlQgiIj8')"></div>
+<div>
+<h4 class="font-semibold text-sm line-clamp-2 leading-snug mb-1">Hội thảo định hướng nghề nghiệp: 'Kỹ năng vàng trong kỷ nguyên số'</h4>
+<span class="text-slate-400 text-[11px] uppercase font-bold tracking-wider">Hôm qua</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Main Grid Layout -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+<!-- Left & Middle: Main Content Categories -->
+<div class="lg:col-span-9 space-y-12">
+<!-- Category: Bản tin AGU -->
+<section>
+<div class="flex items-center justify-between border-l-4 border-primary pl-4 mb-6">
+<h3 class="text-2xl font-bold tracking-tight">BẢN TIN AGU</h3>
+<button class="text-primary flex items-center gap-1 text-sm font-bold hover:gap-2 transition-all">
+                            TẤT CẢ <span class="material-symbols-outlined">chevron_right</span>
+</button>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<div class="bg-white dark:bg-slate-900 overflow-hidden rounded-xl shadow-sm hover:shadow-md transition-shadow">
+<div class="h-48 bg-cover bg-center" data-alt="University students walking through campus plaza" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDA1_VXEtMZAWEmC8AGXNAiMO5xwevU2hB7qTZ4n5y3iFaGGNXeuJ32WhYMJ-tTSDENujiS25g8E7jA05YuSwiU5GX90ccWN72WHwPuOe9NB-mnfErifo4fQxci7c5WEmGE1kU6Jy5rJtw_iPr2BKYQLCJQqkNrqVrabdZLf36TwjHwJR-wQ2nG8JqDt6ZaQoNLSCbx6bTeuLYtasOUJK7dIHvZ2TahOIcocF9Vle5WxxhLPbg_Zu7SBlY7xquj-FJmFRCSVNDIpa4')"></div>
+<div class="p-5">
+<h4 class="font-bold text-lg mb-2 hover:text-primary cursor-pointer line-clamp-2">Kỷ niệm 24 năm thành lập Trường Đại học An Giang: Chặng đường phát triển</h4>
+<p class="text-slate-500 dark:text-slate-400 text-sm mb-4 line-clamp-3">Trải qua hơn hai thập kỷ, AGU đã khẳng định vị thế là trung tâm đào tạo nguồn nhân lực chất lượng cao cho khu vực Đồng bằng sông Cửu Long...</p>
+<div class="flex items-center justify-between mt-auto">
+<span class="text-xs text-slate-400">Tin tức | 2 ngày trước</span>
+<button class="text-primary text-sm font-bold">Chi tiết</button>
+</div>
+</div>
+</div>
+<div class="space-y-4">
+<div class="flex gap-4 p-4 bg-white dark:bg-slate-900 rounded-xl shadow-sm">
+<div class="w-32 h-24 rounded-lg bg-cover bg-center shrink-0" data-alt="Close up of university degree and documents" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCmlAkmO-jhaX1JHeyl3I9QRH_uoxk8ZhsQy1SPwe5SyqF3XtYMPc_ObgbSzdKRDXsvJhlW5MbT7N3Sn08Y_rFRgHPZccHZBfCZz29_cL_XOULmzdZXeJH-nAlyXMKG5aHJFaz6n5GAQ-xQW6pKR7t6Ky67ciBBmKtnQZ920YV58aM-G_HwyhhP9vHpobW-2nMX0zVhxTNJD9bobWWqv2H8DTrNz4OprsT88LhvSqqWZn6iIhpR_S4KYmwu5HFgr0Xrkf54w7Lk4E0')"></div>
+<div>
+<h4 class="font-bold text-base mb-1 hover:text-primary cursor-pointer line-clamp-2">Nâng cao chất lượng đào tạo thông qua kiểm định quốc tế AUN-QA</h4>
+<span class="text-xs text-slate-400">1 tuần trước</span>
+</div>
+</div>
+<div class="flex gap-4 p-4 bg-white dark:bg-slate-900 rounded-xl shadow-sm">
+<div class="w-32 h-24 rounded-lg bg-cover bg-center shrink-0" data-alt="Science presentation in university lecture hall" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCy2AGS7OkZOoBw_O1uwJmC2eRYfCgxVaR5v0Y9WdYh5sBzGIpUJXiQeM2NDmRUzj0Vcxd7zCCeAfORFb3i_HrxZsVOVRBG8hU1NfjU0LRTJ7jvLdTjVPoBMSIx51kg4Ivt2TqRtd1tvA7U1cHK2HdINRC9vbwpb6mReatA_LmMTgXn-NHRPyQzoFMpzzACc_TEk8VHUskVR8lRzAdDSvpphUJCDD3k_0GI0crzOLVSDLsFvrsgGIJiAHquhvedveq7xw39LaAVQ6A')"></div>
+<div>
+<h4 class="font-bold text-base mb-1 hover:text-primary cursor-pointer line-clamp-2">Trao học bổng cho 100 sinh viên vượt khó học giỏi học kỳ I</h4>
+<span class="text-xs text-slate-400">1 tuần trước</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Category: SV với Câu lạc bộ -->
+<section>
+<div class="flex items-center justify-between border-l-4 border-primary pl-4 mb-6">
+<h3 class="text-2xl font-bold tracking-tight uppercase">Sinh viên &amp; Câu lạc bộ</h3>
+<button class="text-primary flex items-center gap-1 text-sm font-bold hover:gap-2 transition-all">
+                            KHÁM PHÁ <span class="material-symbols-outlined">chevron_right</span>
+</button>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+<div class="group">
+<div class="relative overflow-hidden rounded-xl mb-3 aspect-video">
+<div class="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-110" data-alt="Music club performance on university stage" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDBjgCyt4p9drmse4cjJUPvCnnCudHab8z6-GAJiqIl1wV8xKgRuORxR5PmkqVkofeedhg8TdZyMTsbuugs43Z3_w-wZQX8cxXQbYDKw3J0oXSXx6qYgL8N_XAMfnAoNuzsKusrYZNgvTvY6BB5wna97Lod-vcnwI7g_e-IidwjHFCY_QoNMHbfymH641SZGR7_d90BwBxuisJ6eYNxcFMf_4l6qeyfPM8Mvh_Oo4YssG3bbv8eALg4vVVbd86MtrsRMtWC0rf8XWo')"></div>
+<div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+<div class="absolute bottom-3 left-3">
+<span class="text-[10px] font-bold text-white bg-primary/80 px-2 py-0.5 rounded uppercase">Văn nghệ</span>
+</div>
+</div>
+<h4 class="font-bold text-base group-hover:text-primary transition-colors line-clamp-2">Sôi động đêm chung kết "Tiếng hát sinh viên AGU 2023"</h4>
+</div>
+<div class="group">
+<div class="relative overflow-hidden rounded-xl mb-3 aspect-video">
+<div class="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-110" data-alt="Students coding together in a computer lab" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDKg_AqP9ZMzK_aDOhPGz7oPBvG_GGeNO8DY8f5Xo8MGWhEqMOnxtG4tXZTdv07aZiCfZTQmHS7g3HpXXa4_tIe5lZdBFEXmEcEhKPbWa02vQAIy7e8b83Y9AH-8MtbHyJjZ9J1gtbOU07Y9UYD76NrNylG8wZI7sY-EbveF_DvjDNWoZTutrdedqzZs0gYg7uP26UPJovmYl-B7GXQdwWCq2aS8umvQt2ALvW_kEHj5irk5nPV3qRVozZskqEMOX6WQcwU1FyWgoI')"></div>
+<div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+<div class="absolute bottom-3 left-3">
+<span class="text-[10px] font-bold text-white bg-blue-600/80 px-2 py-0.5 rounded uppercase">Kỹ thuật</span>
+</div>
+</div>
+<h4 class="font-bold text-base group-hover:text-primary transition-colors line-clamp-2">CLB Tin học tổ chức Workshop: "Lập trình tương lai cùng AI"</h4>
+</div>
+<div class="group">
+<div class="relative overflow-hidden rounded-xl mb-3 aspect-video">
+<div class="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-110" data-alt="Sports event on university field" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAoZKkCh3tAUJKgDOmA4ybxW4_SETRb0MW8tKzpp1uK7_xUy_Not_iZ4cr1UF5zVCRrrrlFJjy-Tbqu3aue536u6ZRM6wiL2pZ83Fl6FZ51rQNao-SmyMXFkGu8t4aLPP5FNPIAyb3fWmKnEtfEyjR9WdbV8FWvfamnDC00Py0WFpf4mxschmF2ZUcat6DPUzU4GtIy6FiEvmegfp0RQNGXHqzV6Xy1MevzGCL6r_8t2aKW1fEWijBtnhU-mMPtXCntr_5svNGb5O0')"></div>
+<div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+<div class="absolute bottom-3 left-3">
+<span class="text-[10px] font-bold text-white bg-orange-600/80 px-2 py-0.5 rounded uppercase">Thể thao</span>
+</div>
+</div>
+<h4 class="font-bold text-base group-hover:text-primary transition-colors line-clamp-2">Khai mạc giải bóng đá nam truyền thống sinh viên toàn trường</h4>
+</div>
+</div>
+</section>
+</div>
+<!-- Right Sidebar -->
+<aside class="lg:col-span-3 space-y-8">
+<!-- Recruitment/Contest Banner -->
+<div class="bg-gradient-to-br from-primary to-green-700 rounded-2xl p-6 text-white shadow-lg overflow-hidden relative">
+<div class="relative z-10">
+<h4 class="text-xl font-bold mb-2">Bài viết dự thi</h4>
+<p class="text-sm text-white/80 mb-6">Gửi bài viết chia sẻ về mái trường AGU để nhận những phần quà hấp dẫn.</p>
+<button class="w-full bg-white text-primary font-bold py-3 rounded-xl hover:bg-slate-100 transition-colors shadow-sm">GỬI BÀI NGAY</button>
+</div>
+<span class="material-symbols-outlined absolute -bottom-4 -right-4 text-9xl text-white/10 rotate-12">edit_note</span>
+</div>
+<!-- Internal Links -->
+<div class="bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-sm border border-slate-100 dark:border-slate-800">
+<h4 class="font-bold text-lg mb-6 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">link</span> Liên kết nội bộ
+                    </h4>
+<ul class="space-y-4">
+<li>
+<a class="flex items-center justify-between group" href="#">
+<span class="text-slate-600 dark:text-slate-400 group-hover:text-primary transition-colors text-sm font-medium">Cổng thông tin sinh viên</span>
+<span class="material-symbols-outlined text-sm text-slate-300 group-hover:text-primary">arrow_forward</span>
+</a>
+</li>
+<hr class="border-slate-100 dark:border-slate-800"/>
+<li>
+<a class="flex items-center justify-between group" href="#">
+<span class="text-slate-600 dark:text-slate-400 group-hover:text-primary transition-colors text-sm font-medium">Thư viện điện tử</span>
+<span class="material-symbols-outlined text-sm text-slate-300 group-hover:text-primary">arrow_forward</span>
+</a>
+</li>
+<hr class="border-slate-100 dark:border-slate-800"/>
+<li>
+<a class="flex items-center justify-between group" href="#">
+<span class="text-slate-600 dark:text-slate-400 group-hover:text-primary transition-colors text-sm font-medium">Hệ thống E-Learning</span>
+<span class="material-symbols-outlined text-sm text-slate-300 group-hover:text-primary">arrow_forward</span>
+</a>
+</li>
+<hr class="border-slate-100 dark:border-slate-800"/>
+<li>
+<a class="flex items-center justify-between group" href="#">
+<span class="text-slate-600 dark:text-slate-400 group-hover:text-primary transition-colors text-sm font-medium">Đăng ký môn học</span>
+<span class="material-symbols-outlined text-sm text-slate-300 group-hover:text-primary">arrow_forward</span>
+</a>
+</li>
+</ul>
+</div>
+<!-- Social Media -->
+<div class="flex gap-4">
+<button class="flex-1 bg-slate-200 dark:bg-slate-800 h-12 rounded-xl flex items-center justify-center hover:bg-primary/20 transition-colors">
+<span class="material-symbols-outlined text-primary">social_leaderboard</span>
+</button>
+<button class="flex-1 bg-slate-200 dark:bg-slate-800 h-12 rounded-xl flex items-center justify-center hover:bg-primary/20 transition-colors">
+<span class="material-symbols-outlined text-primary">mail</span>
+</button>
+<button class="flex-1 bg-slate-200 dark:bg-slate-800 h-12 rounded-xl flex items-center justify-center hover:bg-primary/20 transition-colors">
+<span class="material-symbols-outlined text-primary">rss_feed</span>
+</button>
+</div>
+</aside>
+</div>
+</main>
+<!-- Footer -->
+<footer class="bg-slate-900 text-slate-400 py-12 mt-16 border-t border-slate-800">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+<div class="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
+<div class="col-span-1 md:col-span-1">
+<div class="flex items-center gap-3 mb-6">
+<div class="bg-primary text-white p-2 rounded-lg">
+<span class="material-symbols-outlined text-2xl">school</span>
+</div>
+<h2 class="text-xl font-bold text-white">AGU E-NEWS</h2>
+</div>
+<p class="text-sm leading-relaxed">
+                        Cơ quan ngôn luận điện tử của Trường Đại học An Giang. Cập nhật tin tức giáo dục, nghiên cứu và đời sống sinh viên.
+                    </p>
+</div>
+<div>
+<h5 class="text-white font-bold mb-6">Chuyên mục</h5>
+<ul class="space-y-3 text-sm">
+<li><a class="hover:text-primary" href="#">Bản tin học thuật</a></li>
+<li><a class="hover:text-primary" href="#">Nghiên cứu &amp; Sáng tạo</a></li>
+<li><a class="hover:text-primary" href="#">Gương mặt AGU</a></li>
+<li><a class="hover:text-primary" href="#">Tuyển sinh 2024</a></li>
+</ul>
+</div>
+<div>
+<h5 class="text-white font-bold mb-6">Thông tin</h5>
+<ul class="space-y-3 text-sm">
+<li><a class="hover:text-primary" href="#">Giới thiệu e-News</a></li>
+<li><a class="hover:text-primary" href="#">Liên hệ tòa soạn</a></li>
+<li><a class="hover:text-primary" href="#">Góp ý bạn đọc</a></li>
+<li><a class="hover:text-primary" href="#">Quy định bản quyền</a></li>
+</ul>
+</div>
+<div>
+<h5 class="text-white font-bold mb-6">Địa chỉ</h5>
+<p class="text-sm leading-relaxed mb-4">
+                        Số 18 Ung Văn Khiêm, P. Đông Xuyên, TP. Long Xuyên, An Giang.
+                    </p>
+<p class="text-sm">Email: enews@agu.edu.vn</p>
+<p class="text-sm">Điện thoại: (0296) 625 6565</p>
+</div>
+</div>
+<div class="pt-8 border-t border-slate-800 text-center text-xs">
+<p>© 2023 Trường Đại học An Giang - Thành viên ĐHQG-HCM. All Rights Reserved.</p>
+</div>
+</div>
+</footer>
+</body></html>

@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class User extends Authenticatable
 {
@@ -32,6 +33,8 @@ class User extends Authenticatable
         'password',
         'role',
         'google_id',
+        'avatar',
+        'bio',
         'avatar',
         'status',
     ];
@@ -94,5 +97,24 @@ class User extends Authenticatable
     public function posts(): HasMany
     {
         return $this->hasMany(Post::class, 'author_id');
+    }
+
+    public function collections(): HasMany
+    {
+        return $this->hasMany(Collection::class);
+    }
+
+    public function likedPosts(): BelongsToMany
+    {
+        return $this->belongsToMany(Post::class, 'post_likes')
+                    ->withPivot('created_at')
+                    ->orderByPivot('created_at', 'desc');
+    }
+
+    public function savedPosts(): BelongsToMany
+    {
+        return $this->belongsToMany(Post::class, 'post_saves', 'user_id', 'post_id')
+                    ->withPivot('collection_id')
+                    ->withTimestamps();
     }
 }

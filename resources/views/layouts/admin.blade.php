@@ -99,13 +99,45 @@
             z-index: 1030;
         }
 
+        /* ── Toggle Button with animated hamburger ── */
         .toggle-btn {
             background: none;
             border: none;
-            font-size: 1.5rem;
-            color: #555;
             cursor: pointer;
-            padding: 0;
+            padding: 6px 8px;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 5px;
+            width: 38px;
+            height: 38px;
+            transition: background 0.2s;
+        }
+        .toggle-btn:hover { background: rgba(0,0,0,0.06); }
+        .toggle-btn span {
+            display: block;
+            height: 2px;
+            background: #555;
+            border-radius: 2px;
+            transition: transform 0.3s ease, opacity 0.3s ease, width 0.3s ease;
+            transform-origin: center;
+        }
+        .toggle-btn span:nth-child(1) { width: 22px; }
+        .toggle-btn span:nth-child(2) { width: 18px; }
+        .toggle-btn span:nth-child(3) { width: 22px; }
+        /* Opened state — X icon */
+        .sidebar-open .toggle-btn span:nth-child(1) {
+            transform: translateY(7px) rotate(45deg);
+            width: 22px;
+        }
+        .sidebar-open .toggle-btn span:nth-child(2) {
+            opacity: 0;
+            transform: scaleX(0);
+        }
+        .sidebar-open .toggle-btn span:nth-child(3) {
+            transform: translateY(-7px) rotate(-45deg);
+            width: 22px;
         }
 
         .admin-content-wrapper {
@@ -113,12 +145,20 @@
             flex: 1;
         }
 
-        /* Responsive */
+        /* Desktop: sidebar collapsible */
+        body.sidebar-collapsed .admin-sidebar {
+            transform: translateX(-100%);
+        }
+        body.sidebar-collapsed .admin-main {
+            margin-left: 0;
+        }
+
+        /* Responsive — mobile */
         @media (max-width: 991.98px) {
             .admin-sidebar {
                 transform: translateX(-100%);
             }
-            .admin-sidebar.show {
+            body.sidebar-open .admin-sidebar {
                 transform: translateX(0);
             }
             .admin-main {
@@ -127,14 +167,13 @@
             .sidebar-overlay {
                 display: none;
                 position: fixed;
-                top: 0;
-                left: 0;
-                width: 100vw;
-                height: 100vh;
-                background: rgba(0,0,0,0.5);
+                top: 0; left: 0;
+                width: 100vw; height: 100vh;
+                background: rgba(0,0,0,0.45);
                 z-index: 1035;
+                transition: opacity 0.3s;
             }
-            .sidebar-overlay.show {
+            body.sidebar-open .sidebar-overlay {
                 display: block;
             }
         }
@@ -222,8 +261,10 @@
         <!-- Topbar -->
         <nav class="admin-navbar">
             <div class="d-flex align-items-center gap-3">
-                <button class="toggle-btn" id="sidebarToggle">
-                    <i class="bi bi-list"></i>
+                <button class="toggle-btn" id="sidebarToggle" title="Ẩn/hiện menu">
+                    <span></span>
+                    <span></span>
+                    <span></span>
                 </button>
                 <div class="fw-bold fs-5 d-none d-sm-block">@yield('title')</div>
             </div>
@@ -283,22 +324,33 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const toggleBtn = document.getElementById('sidebarToggle');
-            const sidebar = document.getElementById('adminSidebar');
-            const overlay = document.getElementById('sidebarOverlay');
-            
-            function toggleSidebar() {
-                sidebar.classList.toggle('show');
-                overlay.classList.toggle('show');
+            const overlay   = document.getElementById('sidebarOverlay');
+            const body      = document.body;
+            const isMobile  = () => window.innerWidth < 992;
+
+            // Restore desktop state from localStorage
+            if (!isMobile() && localStorage.getItem('sidebarCollapsed') === '1') {
+                body.classList.add('sidebar-collapsed');
             }
-            
+
+            function toggleSidebar() {
+                if (isMobile()) {
+                    body.classList.toggle('sidebar-open');
+                } else {
+                    body.classList.toggle('sidebar-collapsed');
+                    localStorage.setItem('sidebarCollapsed',
+                        body.classList.contains('sidebar-collapsed') ? '1' : '0');
+                }
+            }
+
             toggleBtn.addEventListener('click', toggleSidebar);
-            overlay.addEventListener('click', toggleSidebar);
-            
-            // Auto close on window resize if crossing breakpoint
+            overlay.addEventListener('click', function() {
+                body.classList.remove('sidebar-open');
+            });
+
             window.addEventListener('resize', function() {
-                if (window.innerWidth >= 992 && sidebar.classList.contains('show')) {
-                    sidebar.classList.remove('show');
-                    overlay.classList.remove('show');
+                if (!isMobile()) {
+                    body.classList.remove('sidebar-open');
                 }
             });
         });
