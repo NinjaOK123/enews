@@ -186,7 +186,7 @@
       </button>
 
       <div class="text-start mt-2">
-        <a href="#" class="forgot-pwd">Quên mật khẩu?</a>
+        <a href="{{ route('password.request') }}" class="forgot-pwd">Quên mật khẩu?</a>
       </div>
     </form>
   </div>
