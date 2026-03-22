@@ -53,6 +53,16 @@ class Post extends Model
         return $this->hasMany(PostLike::class);
     }
 
+    public function approvalLogs(): HasMany
+    {
+        return $this->hasMany(ApprovalLog::class)->latest('created_at');
+    }
+
+    public function media(): HasMany
+    {
+        return $this->hasMany(Media::class);
+    }
+
     // ─── Scopes ──────────────────────────────────────────────────────────────
 
     public function scopePublished(Builder $query): Builder

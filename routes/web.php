@@ -39,6 +39,7 @@ Route::post('/logout', [LoginController::class, 'logout'])->name('logout')->midd
 Route::middleware('auth')->group(function () {
     Route::get('/profile/{id?}', [App\Http\Controllers\ProfileController::class, 'show'])->name('profile');
     Route::post('/profile/{id}/avatar', [App\Http\Controllers\ProfileController::class, 'updateAvatar'])->name('profile.avatar');
+    Route::post('/profile/{id}/cover',  [App\Http\Controllers\ProfileController::class, 'updateCover'])->name('profile.cover');
     Route::post('/profile/update', [App\Http\Controllers\ProfileController::class, 'update'])->name('profile.update');
 
     // ─── Tính năng mạng xã hội ──────────────────────────────────────────
@@ -114,6 +115,15 @@ Route::prefix('admin')
              Route::post('/{comment}/reject',                   [\App\Http\Controllers\Admin\CommentController::class, 'reject'])->name('reject');
              Route::delete('/{comment}',                        [\App\Http\Controllers\Admin\CommentController::class, 'destroy'])->name('destroy');
          });
+
+          // ADMIN: Quản lý Banner Cuộc thi
+          Route::group(['prefix' => 'banners', 'as' => 'banners.'], function () {
+              Route::get('/',                 [\App\Http\Controllers\Admin\BannerController::class, 'index'])->name('index');
+              Route::post('/',                [\App\Http\Controllers\Admin\BannerController::class, 'store'])->name('store');
+              Route::put('/{banner}',         [\App\Http\Controllers\Admin\BannerController::class, 'update'])->name('update');
+              Route::delete('/{banner}',      [\App\Http\Controllers\Admin\BannerController::class, 'destroy'])->name('destroy');
+              Route::post('/{banner}/toggle', [\App\Http\Controllers\Admin\BannerController::class, 'toggleActive'])->name('toggle');
+          });
      });
 
 // Editor

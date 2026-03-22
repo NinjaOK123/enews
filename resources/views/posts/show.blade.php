@@ -607,7 +607,7 @@
 
     {{-- Lead / excerpt --}}
     @if($post->excerpt)
-    <p class="article-lead">{{ $post->excerpt }}</p>
+    <p class="article-lead">{!! nl2br(e(html_entity_decode(strip_tags($post->excerpt), ENT_QUOTES | ENT_HTML5, 'UTF-8'))) !!}</p>
     @endif
 
     {{-- Meta row --}}

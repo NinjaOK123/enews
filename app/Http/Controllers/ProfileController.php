@@ -113,7 +113,6 @@ class ProfileController extends Controller
             try {
                 $manager  = new ImageManager(new Driver());
                 $image    = $manager->read($request->file('avatar')->getRealPath());
-                // cover() tương thích cả v2 lẫn v3 của Intervention Image
                 $image->cover(400, 400);
 
                 $filename = 'avatar_' . $user->id . '_' . time() . '.jpg';
@@ -126,13 +125,59 @@ class ProfileController extends Controller
 
                 Storage::disk('public')->put($path, (string) $image->toJpeg(85));
 
-                // Lưu vào DB trực tiếp để chắc chắn
-                \DB::table('users')->where('id', $user->id)->update(['avatar' => $path]);
+                DB::table('users')->where('id', $user->id)->update(['avatar' => $path]);
 
                 return redirect()->back()->with('success', 'Cập nhật ảnh đại diện thành công!');
 
             } catch (\Throwable $e) {
                 \Log::error('Avatar upload error: ' . $e->getMessage());
+                return redirect()->back()->with('error', 'Lỗi khi xử lý ảnh: ' . $e->getMessage());
+            }
+        }
+
+        return redirect()->back()->with('error', 'Vui lòng chọn file ảnh.');
+    }
+
+    /**
+     * Cập nhật ảnh bìa (cover photo).
+     */
+    public function updateCover(Request $request, $id)
+    {
+        $user = User::findOrFail($id);
+
+        if ($user->id !== auth()->id() && auth()->user()->role !== 'admin') {
+            abort(403);
+        }
+
+        $request->validate([
+            'cover_photo' => 'required|image|mimes:jpeg,png,jpg,webp|max:5120',
+        ]);
+
+        if ($request->hasFile('cover_photo')) {
+            try {
+                $manager  = new ImageManager(new Driver());
+                $image    = $manager->read($request->file('cover_photo')->getRealPath());
+                // Resize về tỷ lệ 16:9 — 1200×400
+                $image->cover(1200, 400);
+
+                $filename = 'cover_' . $user->id . '_' . time() . '.jpg';
+                $path     = 'covers/' . $filename;
+
+                // Xóa ảnh bìa cũ nếu có
+                if ($user->cover_photo
+                    && str_starts_with($user->cover_photo, 'covers/')
+                    && Storage::disk('public')->exists($user->cover_photo)) {
+                    Storage::disk('public')->delete($user->cover_photo);
+                }
+
+                Storage::disk('public')->put($path, (string) $image->toJpeg(85));
+
+                DB::table('users')->where('id', $user->id)->update(['cover_photo' => $path]);
+
+                return redirect()->back()->with('success', 'Cập nhật ảnh bìa thành công!');
+
+            } catch (\Throwable $e) {
+                \Log::error('Cover upload error: ' . $e->getMessage());
                 return redirect()->back()->with('error', 'Lỗi khi xử lý ảnh: ' . $e->getMessage());
             }
         }

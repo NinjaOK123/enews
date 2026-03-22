@@ -11,6 +11,7 @@ class Media extends Model
 
     protected $fillable = [
         'user_id',
+        'post_id',
         'file_name',
         'file_path',
         'file_type',
@@ -21,6 +22,11 @@ class Media extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function post()
+    {
+        return $this->belongsTo(Post::class);
     }
 
     public function absolutePath(): string

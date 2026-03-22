@@ -28,7 +28,25 @@
     position: absolute;
     inset: 0;
     background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Ccircle cx='30' cy='30' r='20'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E") repeat;
+    pointer-events: none;
 }
+
+/* Cover hover effect */
+.profile-cover:hover .cover-upload-overlay {
+    background: rgba(0, 0, 0, 0.28) !important;
+}
+.profile-cover:hover .cover-upload-label {
+    opacity: 1 !important;
+    transform: translateY(0) !important;
+}
+
+@media (min-width: 640px) {
+    .profile-cover { height: 260px; }
+}
+@media (min-width: 1024px) {
+    .profile-cover { height: 300px; }
+}
+
 
 /* Header card */
 .profile-header-card {
@@ -43,9 +61,10 @@
 /* Avatar */
 .profile-avatar-wrap {
     position: relative;
-    display: inline-block;
+    display: block;
     margin-top: -50px;
     margin-bottom: 12px;
+    width: fit-content;
 }
 .profile-avatar {
     width: 100px;
@@ -313,11 +332,11 @@
 /* Empty state */
 .empty-tab {
     text-align: center;
-    padding: 48px 24px;
+    padding: 120px 24px;
     color: #bbb;
 }
-.empty-tab svg { width: 56px; height: 56px; margin-bottom: 12px; }
-.empty-tab p { font-size: .9rem; margin: 0; }
+.empty-tab svg { width: 80px; height: 80px; margin-bottom: 16px; }
+.empty-tab p { font-size: 1rem; margin: 0; color: #ccc; }
 
 /* Edit modal */
 .modal-profile { border-radius: 16px; overflow: hidden; }
@@ -389,42 +408,317 @@
     width: 14px !important;
     height: 14px !important;
 }
+/* Spinner */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
 </style>
 @endpush
 
 @section('content')
 <div class="profile-wrapper">
 
-    {{-- Cover --}}
-    <div class="profile-cover"></div>
+    {{-- ══ COVER PHOTO ══ --}}
+    <div x-data="{
+            preview: '{{ $user->cover_photo ? asset('storage/' . $user->cover_photo) : '' }}',
+            loading: false,
+            pick(e) {
+                const f = e.target.files[0];
+                if (!f) return;
+                if (f.size > 5 * 1024 * 1024) {
+                    alert('Ảnh phải nhỏ hơn 5MB!');
+                    return;
+                }
+                const reader = new FileReader();
+                reader.onload = ev => {
+                    this.preview = ev.target.result;
+                    this.loading = true;
+                    this.$refs.coverForm.submit();
+                };
+                reader.readAsDataURL(f);
+            }
+         }"
+         class="profile-cover"
+         style="position:relative; overflow:hidden; cursor:{{ $isOwnProfile ? 'pointer' : 'default' }};"
+         @if($isOwnProfile) @click="$refs.coverInput.click()" @endif>
+
+        {{-- Background image or gradient --}}
+        <template x-if="preview">
+            <img :src="preview" alt="Ảnh bìa"
+                 style="width:100%;height:100%;object-fit:cover;display:block;">
+        </template>
+        <template x-if="!preview">
+            <div style="width:100%;height:100%;
+                        background:linear-gradient(135deg,#1a5c38 0%,#2d9e60 50%,#0d3b22 100%);"></div>
+        </template>
+
+        {{-- Gradient overlay bottom --}}
+        <div style="position:absolute;inset:0;
+                    background:linear-gradient(to top, rgba(0,0,0,.35) 0%, transparent 60%);
+                    pointer-events:none;"></div>
+
+        @if($isOwnProfile)
+        {{-- Hidden form --}}
+        <form x-ref="coverForm" method="POST"
+              action="{{ route('profile.cover', $user->id) }}"
+              enctype="multipart/form-data" style="display:none;">
+            @csrf
+            <input x-ref="coverInput" type="file" name="cover_photo"
+                   accept="image/jpeg,image/png,image/jpg,image/webp"
+                   @change="pick($event)">
+        </form>
+
+        {{-- Hover overlay with camera icon --}}
+        <div class="cover-upload-overlay"
+             style="position:absolute;inset:0;display:flex;align-items:center;
+                    justify-content:center;gap:8px;
+                    background:rgba(0,0,0,0);
+                    transition:background .25s ease;
+                    pointer-events:none;">
+            <div class="cover-upload-label"
+                 style="display:flex;align-items:center;gap:8px;
+                        background:rgba(255,255,255,.9);
+                        color:#222;font-size:.82rem;font-weight:700;
+                        padding:9px 18px;border-radius:10px;
+                        opacity:0;transform:translateY(6px);
+                        transition:all .25s ease;
+                        box-shadow:0 4px 16px rgba(0,0,0,.2);">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                     stroke-width="2" stroke="currentColor" style="width:16px;height:16px;">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                          d="M6.827 6.175A2.31 2.31 0 0 1 5.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 0 0-1.134-.175 2.31 2.31 0 0 1-1.64-1.055l-.822-1.316a2.192 2.192 0 0 0-1.736-1.039 48.774 48.774 0 0 0-5.232 0 2.192 2.192 0 0 0-1.736 1.039l-.821 1.316Z" />
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                          d="M16.5 12.75a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0ZM18.75 10.5h.008v.008h-.008V10.5Z" />
+                </svg>
+                Cập nhật ảnh bìa
+            </div>
+        </div>
+
+        {{-- Loading spinner overlay --}}
+        <div x-show="loading"
+             style="position:absolute;inset:0;background:rgba(0,0,0,.4);
+                    display:flex;align-items:center;justify-content:center;">
+            <svg style="width:36px;height:36px;animation:spin 1s linear infinite;"
+                 viewBox="0 0 24 24" fill="none">
+                <circle cx="12" cy="12" r="10" stroke="rgba(255,255,255,.3)" stroke-width="3"/>
+                <path d="M12 2a10 10 0 0 1 10 10" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
+            </svg>
+        </div>
+        @endif
+    </div>
 
     {{-- Header Card --}}
     <div class="profile-header-card">
-        <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
+        <div class="flex flex-wrap justify-between items-start gap-4">
             {{-- Avatar + info --}}
             <div>
-                <div class="profile-avatar-wrap">
+                {{-- Avatar wrap với Alpine modal --}}
+                <div class="profile-avatar-wrap"
+                     x-data="{
+                        open: false,
+                        preview: null,
+                        loading: false,
+                        file: null,
+                        error: null,
+                        pick(e) {
+                            const f = e.target.files[0];
+                            if (!f) return;
+                            if (f.size > 2 * 1024 * 1024) {
+                                this.error = 'Ảnh phải nhỏ hơn 2MB!';
+                                this.preview = null;
+                                return;
+                            }
+                            this.error = null;
+                            this.file = f;
+                            const reader = new FileReader();
+                            reader.onload = ev => { this.preview = ev.target.result; };
+                            reader.readAsDataURL(f);
+                        },
+                        submit() {
+                            if (!this.file) return;
+                            this.loading = true;
+                            this.$refs.avatarForm.submit();
+                        },
+                        reset() {
+                            this.open = false;
+                            this.preview = null;
+                            this.file = null;
+                            this.error = null;
+                            this.loading = false;
+                            this.$refs.avatarInput.value = '';
+                        }
+                     }">
+
+                    {{-- Current avatar display --}}
                     @if($user->avatar)
                         <img src="{{ asset('storage/' . $user->avatar) }}" alt="{{ $user->name }}" class="profile-avatar">
                     @else
                         <div class="profile-avatar-initials">
-                            {{ strtoupper(mb_substr($user->name ?? 'U', 0, 2)) }}
+                            {{ strtoupper(mb_substr($user->name ?? 'U', 0, 1)) }}
                         </div>
                     @endif
 
                     @if($isOwnProfile)
-                    <label for="avatarInput" class="avatar-upload-btn" title="Đổi ảnh đại diện">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" style="width:14px;height:14px;">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M6.827 6.175A2.31 2.31 0 0 1 5.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 0 0-1.134-.175 2.31 2.31 0 0 1-1.64-1.055l-.822-1.316a2.192 2.192 0 0 0-1.736-1.039 48.774 48.774 0 0 0-5.232 0 2.192 2.192 0 0 0-1.736 1.039l-.821 1.316Z" />
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 12.75a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0ZM18.75 10.5h.008v.008h-.008V10.5Z" />
+                    {{-- Camera button --}}
+                    <button @click="open = true" type="button"
+                            class="avatar-upload-btn" title="Đổi ảnh đại diện">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                             stroke-width="2.5" stroke="currentColor" style="width:14px;height:14px;">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                  d="M6.827 6.175A2.31 2.31 0 0 1 5.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 0 0-1.134-.175 2.31 2.31 0 0 1-1.64-1.055l-.822-1.316a2.192 2.192 0 0 0-1.736-1.039 48.774 48.774 0 0 0-5.232 0 2.192 2.192 0 0 0-1.736 1.039l-.821 1.316Z" />
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                  d="M16.5 12.75a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0ZM18.75 10.5h.008v.008h-.008V10.5Z" />
                         </svg>
-                    </label>
-                    <form id="avatarForm" method="POST" action="{{ route('profile.avatar', $user->id) }}" enctype="multipart/form-data" class="d-none">
+                    </button>
+
+                    {{-- Hidden form --}}
+                    <form x-ref="avatarForm"
+                          method="POST"
+                          action="{{ route('profile.avatar', $user->id) }}"
+                          enctype="multipart/form-data"
+                          class="hidden">
                         @csrf
-                        <input type="file" id="avatarInput" name="avatar" accept="image/*" onchange="document.getElementById('avatarForm').submit()">
+                        <input x-ref="avatarInput" type="file" name="avatar"
+                               accept="image/jpeg,image/png,image/jpg"
+                               @change="pick($event)">
                     </form>
+
+                    {{-- ═══ MODAL ═══ --}}
+                    <div x-show="open"
+                         x-transition:enter="transition ease-out duration-200"
+                         x-transition:enter-start="opacity-0"
+                         x-transition:enter-end="opacity-100"
+                         x-transition:leave="transition ease-in duration-150"
+                         x-transition:leave-start="opacity-100"
+                         x-transition:leave-end="opacity-0"
+                         @click.self="reset()"
+                         style="display:none; position:fixed; inset:0; z-index:999;
+                                background:rgba(0,0,0,0.55); display:flex;
+                                align-items:center; justify-content:center; padding:16px;">
+
+                        <div x-show="open"
+                             x-transition:enter="transition ease-out duration-200"
+                             x-transition:enter-start="opacity-0 scale-95 translate-y-4"
+                             x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+                             @click.stop
+                             style="background:#fff; border-radius:20px; width:100%;
+                                    max-width:400px; box-shadow:0 20px 60px rgba(0,0,0,0.25);
+                                    overflow:hidden;">
+
+                            {{-- Modal Header --}}
+                            <div style="padding:18px 20px; border-bottom:1px solid #f0f0f0;
+                                        display:flex; align-items:center; justify-content:space-between;">
+                                <span style="font-size:1rem; font-weight:800; color:#111;">📷 Cập nhật ảnh đại diện</span>
+                                <button @click="reset()" type="button"
+                                        style="width:32px;height:32px;border-radius:50%;border:none;
+                                               background:#f0f0f0;cursor:pointer;font-size:1rem;
+                                               display:flex;align-items:center;justify-content:center;
+                                               transition:background .2s;"
+                                        onmouseover="this.style.background='#e0e0e0'"
+                                        onmouseout="this.style.background='#f0f0f0'">✕</button>
+                            </div>
+
+                            {{-- Modal Body --}}
+                            <div style="padding:24px; text-align:center;">
+
+                                {{-- Preview area --}}
+                                <div style="position:relative; width:150px; height:150px;
+                                            margin:0 auto 20px; border-radius:50%;
+                                            overflow:hidden; border:3px solid #e5e7eb;
+                                            background:#f9fafb; cursor:pointer;"
+                                     @click="$refs.avatarInput.click()">
+
+                                    {{-- Current / preview image --}}
+                                    <template x-if="preview">
+                                        <img :src="preview" alt="Preview"
+                                             style="width:100%;height:100%;object-fit:cover;">
+                                    </template>
+                                    <template x-if="!preview">
+                                        <div style="width:100%;height:100%;display:flex;
+                                                    align-items:center;justify-content:center;">
+                                            @if($user->avatar)
+                                                <img src="{{ asset('storage/' . $user->avatar) }}"
+                                                     alt="{{ $user->name }}"
+                                                     style="width:100%;height:100%;object-fit:cover;">
+                                            @else
+                                                <div style="font-size:3.5rem;font-weight:900;
+                                                            color:#2a7a27;line-height:1;">
+                                                    {{ strtoupper(mb_substr($user->name ?? 'U', 0, 1)) }}
+                                                </div>
+                                            @endif
+                                        </div>
+                                    </template>
+
+                                    {{-- Hover overlay --}}
+                                    <div style="position:absolute;inset:0;background:rgba(0,0,0,0);
+                                                display:flex;align-items:center;justify-content:center;
+                                                transition:background .2s;"
+                                         onmouseover="this.style.background='rgba(0,0,0,0.35)'; this.querySelector('span').style.opacity='1'"
+                                         onmouseout="this.style.background='rgba(0,0,0,0)'; this.querySelector('span').style.opacity='0'">
+                                        <span style="opacity:0;color:#fff;font-size:.78rem;
+                                                     font-weight:700;text-align:center;
+                                                     transition:opacity .2s;pointer-events:none;">
+                                            📷<br>Chọn ảnh
+                                        </span>
+                                    </div>
+                                </div>
+
+                                {{-- Error message --}}
+                                <p x-show="error" x-text="error"
+                                   style="color:#dc2626;font-size:.8rem;margin-bottom:12px;
+                                          background:#fef2f2;padding:8px 14px;border-radius:8px;"></p>
+
+                                {{-- Choose file button --}}
+                                <button type="button"
+                                        @click="$refs.avatarInput.click()"
+                                        style="background:#f3f4f6;color:#333;border:none;
+                                               border-radius:10px;padding:10px 22px;
+                                               font-size:.88rem;font-weight:600;cursor:pointer;
+                                               transition:background .2s;margin-bottom:8px;"
+                                        onmouseover="this.style.background='#e5e7eb'"
+                                        onmouseout="this.style.background='#f3f4f6'">
+                                    🖼️ Chọn ảnh từ máy
+                                </button>
+                                <p style="font-size:.72rem;color:#9ca3af;margin:0 0 20px;">
+                                    JPG, PNG · Tối đa 2 MB
+                                </p>
+                            </div>
+
+                            {{-- Modal Footer --}}
+                            <div style="padding:16px 20px; border-top:1px solid #f0f0f0;
+                                        display:flex; gap:10px; justify-content:flex-end;">
+                                <button @click="reset()" type="button"
+                                        style="padding:10px 22px;border-radius:10px;border:none;
+                                               background:#f3f4f6;color:#333;font-size:.88rem;
+                                               font-weight:600;cursor:pointer;transition:background .2s;"
+                                        onmouseover="this.style.background='#e5e7eb'"
+                                        onmouseout="this.style.background='#f3f4f6'">
+                                    Hủy
+                                </button>
+                                <button @click="submit()" type="button"
+                                        :disabled="!file || loading"
+                                        :style="(!file || loading)
+                                            ? 'opacity:.5;cursor:not-allowed;'
+                                            : 'cursor:pointer;'"
+                                        style="padding:10px 26px;border-radius:10px;border:none;
+                                               background:#2a7a27;color:#fff;font-size:.88rem;
+                                               font-weight:700;transition:all .2s;display:flex;
+                                               align-items:center;gap:8px;">
+                                    <template x-if="loading">
+                                        <svg style="width:16px;height:16px;animation:spin 1s linear infinite;"
+                                             viewBox="0 0 24 24" fill="none">
+                                            <circle cx="12" cy="12" r="10" stroke="rgba(255,255,255,.3)" stroke-width="3"/>
+                                            <path d="M12 2a10 10 0 0 1 10 10" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
+                                        </svg>
+                                    </template>
+                                    <span x-text="loading ? 'Đang lưu...' : '💾 Lưu ảnh'"></span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                     @endif
-                </div>
+                </div>{{-- /profile-avatar-wrap --}}
 
                 <h1 style="font-size:1.4rem;font-weight:800;margin:0 0 4px;">{{ $user->name }}</h1>
                 <span class="role-badge {{ $user->role }}">
@@ -458,8 +752,8 @@
 
         {{-- Edit button --}}
         @if($isOwnProfile)
-        <div class="profile-actions">
-            <button class="btn-edit-profile" data-bs-toggle="modal" data-bs-target="#editProfileModal">
+        <div class="profile-actions" x-data>
+            <button class="btn-edit-profile" @click="$dispatch('open-edit-profile')">
                 ✏️ Chỉnh sửa thông tin
             </button>
         </div>
@@ -503,24 +797,18 @@
             </a>
             @endforeach
         </div>
-        {{-- Phân trang đẹp --}}
         @if($posts->hasPages())
         <div class="profile-pagination">
-            {{-- << Đầu --}}
             @if($posts->onFirstPage())
                 <span style="opacity:.35;">&#171;</span>
             @else
                 <a href="{{ $posts->url(1) }}" title="Trang đầu">&#171;</a>
             @endif
-
-            {{-- < Trước --}}
             @if($posts->onFirstPage())
                 <span style="opacity:.35;">&#8249;</span>
             @else
                 <a href="{{ $posts->previousPageUrl() }}" title="Trang trước">&#8249;</a>
             @endif
-
-            {{-- Các số trang (hiện ±2 quanh trang hiện tại) --}}
             @foreach($posts->getUrlRange(max(1, $posts->currentPage()-2), min($posts->lastPage(), $posts->currentPage()+2)) as $page => $url)
                 @if($page == $posts->currentPage())
                     <span class="active-page">{{ $page }}</span>
@@ -528,15 +816,11 @@
                     <a href="{{ $url }}">{{ $page }}</a>
                 @endif
             @endforeach
-
-            {{-- > Sau --}}
             @if($posts->hasMorePages())
                 <a href="{{ $posts->nextPageUrl() }}" title="Trang sau">&#8250;</a>
             @else
                 <span style="opacity:.35;">&#8250;</span>
             @endif
-
-            {{-- >> Cuối --}}
             @if($posts->hasMorePages())
                 <a href="{{ $posts->url($posts->lastPage()) }}" title="Trang cuối">&#187;</a>
             @else
@@ -572,7 +856,7 @@
             @endforeach
 
             {{-- Nút tạo mới --}}
-            <button class="btn-new-collection" data-bs-toggle="modal" data-bs-target="#newCollectionModal">
+            <button class="btn-new-collection" x-data @click="$dispatch('open-new-collection')">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width:28px;height:28px;"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
                 Tạo bộ sưu tập
             </button>
@@ -613,21 +897,21 @@
     <div class="tab-pane" id="tab-about">
         <div style="background:#fff;border-radius:12px;padding:24px;box-shadow:0 2px 8px rgba(0,0,0,0.06);">
             <div style="display:flex;flex-direction:column;gap:14px;">
-                <div class="d-flex gap-3 align-items-center">
+                <div class="flex items-center gap-3">
                     <span style="font-size:1.3rem;">👤</span>
                     <div>
                         <div style="font-size:.75rem;color:#999;font-weight:600;text-transform:uppercase;letter-spacing:.5px;">Họ tên</div>
                         <div style="font-weight:600;color:#222;">{{ $user->name }}</div>
                     </div>
                 </div>
-                <div class="d-flex gap-3 align-items-center">
+                <div class="flex items-center gap-3">
                     <span style="font-size:1.3rem;">📧</span>
                     <div>
                         <div style="font-size:.75rem;color:#999;font-weight:600;text-transform:uppercase;letter-spacing:.5px;">Email</div>
                         <div style="font-weight:600;color:#222;">{{ $isOwnProfile ? $user->email : '***@***.***' }}</div>
                     </div>
                 </div>
-                <div class="d-flex gap-3 align-items-center">
+                <div class="flex items-center gap-3">
                     <span style="font-size:1.3rem;">🎓</span>
                     <div>
                         <div style="font-size:.75rem;color:#999;font-weight:600;text-transform:uppercase;letter-spacing:.5px;">Vai trò</div>
@@ -635,7 +919,7 @@
                     </div>
                 </div>
                 @if($user->bio ?? false)
-                <div class="d-flex gap-3 align-items-start">
+                <div class="flex items-start gap-3">
                     <span style="font-size:1.3rem;">📝</span>
                     <div>
                         <div style="font-size:.75rem;color:#999;font-weight:600;text-transform:uppercase;letter-spacing:.5px;">Giới thiệu</div>
@@ -643,7 +927,7 @@
                     </div>
                 </div>
                 @endif
-                <div class="d-flex gap-3 align-items-center">
+                <div class="flex items-center gap-3">
                     <span style="font-size:1.3rem;">📅</span>
                     <div>
                         <div style="font-size:.75rem;color:#999;font-weight:600;text-transform:uppercase;letter-spacing:.5px;">Tham gia từ</div>
@@ -656,66 +940,110 @@
 
 </div>
 
-{{-- Modal: Sửa thông tin --}}
+{{-- Alpine Modal: Sửa thông tin --}}
 @if($isOwnProfile)
-<div class="modal fade" id="editProfileModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content modal-profile">
-            <div class="modal-header">
-                <h5 class="modal-title fw-bold">✏️ Chỉnh sửa thông tin</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <form method="POST" action="{{ route('profile.update') }}">
-                @csrf
-                <div class="modal-body p-4">
-                    <div class="mb-3">
-                        <label class="form-label fw-semibold">Họ tên</label>
-                        <input type="text" name="name" value="{{ old('name', $user->name) }}" class="form-control" required>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label fw-semibold">Giới thiệu bản thân</label>
-                        <textarea name="bio" rows="3" class="form-control" maxlength="300" placeholder="Ví dụ: Sinh viên năm 3 Khoa CNTT, yêu thích viết lách...">{{ old('bio', $user->bio ?? '') }}</textarea>
-                        <small class="text-muted">Tối đa 300 ký tự</small>
-                    </div>
-                </div>
-                <div class="modal-footer border-0">
-                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Hủy</button>
-                    <button type="submit" class="btn btn-success px-4">💾 Lưu thay đổi</button>
-                </div>
-            </form>
+<div x-data="{ open: false }"
+     x-on:open-edit-profile.window="open = true"
+     x-show="open"
+     x-transition:enter="transition ease-out duration-200"
+     x-transition:enter-start="opacity-0"
+     x-transition:enter-end="opacity-100"
+     x-transition:leave="transition ease-in duration-150"
+     x-transition:leave-start="opacity-100"
+     x-transition:leave-end="opacity-0"
+     class="fixed inset-0 z-[999] flex items-center justify-center p-4"
+     style="display:none;">
+    {{-- Backdrop --}}
+    <div class="absolute inset-0 bg-black/50" @click="open = false"></div>
+    {{-- Modal panel --}}
+    <div class="relative w-full max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden"
+         x-transition:enter="transition ease-out duration-200"
+         x-transition:enter-start="opacity-0 scale-95"
+         x-transition:enter-end="opacity-100 scale-100"
+         @click.stop>
+        {{-- Header --}}
+        <div class="flex items-center justify-between px-6 py-4 bg-gradient-to-r from-[#1a5c38] to-[#2d9e60]">
+            <h5 class="text-white font-bold text-lg">✏️ Chỉnh sửa thông tin</h5>
+            <button @click="open = false" class="text-white/80 hover:text-white transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/>
+                </svg>
+            </button>
         </div>
+        {{-- Body --}}
+        <form method="POST" action="{{ route('profile.update') }}">
+            @csrf
+            <div class="p-6 flex flex-col gap-4">
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1.5">Họ tên</label>
+                    <input type="text" name="name" value="{{ old('name', $user->name) }}" required
+                           class="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-[#2a7a27] focus:ring-2 focus:ring-[#2a7a27]/20 transition">
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1.5">Giới thiệu bản thân</label>
+                    <textarea name="bio" rows="3" maxlength="300"
+                              placeholder="Ví dụ: Sinh viên năm 3 Khoa CNTT, yêu thích viết lách..."
+                              class="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-[#2a7a27] focus:ring-2 focus:ring-[#2a7a27]/20 transition resize-none">{{ old('bio', $user->bio ?? '') }}</textarea>
+                    <p class="text-xs text-gray-400 mt-1">Tối đa 300 ký tự</p>
+                </div>
+            </div>
+            <div class="flex items-center justify-end gap-3 px-6 py-4 border-t border-gray-100">
+                <button type="button" @click="open = false"
+                        class="px-4 py-2 text-sm font-semibold text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-xl transition">Hủy</button>
+                <button type="submit"
+                        class="px-5 py-2 text-sm font-bold text-white bg-[#2a7a27] hover:bg-[#1b5e20] rounded-xl shadow transition">💾 Lưu thay đổi</button>
+            </div>
+        </form>
     </div>
 </div>
 
-{{-- Modal: Tạo bộ sưu tập mới --}}
-<div class="modal fade" id="newCollectionModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content modal-profile">
-            <div class="modal-header">
-                <h5 class="modal-title fw-bold">🔖 Tạo bộ sưu tập mới</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+{{-- Alpine Modal: Tạo bộ sưu tập mới --}}
+<div x-data="{ open: false, name: '', isPublic: false }"
+     x-on:open-new-collection.window="open = true"
+     x-show="open"
+     x-transition:enter="transition ease-out duration-200"
+     x-transition:enter-start="opacity-0"
+     x-transition:enter-end="opacity-100"
+     x-transition:leave="transition ease-in duration-150"
+     x-transition:leave-start="opacity-100"
+     x-transition:leave-end="opacity-0"
+     class="fixed inset-0 z-[999] flex items-center justify-center p-4"
+     style="display:none;">
+    <div class="absolute inset-0 bg-black/50" @click="open = false"></div>
+    <div class="relative w-full max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden" @click.stop
+         x-transition:enter="transition ease-out duration-200"
+         x-transition:enter-start="opacity-0 scale-95"
+         x-transition:enter-end="opacity-100 scale-100">
+        <div class="flex items-center justify-between px-6 py-4 bg-gradient-to-r from-[#1a5c38] to-[#2d9e60]">
+            <h5 class="text-white font-bold text-lg">🔖 Tạo bộ sưu tập mới</h5>
+            <button @click="open = false" class="text-white/80 hover:text-white transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/>
+                </svg>
+            </button>
+        </div>
+        <div class="p-6 flex flex-col gap-4">
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-1.5">Tên bộ sưu tập</label>
+                <input type="text" x-model="name" maxlength="100" placeholder="Ví dụ: Bài viết yêu thích"
+                       class="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-[#2a7a27] focus:ring-2 focus:ring-[#2a7a27]/20 transition">
             </div>
-            <div class="modal-body p-4">
-                <div class="mb-3">
-                    <label class="form-label fw-semibold">Tên bộ sưu tập</label>
-                    <input type="text" id="newColName" class="form-control" placeholder="Ví dụ: Bài viết yêu thích" maxlength="100">
-                </div>
-                <div class="form-check">
-                    <input class="form-check-input" type="checkbox" id="newColPublic">
-                    <label class="form-check-label" for="newColPublic">Công khai (mọi người đều xem được)</label>
-                </div>
-            </div>
-            <div class="modal-footer border-0">
-                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Hủy</button>
-                <button type="button" class="btn btn-success px-4" id="createColBtn">🔖 Tạo bộ sưu tập</button>
-            </div>
+            <label class="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" x-model="isPublic" class="w-4 h-4 accent-[#2a7a27]">
+                <span class="text-sm text-gray-600">Công khai (mọi người đều xem được)</span>
+            </label>
+        </div>
+        <div class="flex items-center justify-end gap-3 px-6 py-4 border-t border-gray-100">
+            <button type="button" @click="open = false"
+                    class="px-4 py-2 text-sm font-semibold text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-xl transition">Hủy</button>
+            <button type="button" @click="createCollection(name, isPublic, () => open = false)"
+                    class="px-5 py-2 text-sm font-bold text-white bg-[#2a7a27] hover:bg-[#1b5e20] rounded-xl shadow transition">🔖 Tạo bộ sưu tập</button>
         </div>
     </div>
 </div>
 @endif
 
 @endsection
-
 @push('scripts')
 <script>
 // Tab switching
@@ -723,37 +1051,27 @@ document.querySelectorAll('.profile-tab').forEach(tab => {
     tab.addEventListener('click', function(e) {
         e.preventDefault();
         const targetId = this.getAttribute('data-tab');
-
         document.querySelectorAll('.profile-tab').forEach(t => t.classList.remove('active'));
         document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
-
         this.classList.add('active');
         document.getElementById(targetId)?.classList.add('active');
     });
 });
 
-// Tạo bộ sưu tập mới
-const createColBtn = document.getElementById('createColBtn');
-if (createColBtn) {
-    createColBtn.addEventListener('click', function() {
-        const name = document.getElementById('newColName').value.trim();
-        const isPublic = document.getElementById('newColPublic').checked;
-        if (!name) { alert('Vui lòng nhập tên bộ sưu tập!'); return; }
-
-        fetch("{{ route('collections.store') }}", {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-            },
-            body: JSON.stringify({ name, is_public: isPublic }),
-        }).then(r => r.json()).then(data => {
-            if (data.collection) {
-                bootstrap.Modal.getInstance(document.getElementById('newCollectionModal')).hide();
-                window.location.reload();
-            }
-        });
+// Tạo bộ sưu tập (Alpine x-data gọi hàm này)
+function createCollection(name, isPublic, onSuccess) {
+    if (!name || !name.trim()) { alert('Vui lòng nhập tên bộ sưu tập!'); return; }
+    fetch("{{ route('collections.store') }}", {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+        },
+        body: JSON.stringify({ name: name.trim(), is_public: isPublic }),
+    }).then(r => r.json()).then(data => {
+        if (data.collection) { onSuccess && onSuccess(); window.location.reload(); }
     });
 }
 </script>
 @endpush
+

@@ -80,17 +80,18 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: rgba(255,255,255,.12);
-  border: 1px solid rgba(255,255,255,.25);
-  color: #fff;
-  padding: 6px 16px;
+  background: #f5d400;
+  border: none;
+  color: #1b5e20;
+  padding: 8px 18px;
   border-radius: 8px;
-  font-size: .80rem;
-  font-weight: 600;
+  font-size: .82rem;
+  font-weight: 700;
   text-decoration: none;
-  transition: background .18s;
+  transition: background .18s, transform .15s;
+  box-shadow: 0 2px 10px rgba(0,0,0,.15);
 }
-.hero-url:hover { background: rgba(255,255,255,.2); color: #fff; }
+.hero-url:hover { background: #fff; color: #1b5e20; transform: translateY(-1px); }
 .hero-stats {
   display: flex;
   gap: 28px;
@@ -273,7 +274,7 @@
 }
 .contact-row:last-child { border-bottom: none; }
 .contact-row i { color: #2a7a27; margin-top: 2px; }
-a { color: #2a7a27; }
+.about-page a { color: #2a7a27; }
 
 @media (max-width: 900px) {
   .about-layout  { flex-direction: column; }

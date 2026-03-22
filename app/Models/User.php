@@ -34,8 +34,8 @@ class User extends Authenticatable
         'role',
         'google_id',
         'avatar',
+        'cover_photo',
         'bio',
-        'avatar',
         'status',
     ];
 

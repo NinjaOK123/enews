@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Category;
 use App\Models\Post;
+use App\Models\Banner;
 use Illuminate\View\View;
 
 class HomeController extends Controller
@@ -26,19 +27,33 @@ class HomeController extends Controller
 
         // ── Sections: lấy bài theo từng chuyên mục ─────────────────────────
         $sections = $this->loadSections([
+            // ── Main sections ───────────────────────────────
             'ban-tin-agu',
-            'sv-clb',
             'guong-mat-agu',
-            'enews-ban-doc',
+            'enews-va-ban-doc',
             'cau-chuyen-agu',
             'khoa-hoc-voi-agu',
             'goc-nhin',
             'tan-man',
             'luot-web-cung-sv',
             'phong-su-anh',
+            // ── CLB sub-categories ───────────────────────────
+            'clb-van-tho',
+            'clb-am-nhac',
+            'clb-tin-hoc',
+            'clb-tam-tinh-tre',
+            'clb-ngoai-ngu',
+            'clb-sach-ban-doc',
+            'clb-nghe-thuat',
+            'clb-su-hoc',
+            'clb-moi-truong',
+            'clb-du-lich',
         ]);
 
-        return view('frontend.home', compact('heroPosts', 'sidebarLatest', 'sections'));
+        // ── Banners cuộc thi (chạy marquee)
+        $banners = Banner::active()->get();
+
+        return view('frontend.home', compact('heroPosts', 'sidebarLatest', 'sections', 'banners'));
     }
 
     /**

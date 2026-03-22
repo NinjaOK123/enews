@@ -423,14 +423,36 @@
       </div>
     </div>
 
-    {{-- Google Map --}}
-    <div class="map-wrap">
+    {{-- Google Map — Thư viện Trường Đại học An Giang --}}
+    <div class="map-wrap" style="position:relative;">
       <iframe
-        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3924.1234567890!2d105.4230!3d10.3748!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x310a6a79dbfb5f0b%3A0x123456789abcdef!2zVHLGsOG7nW5nIMSQ4bqhaSBo4buNYyBBbiBHaWFuZw!5e0!3m2!1svi!2svn!4v1234567890"
+        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d1962.1!2d105.4325691!3d10.3694947!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x310a7318db1f27c5%3A0xac5cc8ab6416d0f3!2zVGjGsCB2aeG7h24gdHLGsOG7nW5nIMSQ4bqhaSBo4buNYyBBbiBHaWFuZw!5e0!3m2!1svi!2svn!4v1711040000000"
         width="100%" height="100%" style="border:0; min-height:360px; display:block;"
         allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"
-        title="Bản đồ Trường Đại học An Giang">
-      </iframe>
+        title="Thư viện Trường Đại học An Giang"></iframe>
+
+      {{-- Nút chỉ đường --}}
+      <a href="https://www.google.com/maps/dir/10.3463332,105.3716798/Th%C6%B0+vi%E1%BB%87n+tr%C6%B0%E1%BB%9Dng+%C4%90%E1%BA%A1i+h%E1%BB%8Dc+An+Giang,+9C9M%2BP2V,+P.+M%E1%BB%B9+Ph%C6%B0%E1%BB%9Bc,+Th%C3%A0nh+ph%E1%BB%91+Long+Xuy%C3%AAn,+An+Giang,+Vi%E1%BB%87t+Nam/@10.3625199,105.3827697,5971m/data=!3m2!1e3!4b1!4m10!4m9!1m1!4e1!1m5!1m1!1s0x310a7318db1f27c5:0xac5cc8ab6416d0f3!2m2!1d105.4325691!2d10.3694947!3e0?entry=ttu&g_ep=EgoyMDI2MDMxOC4xIKXMDSoASAFQAw%3D%3D"
+         target="_blank" rel="noopener"
+         style="position:absolute; bottom:16px; left:16px; z-index:10;
+                display:inline-flex; align-items:center; gap:8px;
+                background:#2a7a27; color:#fff; font-size:.84rem; font-weight:700;
+                padding:10px 20px; border-radius:10px; text-decoration:none;
+                box-shadow:0 4px 16px rgba(0,0,0,.25); transition:all .2s;"
+         onmouseover="this.style.background='#1b5e20';this.style.transform='translateY(-2px)'"
+         onmouseout="this.style.background='#2a7a27';this.style.transform='translateY(0)'">
+        <i class="bi bi-sign-turn-right-fill" style="font-size:1.1rem;"></i>
+        Chỉ đường đến đây
+      </a>
+
+      {{-- Label địa chỉ --}}
+      <div style="position:absolute; top:12px; left:12px; z-index:10;
+                  background:rgba(255,255,255,.95); backdrop-filter:blur(6px);
+                  padding:8px 14px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,.12);
+                  font-size:.78rem; color:#333; max-width:280px; line-height:1.5;">
+        <strong style="color:#2a7a27;">📍 Thư viện ĐH An Giang</strong><br>
+        <span style="color:#777;">18 Ung Văn Khiêm, P. Mỹ Phước, TP. Long Xuyên</span>
+      </div>
     </div>
 
   </div>
