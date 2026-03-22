@@ -76,7 +76,14 @@
 <div class="relative pt-8 pb-12 px-6 flex flex-col items-center bg-gradient-to-b from-primary/20 to-transparent">
 <div class="relative">
 <div class="w-32 h-32 rounded-full border-4 border-accent/30 p-1 shadow-2xl">
-<div class="w-full h-full rounded-full bg-cover bg-center" data-alt="Avatar of {{ $user->name }}" style="background-image: url('{{ filter_var($user->avatar, FILTER_VALIDATE_URL) ? $user->avatar : ($user->avatar ? asset('storage/' . $user->avatar) : 'https://ui-avatars.com/api/?name='.urlencode($user->name).'&background=2a7c27&color=fff&size=200') }}')"></div>
+@php
+    $avatarUrl = filter_var($user->avatar, FILTER_VALIDATE_URL)
+        ? $user->avatar
+        : ($user->avatar
+            ? asset('storage/' . $user->avatar) . '?v=' . (@filemtime(storage_path('app/public/' . $user->avatar)) ?: time())
+            : 'https://ui-avatars.com/api/?name='.urlencode($user->name).'&background=2a7c27&color=fff&size=200');
+@endphp
+<div class="w-full h-full rounded-full bg-cover bg-center" data-alt="Avatar of {{ $user->name }}" style="background-image: url('{{ $avatarUrl }}')"></div>
 </div>
 @if($isEditable)
 <button onclick="document.getElementById('avatarInput').click()" class="absolute bottom-1 right-1 bg-accent text-background-dark p-2 rounded-full shadow-lg border-2 border-background-dark flex items-center justify-center hover:bg-yellow-500 transition-colors">
@@ -84,7 +91,12 @@
 </button>
 <form id="avatarForm" action="{{ route('profile.avatar', $user->id) }}" method="POST" enctype="multipart/form-data" class="hidden">
     @csrf
-    <input type="file" name="avatar" id="avatarInput" accept="image/*" onchange="document.getElementById('avatarForm').submit();">
+    <input type="file" name="avatar" id="avatarInput" accept="image/*" onchange="
+        var f = this.files[0];
+        if (f && f.size > 5*1024*1024) { alert('Ảnh quá lớn! Vui lòng chọn ảnh nhỏ hơn 5MB.'); this.value=''; return; }
+        document.getElementById('avatarForm').submit();
+    ">
+</form>
 </form>
 @endif
 </div>

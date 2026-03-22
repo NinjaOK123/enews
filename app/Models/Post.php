@@ -131,21 +131,29 @@ class Post extends Model
 
     public function getThumbnailUrlAttribute(): string
     {
-        if ($this->thumbnail && str_starts_with($this->thumbnail, 'http')) {
+        if (!$this->thumbnail) {
+            return 'https://placehold.co/400x250/e8f5e2/2a7a27?text=eNews+AGU';
+        }
+
+        // Đã là URL đầy đủ (http/https) — dùng luôn
+        if (str_starts_with($this->thumbnail, 'http')) {
             return $this->thumbnail;
         }
-        // Legacy import (Joomla): thumbnail có thể là đường dẫn tương đối kiểu "images/..."
-        if ($this->thumbnail && (str_starts_with($this->thumbnail, 'images/') || str_starts_with($this->thumbnail, '/images/'))) {
-            return asset(ltrim($this->thumbnail, '/'));
+
+        // Path Joomla cũ (images/...) → ghép domain enews.agu.edu.vn
+        if (str_starts_with($this->thumbnail, 'images/') || str_starts_with($this->thumbnail, '/images/')) {
+            return 'https://enews.agu.edu.vn/' . ltrim($this->thumbnail, '/');
         }
-        return $this->thumbnail
-            ? asset('storage/' . $this->thumbnail)
-            : 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=400&q=70';
+
+        // Ảnh mới upload lên Laravel storage
+        return asset('storage/' . $this->thumbnail);
     }
 
     public function getExcerptShortAttribute(): string
     {
-        return $this->excerpt ?: \Str::limit(strip_tags($this->content ?? ''), 120);
+        $raw   = $this->excerpt ?: $this->content ?? '';
+        $clean = html_entity_decode(strip_tags($raw), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        return \Str::limit(trim($clean), 160);
     }
 
     // ─── Social Helpers ──────────────────────────────────────────────────

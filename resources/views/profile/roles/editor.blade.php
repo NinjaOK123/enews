@@ -87,7 +87,14 @@
 <div class="flex flex-col items-center md:items-start gap-4 flex-1">
 <div class="relative">
 <div class="size-24 rounded-full border-4 border-primary/30 p-1">
-<div class="size-full rounded-full bg-cover bg-center" data-alt="Avatar" style="background-image: url('{{ filter_var($user->avatar, FILTER_VALIDATE_URL) ? $user->avatar : ($user->avatar ? asset('storage/' . $user->avatar) : 'https://ui-avatars.com/api/?name='.urlencode($user->name).'&background=2a7c27&color=fff&size=200') }}')"></div>
+@php
+    $avatarUrl = filter_var($user->avatar, FILTER_VALIDATE_URL)
+        ? $user->avatar
+        : ($user->avatar
+            ? asset('storage/' . $user->avatar) . '?v=' . (@filemtime(storage_path('app/public/' . $user->avatar)) ?: time())
+            : 'https://ui-avatars.com/api/?name='.urlencode($user->name).'&background=2a7c27&color=fff&size=200');
+@endphp
+<div class="size-full rounded-full bg-cover bg-center" data-alt="Avatar" style="background-image: url('{{ $avatarUrl }}')"></div>
 </div>
 <div class="absolute bottom-0 right-0 size-6 bg-primary rounded-full flex items-center justify-center border-2 border-background-dark">
 <span class="material-symbols-outlined text-[14px] text-white">verified</span>

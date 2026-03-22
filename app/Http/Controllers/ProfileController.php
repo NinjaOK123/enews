@@ -8,8 +8,6 @@ use App\Models\Collection;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
-use Intervention\Image\ImageManager;
-use Intervention\Image\Drivers\Gd\Driver;
 
 class ProfileController extends Controller
 {
@@ -125,7 +123,11 @@ class ProfileController extends Controller
 
                 Storage::disk('public')->put($path, (string) $image->toJpeg(85));
 
-                DB::table('users')->where('id', $user->id)->update(['avatar' => $path]);
+                // ✅ Eloquent update để session được refresh (Facebook-style: luôn sync state)
+                $user->update(['avatar' => $path]);
+                if (auth()->id() === $user->id) {
+                    auth()->setUser($user->fresh());
+                }
 
                 return redirect()->back()->with('success', 'Cập nhật ảnh đại diện thành công!');
 
@@ -172,7 +174,11 @@ class ProfileController extends Controller
 
                 Storage::disk('public')->put($path, (string) $image->toJpeg(85));
 
-                DB::table('users')->where('id', $user->id)->update(['cover_photo' => $path]);
+                // ✅ Eloquent update để session được refresh
+                $user->update(['cover_photo' => $path]);
+                if (auth()->id() === $user->id) {
+                    auth()->setUser($user->fresh());
+                }
 
                 return redirect()->back()->with('success', 'Cập nhật ảnh bìa thành công!');
 
