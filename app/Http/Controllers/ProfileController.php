@@ -104,40 +104,47 @@ class ProfileController extends Controller
         }
 
         $request->validate([
-            'avatar' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
+            'avatar' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:10240',
+        ], [
+            'avatar.required' => 'Vui lòng chọn ảnh.',
+            'avatar.image'    => 'File phải là ảnh (jpg, png, gif, webp).',
+            'avatar.max'      => 'Ảnh không được vượt quá 10MB.',
         ]);
 
-        if ($request->hasFile('avatar')) {
-            try {
-                $manager  = new ImageManager(new Driver());
-                $image    = $manager->read($request->file('avatar')->getRealPath());
-                $image->cover(400, 400);
+        $file = $request->file('avatar');
 
-                $filename = 'avatar_' . $user->id . '_' . time() . '.jpg';
-                $path     = 'avatars/' . $filename;
-
-                // Xóa avatar cũ nếu có
-                if ($user->avatar && str_starts_with($user->avatar, 'avatars/') && Storage::disk('public')->exists($user->avatar)) {
-                    Storage::disk('public')->delete($user->avatar);
-                }
-
-                Storage::disk('public')->put($path, (string) $image->toJpeg(85));
-
-                // ✅ Eloquent update để session được refresh (Facebook-style: luôn sync state)
-                $user->update(['avatar' => $path]);
-                if (auth()->id() === $user->id) {
-                    auth()->setUser($user->fresh());
-                }
-
-                return redirect()->back()->with('success', 'Cập nhật ảnh đại diện thành công!');
-
-            } catch (\Throwable $e) {
-                \Log::error('Avatar upload error: ' . $e->getMessage());
-                return redirect()->back()->with('error', 'Lỗi khi xử lý ảnh: ' . $e->getMessage());
-            }
+        if (!$file || !$file->isValid()) {
+            return redirect()->back()->with('error', 'File ảnh không hợp lệ hoặc bị lỗi khi upload.');
         }
 
-        return redirect()->back()->with('error', 'Vui lòng chọn file ảnh.');
+        try {
+            // Tạo thư mục nếu chưa có
+            Storage::disk('public')->makeDirectory('avatars');
+
+            // Xóa avatar cũ nếu có
+            if ($user->avatar
+                && str_starts_with($user->avatar, 'avatars/')
+                && Storage::disk('public')->exists($user->avatar)) {
+                Storage::disk('public')->delete($user->avatar);
+            }
+
+            // Lưu file
+            $ext      = $file->extension() ?: $file->getClientOriginalExtension() ?: 'jpg';
+            $filename = 'avatar_' . $user->id . '_' . time() . '.' . $ext;
+            $file->storeAs('avatars', $filename, 'public');
+
+            // Cập nhật DB & refresh session
+            $user->update(['avatar' => 'avatars/' . $filename]);
+            if (auth()->id() === $user->id) {
+                auth()->setUser($user->fresh());
+            }
+
+            return redirect()->back()->with('success', '✅ Cập nhật ảnh đại diện thành công!');
+
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('Avatar upload error: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Lỗi upload: ' . $e->getMessage());
+        }
     }
 
     /**
@@ -152,42 +159,47 @@ class ProfileController extends Controller
         }
 
         $request->validate([
-            'cover_photo' => 'required|image|mimes:jpeg,png,jpg,webp|max:5120',
+            'cover_photo' => 'required|image|mimes:jpeg,png,jpg,webp|max:10240',
+        ], [
+            'cover_photo.required' => 'Vui lòng chọn ảnh bìa.',
+            'cover_photo.image'    => 'File phải là ảnh (jpg, png, webp).',
+            'cover_photo.max'      => 'Ảnh không được vượt quá 10MB.',
         ]);
 
-        if ($request->hasFile('cover_photo')) {
-            try {
-                $manager  = new ImageManager(new Driver());
-                $image    = $manager->read($request->file('cover_photo')->getRealPath());
-                // Resize về tỷ lệ 16:9 — 1200×400
-                $image->cover(1200, 400);
+        $file = $request->file('cover_photo');
 
-                $filename = 'cover_' . $user->id . '_' . time() . '.jpg';
-                $path     = 'covers/' . $filename;
-
-                // Xóa ảnh bìa cũ nếu có
-                if ($user->cover_photo
-                    && str_starts_with($user->cover_photo, 'covers/')
-                    && Storage::disk('public')->exists($user->cover_photo)) {
-                    Storage::disk('public')->delete($user->cover_photo);
-                }
-
-                Storage::disk('public')->put($path, (string) $image->toJpeg(85));
-
-                // ✅ Eloquent update để session được refresh
-                $user->update(['cover_photo' => $path]);
-                if (auth()->id() === $user->id) {
-                    auth()->setUser($user->fresh());
-                }
-
-                return redirect()->back()->with('success', 'Cập nhật ảnh bìa thành công!');
-
-            } catch (\Throwable $e) {
-                \Log::error('Cover upload error: ' . $e->getMessage());
-                return redirect()->back()->with('error', 'Lỗi khi xử lý ảnh: ' . $e->getMessage());
-            }
+        if (!$file || !$file->isValid()) {
+            return redirect()->back()->with('error', 'File ảnh không hợp lệ hoặc bị lỗi khi upload.');
         }
 
-        return redirect()->back()->with('error', 'Vui lòng chọn file ảnh.');
+        try {
+            // Tạo thư mục nếu chưa có
+            Storage::disk('public')->makeDirectory('covers');
+
+            // Xóa ảnh bìa cũ nếu có
+            if ($user->cover_photo
+                && str_starts_with($user->cover_photo, 'covers/')
+                && Storage::disk('public')->exists($user->cover_photo)) {
+                Storage::disk('public')->delete($user->cover_photo);
+            }
+
+            // Lưu file
+            $ext      = $file->extension() ?: $file->getClientOriginalExtension() ?: 'jpg';
+            $filename = 'cover_' . $user->id . '_' . time() . '.' . $ext;
+            $file->storeAs('covers', $filename, 'public');
+
+            // Cập nhật DB & refresh session
+            $user->update(['cover_photo' => 'covers/' . $filename]);
+            if (auth()->id() === $user->id) {
+                auth()->setUser($user->fresh());
+            }
+
+            return redirect()->back()->with('success', '✅ Cập nhật ảnh bìa thành công!');
+
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('Cover upload error: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Lỗi upload: ' . $e->getMessage());
+        }
     }
 }
+

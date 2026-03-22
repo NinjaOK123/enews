@@ -552,7 +552,18 @@
 
                     {{-- Current avatar display --}}
                     @if($user->avatar)
-                        <img src="{{ asset('storage/' . $user->avatar) }}" alt="{{ $user->name }}" class="profile-avatar">
+                        @php
+                            $avatarSrc = filter_var($user->avatar, FILTER_VALIDATE_URL)
+                                ? $user->avatar
+                                : asset('storage/' . $user->avatar);
+                        @endphp
+                        <img src="{{ $avatarSrc }}"
+                             alt="{{ $user->name }}"
+                             class="profile-avatar"
+                             onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                        <div class="profile-avatar-initials" style="display:none;">
+                            {{ strtoupper(mb_substr($user->name ?? 'U', 0, 1)) }}
+                        </div>
                     @else
                         <div class="profile-avatar-initials">
                             {{ strtoupper(mb_substr($user->name ?? 'U', 0, 1)) }}
