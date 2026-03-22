@@ -767,8 +767,27 @@
             <button class="btn-edit-profile" @click="$dispatch('open-edit-profile')">
                 ✏️ Chỉnh sửa thông tin
             </button>
+
+            {{-- Nút trở thành CTV: chỉ hiện nếu là reader và chưa gửi request --}}
+            @if($user->role === 'reader')
+            @php
+                $hasPendingRequest = \App\Models\ContributorRequest::where('user_id', $user->id)
+                    ->whereIn('status', ['pending', 'approved'])->exists();
+            @endphp
+            @if(!$hasPendingRequest)
+            <button class="btn-edit-profile" style="background:#f59e0b;color:#fff;border-color:#f59e0b;"
+                    @click="$dispatch('open-contributor-form')">
+                🤝 Trở thành Cộng tác viên
+            </button>
+            @else
+            <span style="display:inline-flex;align-items:center;gap:6px;font-size:.85rem;color:#6b7280;padding:8px 16px;background:#f3f4f6;border-radius:999px;font-weight:600;">
+                ⏳ Đang chờ duyệt CTV
+            </span>
+            @endif
+            @endif
         </div>
         @endif
+
     </div>
 
     {{-- Tabs --}}
@@ -967,16 +986,16 @@
     {{-- Backdrop --}}
     <div class="absolute inset-0 bg-black/50" @click="open = false"></div>
     {{-- Modal panel --}}
-    <div class="relative w-full max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden"
+    <div class="relative w-full max-w-2xl bg-white rounded-2xl shadow-2xl overflow-hidden"
          x-transition:enter="transition ease-out duration-200"
          x-transition:enter-start="opacity-0 scale-95"
          x-transition:enter-end="opacity-100 scale-100"
          @click.stop>
         {{-- Header --}}
-        <div class="flex items-center justify-between px-6 py-4 bg-gradient-to-r from-[#1a5c38] to-[#2d9e60]">
-            <h5 class="text-white font-bold text-lg">✏️ Chỉnh sửa thông tin</h5>
+        <div class="flex items-center justify-between px-8 py-5 bg-gradient-to-r from-[#1a5c38] to-[#2d9e60]">
+            <h5 class="text-white font-bold text-xl">✏️ Chỉnh sửa thông tin</h5>
             <button @click="open = false" class="text-white/80 hover:text-white transition-colors">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/>
                 </svg>
             </button>
@@ -984,18 +1003,19 @@
         {{-- Body --}}
         <form method="POST" action="{{ route('profile.update') }}">
             @csrf
-            <div class="p-6 flex flex-col gap-4">
+            <div class="p-8 flex flex-col gap-5">
                 <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-1.5">Họ tên</label>
+                    <label class="block text-sm font-bold text-gray-700 mb-2">Họ và tên</label>
                     <input type="text" name="name" value="{{ old('name', $user->name) }}" required
-                           class="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-[#2a7a27] focus:ring-2 focus:ring-[#2a7a27]/20 transition">
+                           placeholder="Nhập họ và tên..."
+                           class="w-full border border-gray-300 rounded-xl px-4 py-3 text-base outline-none focus:border-[#2a7a27] focus:ring-2 focus:ring-[#2a7a27]/20 transition">
                 </div>
                 <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-1.5">Giới thiệu bản thân</label>
-                    <textarea name="bio" rows="3" maxlength="300"
-                              placeholder="Ví dụ: Sinh viên năm 3 Khoa CNTT, yêu thích viết lách..."
-                              class="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-[#2a7a27] focus:ring-2 focus:ring-[#2a7a27]/20 transition resize-none">{{ old('bio', $user->bio ?? '') }}</textarea>
-                    <p class="text-xs text-gray-400 mt-1">Tối đa 300 ký tự</p>
+                    <label class="block text-sm font-bold text-gray-700 mb-2">Giới thiệu bản thân</label>
+                    <textarea name="bio" rows="5" maxlength="300"
+                              placeholder="Ví dụ: Sinh viên năm 4 Khoa CNTT, yêu thích viết lách và báo chí..."
+                              class="w-full border border-gray-300 rounded-xl px-4 py-3 text-base outline-none focus:border-[#2a7a27] focus:ring-2 focus:ring-[#2a7a27]/20 transition resize-none">{{ old('bio', $user->bio ?? '') }}</textarea>
+                    <p class="text-xs text-gray-400 mt-1.5">Tối đa 300 ký tự</p>
                 </div>
             </div>
             <div class="flex items-center justify-end gap-3 px-6 py-4 border-t border-gray-100">
@@ -1086,3 +1106,99 @@ function createCollection(name, isPublic, onSuccess) {
 </script>
 @endpush
 
+{{-- ══════ Modal: Đăng ký Cộng tác viên ══════ --}}
+@if($isOwnProfile && $user->role === 'reader')
+<div x-data="{ open: false }"
+     x-on:open-contributor-form.window="open = true"
+     x-show="open"
+     x-transition:enter="transition ease-out duration-200"
+     x-transition:enter-start="opacity-0"
+     x-transition:enter-end="opacity-100"
+     x-transition:leave="transition ease-in duration-150"
+     x-transition:leave-start="opacity-100"
+     x-transition:leave-end="opacity-0"
+     class="fixed inset-0 z-[1000] flex items-center justify-center p-4"
+     style="display:none;">
+    <div class="absolute inset-0 bg-black/60" @click="open = false"></div>
+    <div class="relative w-full max-w-2xl bg-white rounded-2xl shadow-2xl overflow-hidden max-h-[90vh] overflow-y-auto"
+         x-transition:enter="transition ease-out duration-200"
+         x-transition:enter-start="opacity-0 scale-95"
+         x-transition:enter-end="opacity-100 scale-100"
+         @click.stop>
+        {{-- Header --}}
+        <div class="flex items-center justify-between px-8 py-5 bg-gradient-to-r from-[#d97706] to-[#f59e0b] sticky top-0">
+            <div>
+                <h5 class="text-white font-bold text-xl">🤝 Đăng ký Cộng tác viên</h5>
+                <p class="text-white/80 text-sm mt-0.5">Điền thông tin để gửi yêu cầu đến Admin</p>
+            </div>
+            <button @click="open = false" class="text-white/80 hover:text-white">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18 18 6M6 6l12 12"/>
+                </svg>
+            </button>
+        </div>
+        {{-- Body --}}
+        <form method="POST" action="{{ route('contributor.request.store') }}">
+            @csrf
+            <div class="p-8 grid grid-cols-1 md:grid-cols-2 gap-5">
+                {{-- Họ tên --}}
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-bold text-gray-700 mb-2">Họ và tên đầy đủ <span class="text-red-500">*</span></label>
+                    <input type="text" name="full_name" value="{{ old('full_name', $user->name) }}" required
+                           placeholder="TRẦN NGUYỄN MINH THIÊN"
+                           class="w-full border border-gray-300 rounded-xl px-4 py-3 text-base outline-none focus:border-[#f59e0b] focus:ring-2 focus:ring-[#f59e0b]/20 transition">
+                </div>
+                {{-- Ngân hàng --}}
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-2">Ngân hàng <span class="text-red-500">*</span></label>
+                    <select name="bank_name" required
+                            class="w-full border border-gray-300 rounded-xl px-4 py-3 text-base outline-none focus:border-[#f59e0b] focus:ring-2 focus:ring-[#f59e0b]/20 transition bg-white">
+                        <option value="">-- Chọn ngân hàng --</option>
+                        @foreach(\App\Models\ContributorRequest::banks() as $bank)
+                        <option value="{{ $bank }}" {{ old('bank_name') === $bank ? 'selected' : '' }}>{{ $bank }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                {{-- Số tài khoản --}}
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-2">Số tài khoản <span class="text-red-500">*</span></label>
+                    <input type="text" name="bank_account" value="{{ old('bank_account') }}" required
+                           placeholder="0123456789" pattern="[0-9]{6,20}" title="Chỉ nhập số, 6–20 ký tự"
+                           class="w-full border border-gray-300 rounded-xl px-4 py-3 text-base font-mono outline-none focus:border-[#f59e0b] focus:ring-2 focus:ring-[#f59e0b]/20 transition">
+                </div>
+                {{-- Chủ tài khoản --}}
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-bold text-gray-700 mb-2">
+                        Tên chủ tài khoản <span class="text-red-500">*</span>
+                        <span class="text-gray-400 font-normal text-xs">(đúng như in trên thẻ)</span>
+                    </label>
+                    <input type="text" name="account_holder" value="{{ old('account_holder', strtoupper($user->name)) }}" required
+                           placeholder="TRAN NGUYEN MINH THIEN"
+                           class="w-full border border-gray-300 rounded-xl px-4 py-3 text-base font-medium outline-none focus:border-[#f59e0b] focus:ring-2 focus:ring-[#f59e0b]/20 transition uppercase"
+                           oninput="this.value=this.value.toUpperCase()">
+                </div>
+                {{-- Ghi chú --}}
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-bold text-gray-700 mb-2">Ghi chú thêm</label>
+                    <textarea name="note" rows="3" maxlength="500"
+                              placeholder="Lý do muốn trở thành cộng tác viên, kinh nghiệm viết lách..."
+                              class="w-full border border-gray-300 rounded-xl px-4 py-3 text-base outline-none focus:border-[#f59e0b] focus:ring-2 focus:ring-[#f59e0b]/20 transition resize-none">{{ old('note') }}</textarea>
+                </div>
+                {{-- Info --}}
+                <div class="md:col-span-2 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 text-sm text-amber-800">
+                    ℹ️ Admin sẽ xét duyệt và thông báo kết quả. Thông tin ngân hàng dùng để thanh toán nhuận bút (nếu có).
+                </div>
+            </div>
+            {{-- Footer --}}
+            <div class="flex items-center justify-end gap-3 px-8 py-5 border-t border-gray-100">
+                <button type="button" @click="open = false"
+                        class="px-5 py-2.5 text-sm font-semibold text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-xl transition">Hủy</button>
+                <button type="submit"
+                        class="px-6 py-2.5 text-sm font-bold text-white bg-amber-500 hover:bg-amber-600 rounded-xl shadow transition">
+                    📨 Gửi yêu cầu
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+@endif

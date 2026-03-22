@@ -54,6 +54,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/thong-bao', [App\Http\Controllers\NotificationUserController::class, 'index'])->name('notifications.user.index');
     Route::post('/thong-bao/{id}/doc', [App\Http\Controllers\NotificationUserController::class, 'markRead'])->name('notifications.user.markRead');
     Route::post('/thong-bao/doc-tat-ca', [App\Http\Controllers\NotificationUserController::class, 'markAllRead'])->name('notifications.user.markAllRead');
+
+    // ─── Đăng ký cộng tác viên ──────────────────────────────────────────
+    Route::post('/dang-ky-cong-tac-vien', [App\Http\Controllers\ContributorRequestController::class, 'store'])->name('contributor.request.store');
 });
 
 // Profile công khai (không cần đăng nhập)
@@ -123,6 +126,13 @@ Route::prefix('admin')
               Route::put('/{banner}',         [\App\Http\Controllers\Admin\BannerController::class, 'update'])->name('update');
               Route::delete('/{banner}',      [\App\Http\Controllers\Admin\BannerController::class, 'destroy'])->name('destroy');
               Route::post('/{banner}/toggle', [\App\Http\Controllers\Admin\BannerController::class, 'toggleActive'])->name('toggle');
+          });
+
+          // ADMIN: Cộng tác viên
+          Route::group(['prefix' => 'cong-tac-vien', 'as' => 'admin.contributor.'], function () {
+              Route::get('/',                              [\App\Http\Controllers\ContributorRequestController::class, 'index'])->name('index');
+              Route::post('/{contributorRequest}/duyet',  [\App\Http\Controllers\ContributorRequestController::class, 'approve'])->name('approve');
+              Route::post('/{contributorRequest}/tu-choi',[\App\Http\Controllers\ContributorRequestController::class, 'reject'])->name('reject');
           });
      });
 
