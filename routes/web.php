@@ -137,7 +137,7 @@ Route::prefix('admin')
           });
 
           // ADMIN: Cộng tác viên
-          Route::group(['prefix' => 'cong-tac-vien', 'as' => 'admin.contributor.'], function () {
+          Route::group(['prefix' => 'cong-tac-vien', 'as' => 'contributor.'], function () {
               Route::get('/',                              [\App\Http\Controllers\ContributorRequestController::class, 'index'])->name('index');
               Route::post('/{contributorRequest}/duyet',  [\App\Http\Controllers\ContributorRequestController::class, 'approve'])->name('approve');
               Route::post('/{contributorRequest}/tu-choi',[\App\Http\Controllers\ContributorRequestController::class, 'reject'])->name('reject');
