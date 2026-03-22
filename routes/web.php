@@ -36,6 +36,14 @@ Route::middleware('guest')->group(function () {
 });
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout')->middleware('auth');
 
+// ─── Quên mật khẩu ──────────────────────────────────────────────
+Route::middleware('guest')->group(function () {
+    Route::get('/quen-mat-khau',  [\App\Http\Controllers\Auth\ForgotPasswordController::class, 'showForm'])->name('password.request');
+    Route::post('/quen-mat-khau', [\App\Http\Controllers\Auth\ForgotPasswordController::class, 'sendResetLink'])->name('password.email');
+    Route::get('/dat-lai-mat-khau/{token}', [\App\Http\Controllers\Auth\ResetPasswordController::class, 'showForm'])->name('password.reset');
+    Route::post('/dat-lai-mat-khau', [\App\Http\Controllers\Auth\ResetPasswordController::class, 'reset'])->name('password.update');
+});
+
 Route::middleware('auth')->group(function () {
     Route::get('/profile/{id?}', [App\Http\Controllers\ProfileController::class, 'show'])->name('profile');
     Route::post('/profile/{id}/avatar', [App\Http\Controllers\ProfileController::class, 'updateAvatar'])->name('profile.avatar');
