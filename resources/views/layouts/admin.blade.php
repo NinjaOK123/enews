@@ -253,6 +253,16 @@
                 @endif
             </a>
             @endif
+
+            @if($role === 'admin')
+            @php $pendingCTV = \App\Models\ContributorRequest::where('status', 'pending')->count(); @endphp
+            <a href="{{ route('admin.contributor.index') }}" class="{{ request()->routeIs('admin.contributor.*') ? 'active' : '' }}">
+                <i class="bi bi-person-check"></i> Cộng tác viên
+                @if($pendingCTV > 0)
+                    <span class="badge bg-warning text-dark ms-auto rounded-pill" style="font-size:.65rem;">{{ $pendingCTV }}</span>
+                @endif
+            </a>
+            @endif
         </div>
     </aside>
 
