@@ -97,4 +97,32 @@ class NotificationUserController extends Controller
 
         return response()->json(['ok' => true]);
     }
+
+    /**
+     * Xem chi tiết thông báo.
+     */
+    public function show($id)
+    {
+        $user   = auth()->user();
+        $userId = $user->id;
+        $role   = $user->role;
+
+        $notification = Notification::whereNotNull('sent_at')
+            ->where('id', $id)
+            ->where(function ($q) use ($userId, $role) {
+                $q->whereNull('recipients')
+                  ->orWhereRaw("JSON_CONTAINS(recipients, ?)", ['"all"'])
+                  ->orWhereRaw("JSON_CONTAINS(recipients, ?)", ['"' . $role . '"'])
+                  ->orWhereRaw("JSON_CONTAINS(recipients, ?)", [(string) $userId]);
+            })
+            ->firstOrFail();
+
+        // Tự động đánh dấu đã đọc
+        DB::table('user_notification_reads')->updateOrInsert(
+            ['user_id' => $userId, 'notification_id' => $notification->id],
+            ['read_at' => now()]
+        );
+
+        return view('notifications.show', compact('notification'));
+    }
 }

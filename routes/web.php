@@ -60,6 +60,7 @@ Route::middleware('auth')->group(function () {
 
     // ─── Thông báo (chuông) ──────────────────────────────────────────────
     Route::get('/thong-bao', [App\Http\Controllers\NotificationUserController::class, 'index'])->name('notifications.user.index');
+    Route::get('/thong-bao/{id}', [App\Http\Controllers\NotificationUserController::class, 'show'])->name('notifications.user.show');
     Route::post('/thong-bao/{id}/doc', [App\Http\Controllers\NotificationUserController::class, 'markRead'])->name('notifications.user.markRead');
     Route::post('/thong-bao/doc-tat-ca', [App\Http\Controllers\NotificationUserController::class, 'markAllRead'])->name('notifications.user.markAllRead');
 

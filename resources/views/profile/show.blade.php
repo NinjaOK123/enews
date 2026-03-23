@@ -1108,8 +1108,8 @@ function createCollection(name, isPublic, onSuccess) {
 
 {{-- ══════ Modal: Đăng ký Cộng tác viên ══════ --}}
 @if($isOwnProfile && $user->role === 'reader')
-<div x-data="{ open: false }"
-     x-on:open-contributor-form.window="open = true"
+<div x-data="{ open: false, loading: false, success: false, errorMsg: '' }"
+     x-on:open-contributor-form.window="open = true; loading = false; success = false; errorMsg = ''"
      x-show="open"
      x-transition:enter="transition ease-out duration-200"
      x-transition:enter-start="opacity-0"
@@ -1119,32 +1119,72 @@ function createCollection(name, isPublic, onSuccess) {
      x-transition:leave-end="opacity-0"
      class="fixed inset-0 z-[1000] flex items-center justify-center p-4"
      style="display:none;">
-    <div class="absolute inset-0 bg-black/60" @click="open = false"></div>
+    <div class="absolute inset-0 bg-black/60" @click="if(!loading) open = false"></div>
     <div class="relative w-full max-w-2xl bg-white rounded-2xl shadow-2xl overflow-hidden max-h-[90vh] overflow-y-auto"
          x-transition:enter="transition ease-out duration-200"
          x-transition:enter-start="opacity-0 scale-95"
          x-transition:enter-end="opacity-100 scale-100"
          @click.stop>
+
         {{-- Header --}}
-        <div class="flex items-center justify-between px-8 py-5 bg-gradient-to-r from-[#d97706] to-[#f59e0b] sticky top-0">
+        <div class="flex items-center justify-between px-8 py-5 bg-gradient-to-r from-[#d97706] to-[#f59e0b] sticky top-0 z-10">
             <div>
                 <h5 class="text-white font-bold text-xl">🤝 Đăng ký Cộng tác viên</h5>
                 <p class="text-white/80 text-sm mt-0.5">Điền thông tin để gửi yêu cầu đến Admin</p>
             </div>
-            <button @click="open = false" class="text-white/80 hover:text-white">
+            <button @click="if(!loading) open = false" class="text-white/80 hover:text-white">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18 18 6M6 6l12 12"/>
                 </svg>
             </button>
         </div>
-        {{-- Body --}}
-        <form method="POST" action="{{ route('contributor.request.store') }}">
+
+        {{-- ── Loading overlay ── --}}
+        <div x-show="loading" x-transition
+             class="absolute inset-0 bg-white/90 z-20 flex flex-col items-center justify-center gap-4"
+             style="display:none;">
+            <svg class="animate-spin w-14 h-14 text-amber-500" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+            </svg>
+            <p class="text-amber-600 font-semibold text-lg">Đang gửi yêu cầu...</p>
+        </div>
+
+        {{-- ── Success screen ── --}}
+        <div x-show="success" x-transition
+             class="absolute inset-0 bg-white z-20 flex flex-col items-center justify-center gap-5 text-center p-8"
+             style="display:none;">
+            {{-- Animated tick --}}
+            <div class="w-24 h-24 rounded-full bg-green-100 flex items-center justify-center"
+                 style="animation: popIn .4s cubic-bezier(.68,-.55,.27,1.55) both;">
+                <svg class="w-14 h-14 text-green-500" style="animation: drawTick .5s ease .3s both;" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"
+                          style="stroke-dasharray:30;stroke-dashoffset:30;animation:dashDraw .5s ease .3s forwards;"/>
+                </svg>
+            </div>
+            <div>
+                <h3 class="text-2xl font-bold text-gray-800 mb-2">Gửi thành công! 🎉</h3>
+                <p class="text-gray-500 text-base">Yêu cầu Cộng tác viên của bạn đã được gửi đến Admin.<br>Bạn sẽ nhận thông báo qua chuông khi được xét duyệt.</p>
+            </div>
+            <button @click="open = false; window.location.reload()"
+                    class="px-8 py-3 bg-green-500 hover:bg-green-600 text-white font-bold rounded-xl shadow transition text-base">
+                Đóng
+            </button>
+        </div>
+
+        {{-- Error --}}
+        <div x-show="errorMsg" x-transition class="mx-8 mt-5 bg-red-50 border border-red-200 text-red-700 rounded-xl px-4 py-3 text-sm">
+            <span x-text="errorMsg"></span>
+        </div>
+
+        {{-- Body form --}}
+        <form id="ctvForm" @submit.prevent="submitCTV($el, $data)">
             @csrf
             <div class="p-8 grid grid-cols-1 md:grid-cols-2 gap-5">
                 {{-- Họ tên --}}
                 <div class="md:col-span-2">
                     <label class="block text-sm font-bold text-gray-700 mb-2">Họ và tên đầy đủ <span class="text-red-500">*</span></label>
-                    <input type="text" name="full_name" value="{{ old('full_name', $user->name) }}" required
+                    <input type="text" name="full_name" value="{{ $user->name }}" required
                            placeholder="TRẦN NGUYỄN MINH THIÊN"
                            class="w-full border border-gray-300 rounded-xl px-4 py-3 text-base outline-none focus:border-[#f59e0b] focus:ring-2 focus:ring-[#f59e0b]/20 transition">
                 </div>
@@ -1155,14 +1195,14 @@ function createCollection(name, isPublic, onSuccess) {
                             class="w-full border border-gray-300 rounded-xl px-4 py-3 text-base outline-none focus:border-[#f59e0b] focus:ring-2 focus:ring-[#f59e0b]/20 transition bg-white">
                         <option value="">-- Chọn ngân hàng --</option>
                         @foreach(\App\Models\ContributorRequest::banks() as $bank)
-                        <option value="{{ $bank }}" {{ old('bank_name') === $bank ? 'selected' : '' }}>{{ $bank }}</option>
+                        <option value="{{ $bank }}">{{ $bank }}</option>
                         @endforeach
                     </select>
                 </div>
                 {{-- Số tài khoản --}}
                 <div>
                     <label class="block text-sm font-bold text-gray-700 mb-2">Số tài khoản <span class="text-red-500">*</span></label>
-                    <input type="text" name="bank_account" value="{{ old('bank_account') }}" required
+                    <input type="text" name="bank_account" required
                            placeholder="0123456789" pattern="[0-9]{6,20}" title="Chỉ nhập số, 6–20 ký tự"
                            class="w-full border border-gray-300 rounded-xl px-4 py-3 text-base font-mono outline-none focus:border-[#f59e0b] focus:ring-2 focus:ring-[#f59e0b]/20 transition">
                 </div>
@@ -1172,7 +1212,7 @@ function createCollection(name, isPublic, onSuccess) {
                         Tên chủ tài khoản <span class="text-red-500">*</span>
                         <span class="text-gray-400 font-normal text-xs">(đúng như in trên thẻ)</span>
                     </label>
-                    <input type="text" name="account_holder" value="{{ old('account_holder', strtoupper($user->name)) }}" required
+                    <input type="text" name="account_holder" value="{{ strtoupper($user->name) }}" required
                            placeholder="TRAN NGUYEN MINH THIEN"
                            class="w-full border border-gray-300 rounded-xl px-4 py-3 text-base font-medium outline-none focus:border-[#f59e0b] focus:ring-2 focus:ring-[#f59e0b]/20 transition uppercase"
                            oninput="this.value=this.value.toUpperCase()">
@@ -1182,23 +1222,60 @@ function createCollection(name, isPublic, onSuccess) {
                     <label class="block text-sm font-bold text-gray-700 mb-2">Ghi chú thêm</label>
                     <textarea name="note" rows="3" maxlength="500"
                               placeholder="Lý do muốn trở thành cộng tác viên, kinh nghiệm viết lách..."
-                              class="w-full border border-gray-300 rounded-xl px-4 py-3 text-base outline-none focus:border-[#f59e0b] focus:ring-2 focus:ring-[#f59e0b]/20 transition resize-none">{{ old('note') }}</textarea>
+                              class="w-full border border-gray-300 rounded-xl px-4 py-3 text-base outline-none focus:border-[#f59e0b] focus:ring-2 focus:ring-[#f59e0b]/20 transition resize-none"></textarea>
                 </div>
                 {{-- Info --}}
                 <div class="md:col-span-2 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 text-sm text-amber-800">
-                    ℹ️ Admin sẽ xét duyệt và thông báo kết quả. Thông tin ngân hàng dùng để thanh toán nhuận bút (nếu có).
+                    ℹ️ Admin sẽ xét duyệt và thông báo kết quả qua chuông thông báo của bạn.
                 </div>
             </div>
             {{-- Footer --}}
             <div class="flex items-center justify-end gap-3 px-8 py-5 border-t border-gray-100">
-                <button type="button" @click="open = false"
+                <button type="button" @click="open = false" :disabled="loading"
                         class="px-5 py-2.5 text-sm font-semibold text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-xl transition">Hủy</button>
-                <button type="submit"
-                        class="px-6 py-2.5 text-sm font-bold text-white bg-amber-500 hover:bg-amber-600 rounded-xl shadow transition">
+                <button type="submit" :disabled="loading"
+                        class="px-6 py-2.5 text-sm font-bold text-white bg-amber-500 hover:bg-amber-600 rounded-xl shadow transition disabled:opacity-60">
                     📨 Gửi yêu cầu
                 </button>
             </div>
         </form>
     </div>
 </div>
+
+<style>
+@keyframes popIn { from { transform: scale(0); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+@keyframes dashDraw { to { stroke-dashoffset: 0; } }
+</style>
+
+<script>
+function submitCTV(formEl, data) {
+    const form    = formEl;
+    const fd      = new FormData(form);
+    const csrf    = document.querySelector('meta[name="csrf-token"]').content;
+    data.loading  = true;
+    data.errorMsg = '';
+
+    fetch('{{ route("contributor.request.store") }}', {
+        method: 'POST',
+        headers: { 'X-CSRF-TOKEN': csrf, 'Accept': 'application/json' },
+        body: fd,
+    })
+    .then(res => res.json())
+    .then(json => {
+        data.loading = false;
+        if (json.success) {
+            data.success = true;
+        } else {
+            // Validation errors
+            const errs = json.errors ? Object.values(json.errors).flat().join(' ') : (json.error || 'Có lỗi xảy ra.');
+            data.errorMsg = errs;
+        }
+    })
+    .catch(() => {
+        data.loading  = false;
+        data.errorMsg = 'Không thể kết nối. Vui lòng thử lại.';
+    });
+}
+</script>
 @endif
+

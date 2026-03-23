@@ -308,7 +308,7 @@
               </div>
               {{-- Footer --}}
               <div class="border-t border-gray-100 bg-gray-50 text-center">
-                <a href="#" class="block py-3 text-xs font-semibold text-[#2a7a27] hover:text-[#1b5e20] transition-colors">
+                <a href="{{ route('notifications.user.index') }}" class="block py-3 text-xs font-semibold text-[#2a7a27] hover:text-[#1b5e20] transition-colors">
                   Xem tất cả thông báo
                 </a>
               </div>
@@ -357,16 +357,16 @@
             }
 
             list.innerHTML = items.map(n => `
-              <div onclick="markOneRead(${n.id}, this)"
-                   class="flex gap-3 px-4 py-3 border-b border-gray-50 cursor-pointer transition-colors ${n.is_read ? 'bg-white' : 'bg-green-50 hover:bg-green-100'}"
-                   data-id="${n.id}">
+              <a href="/thong-bao/${n.id}"
+                 class="flex gap-3 px-4 py-3 border-b border-gray-50 cursor-pointer transition-colors no-underline ${n.is_read ? 'bg-white hover:bg-gray-50' : 'bg-green-50 hover:bg-green-100'}"
+                 data-id="${n.id}">
                 <div class="w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${n.is_read ? 'bg-transparent' : 'bg-green-600'}"></div>
                 <div class="flex-1 min-w-0">
                   <p class="text-xs ${n.is_read ? 'font-medium' : 'font-bold'} text-gray-800 truncate">${n.title}</p>
                   <p class="text-xs text-gray-500 mt-0.5 leading-relaxed">${n.content}</p>
                   <p class="text-[10px] text-gray-400 mt-1">${n.sent_at}</p>
                 </div>
-              </div>`).join('');
+              </a>`).join('');
           }
 
           function markOneRead(id, el) {
