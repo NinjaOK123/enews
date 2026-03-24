@@ -61,7 +61,7 @@ php artisan migrate
 Trong `.env`, cap nhat:
 
 ```env
-APP_URL=http://enews.test
+APP_URL=http://enews.com
 
 GOOGLE_CLIENT_ID=your-google-client-id
 GOOGLE_CLIENT_SECRET=your-google-client-secret
