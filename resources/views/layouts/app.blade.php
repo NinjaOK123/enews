@@ -6,10 +6,10 @@
   <meta name="description" content="@yield('meta_description', 'Trang Tin Điện Tử - Trang báo Sinh viên Đại học An Giang')">
   <title>@yield('title', 'Trang chủ') — Trang báo Sinh viên Đại học An Giang</title>
 
-  {{-- Google Font: Inter --}}
+  {{-- Google Font: Be Vietnam Pro (đẹp hơn cho tiếng Việt) --}}
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 
   {{-- Bootstrap Icons (icon-only, no Bootstrap CSS) --}}
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
@@ -776,6 +776,38 @@ document.addEventListener('DOMContentLoaded', () => { toggleAdvSearch(); });
 
 {{-- Livewire --}}
 @livewireScripts
+
+{{-- Reading Progress Bar --}}
+<div id="reading-progress"></div>
+
+<script>
+// ── Scroll Reveal ──
+(function() {
+  const els = document.querySelectorAll('.section-widget, .news-list-item, .featured-article, .clb-card, .photo-strip-item');
+  if (!els.length) return;
+  els.forEach(el => el.classList.add('reveal'));
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach((e, i) => {
+      if (e.isIntersecting) {
+        setTimeout(() => e.target.classList.add('visible'), i * 60);
+        io.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.08 });
+  els.forEach(el => io.observe(el));
+})();
+
+// ── Reading Progress Bar ──
+(function() {
+  const bar = document.getElementById('reading-progress');
+  if (!bar) return;
+  window.addEventListener('scroll', () => {
+    const docH  = document.documentElement.scrollHeight - window.innerHeight;
+    const pct   = docH > 0 ? (window.scrollY / docH) * 100 : 0;
+    bar.style.width = Math.min(pct, 100) + '%';
+  }, { passive: true });
+})();
+</script>
 
 </body>
 </html>
