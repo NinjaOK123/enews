@@ -781,6 +781,19 @@ document.addEventListener('DOMContentLoaded', () => { toggleAdvSearch(); });
 <div id="reading-progress"></div>
 
 <script>
+// ── Global image fallback (ảnh lỗi → placeholder) ──
+(function() {
+  const PLACEHOLDER = 'https://placehold.co/600x350/e8f5e2/2a7a27?text=eNews+AGU';
+  document.addEventListener('error', function(e) {
+    const img = e.target;
+    if (img.tagName === 'IMG' && img.src !== PLACEHOLDER) {
+      img.src = PLACEHOLDER;
+      img.style.objectFit = 'contain';
+      img.style.padding = '8px';
+    }
+  }, true); // capture phase để bắt được trước khi alt text hiển thị
+})();
+
 // ── Scroll Reveal ──
 (function() {
   const els = document.querySelectorAll('.section-widget, .news-list-item, .featured-article, .clb-card, .photo-strip-item');
