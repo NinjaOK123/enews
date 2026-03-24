@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Cache;
 
 class Post extends Model
 {
@@ -20,6 +21,18 @@ class Post extends Model
         'published_at' => 'datetime',
         'is_featured'  => 'boolean',
     ];
+
+    /**
+     * Auto-clear trang chủ cache khi post thay đổi
+     */
+    protected static function boot(): void
+    {
+        parent::boot();
+        $clear = fn() => Cache::forget('home.page.data');
+        static::created($clear);
+        static::updated($clear);
+        static::deleted($clear);
+    }
 
     // ─── Relationships ────────────────────────────────────────────────────────
 
