@@ -79,6 +79,9 @@ Route::prefix('admin')
      ->middleware(['auth', 'role:admin,editor'])
      ->group(function () {
          // Quản lý Bài viết (Admin & Editor)
+         Route::post('posts/{post}/approve', [\App\Http\Controllers\Admin\PostController::class, 'approve'])->name('posts.approve');
+         Route::post('posts/{post}/reject', [\App\Http\Controllers\Admin\PostController::class, 'reject'])->name('posts.reject');
+         Route::get('posts/{post}/revisions', [\App\Http\Controllers\Admin\PostController::class, 'revisions'])->name('posts.revisions');
          Route::resource('posts', \App\Http\Controllers\Admin\PostController::class)->except(['show', 'create', 'store', 'update']);
          
          // Quản lý Chuyên mục
@@ -101,6 +104,7 @@ Route::prefix('admin')
          Route::get('/dashboard', [\App\Http\Controllers\AdminController::class, 'dashboard'])->name('dashboard');
          
          // User Management
+         Route::post('users/bulk', [\App\Http\Controllers\Admin\UserController::class, 'bulkAction'])->name('users.bulk');
          Route::resource('users', \App\Http\Controllers\Admin\UserController::class)->except(['show']);
 
          // ADMIN: Báo cáo & Thống kê

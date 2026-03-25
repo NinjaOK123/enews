@@ -14,7 +14,7 @@ class Post extends Model
     protected $fillable = [
         'title', 'slug', 'excerpt', 'content', 'thumbnail',
         'author_id', 'category_id', 'status', 'published_at', 'view_count',
-        'is_featured', 'meta_desc', 'meta_key',
+        'is_featured', 'meta_desc', 'meta_key', 'source_author',
     ];
 
     protected $casts = [
@@ -29,9 +29,51 @@ class Post extends Model
     {
         parent::boot();
         $clear = fn() => Cache::forget('home.page.data');
-        static::created($clear);
-        static::updated($clear);
         static::deleted($clear);
+
+        $notifyPostStatus = function ($post) {
+            $isNew = $post->wasRecentlyCreated;
+            $statusChanged = $post->wasChanged('status');
+
+            if (!$isNew && !$statusChanged) {
+                return;
+            }
+
+            if ($post->status === 'pending') {
+                $reviewUrl = route('admin.posts.edit', $post->id);
+                \App\Models\Notification::create([
+                    'title' => 'Bài viết mới đang chờ duyệt',
+                    'content' => '<p>Cộng tác viên <b>' . ($post->author->name ?? 'Khuyết danh') . '</b> vừa gửi một bài viết mới: <b>"' . $post->title . '"</b>.</p><p><br></p><p><a href="' . $reviewUrl . '" style="display:inline-block; padding: 10px 20px; background-color: #1a5c38; color: white; border-radius: 8px; text-decoration: none; font-weight: bold; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">👀 Xem bài viết để xử lý</a></p>',
+                    'sent_at' => now(),
+                    'recipients' => json_encode(['admin', 'editor'])
+                ]);
+            } elseif ($post->status === 'published' && $statusChanged) {
+                \App\Models\Notification::create([
+                    'title' => 'Bài viết của bạn đã được xuất bản 🎉',
+                    'content' => '<p>Tin vui! Bài viết <b>"' . $post->title . '"</b> của bạn đã được Ban biên tập duyệt và chính thức xuất bản.</p><p>Cảm ơn bạn đã đóng góp nội dung chất lượng!</p>',
+                    'sent_at' => now(),
+                    'recipients' => json_encode([(string)$post->author_id])
+                ]);
+            } elseif ($post->status === 'rejected' && $statusChanged) {
+                $reviewUrl = route('contributor.posts.edit', $post->id);
+                \App\Models\Notification::create([
+                    'title' => 'Bài viết chưa được duyệt 😔',
+                    'content' => '<p>Rất tiếc, bài viết <b>"' . $post->title . '"</b> của bạn chưa được duyệt lền này. Bạn cần cố gắng hơn nhé!</p><p><br></p><p><a href="' . $reviewUrl . '" style="display:inline-block; padding: 10px 20px; background-color: #f3f4f6; color: #4b5563; border: 1px solid #d1d5db; border-radius: 8px; text-decoration: none; font-weight: bold;">Sửa lại bài viết</a></p>',
+                    'sent_at' => now(),
+                    'recipients' => json_encode([(string)$post->author_id])
+                ]);
+            }
+        };
+
+        static::created(function($post) use ($clear, $notifyPostStatus) {
+            $clear();
+            $notifyPostStatus($post);
+        });
+
+        static::updated(function($post) use ($clear, $notifyPostStatus) {
+            $clear();
+            $notifyPostStatus($post);
+        });
     }
 
     // ─── Relationships ────────────────────────────────────────────────────────
@@ -165,9 +207,13 @@ class Post extends Model
     public function getExcerptShortAttribute(): string
     {
         $raw   = $this->excerpt ?: $this->content ?? '';
-        $clean = html_entity_decode(strip_tags($raw), ENT_QUOTES | ENT_HTML5, 'UTF-8');
-        return \Str::limit(trim($clean), 160);
+        $text  = strip_tags($raw);
+        $text  = html_entity_decode($text, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        // Xóa các entity HTML không hoàn chỉnh (thiếu dấu ;) còn sót sau decode
+        $text  = preg_replace('/&[a-zA-Z0-9#]{1,10}(?!;)/', '', $text);
+        return \Str::limit(trim($text), 160);
     }
+
 
     // ─── Social Helpers ──────────────────────────────────────────────────
 

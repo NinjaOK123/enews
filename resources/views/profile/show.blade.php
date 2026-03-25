@@ -776,7 +776,7 @@
             @endphp
             @if(!$hasPendingRequest)
             <button class="btn-edit-profile" style="background:#f59e0b;color:#fff;border-color:#f59e0b;"
-                    @click="$dispatch('open-contributor-form')">
+                    @click="window.dispatchEvent(new CustomEvent('open-contributor-form'))">
                 🤝 Trở thành Cộng tác viên
             </button>
             @else
@@ -1108,7 +1108,7 @@ function createCollection(name, isPublic, onSuccess) {
 
 {{-- ══════ Modal: Đăng ký Cộng tác viên ══════ --}}
 @if($isOwnProfile && $user->role === 'reader')
-<div x-data="{ open: false, loading: false, success: false, errorMsg: '' }"
+<div x-data="ctvModal()"
      x-on:open-contributor-form.window="open = true; loading = false; success = false; errorMsg = ''"
      x-show="open"
      x-transition:enter="transition ease-out duration-200"
@@ -1178,7 +1178,7 @@ function createCollection(name, isPublic, onSuccess) {
         </div>
 
         {{-- Body form --}}
-        <form id="ctvForm" @submit.prevent="submitCTV($el, $data)">
+        <form id="ctvForm" @submit.prevent="submit($el)">
             @csrf
             <div class="p-8 grid grid-cols-1 md:grid-cols-2 gap-5">
                 {{-- Họ tên --}}
@@ -1230,12 +1230,14 @@ function createCollection(name, isPublic, onSuccess) {
                 </div>
             </div>
             {{-- Footer --}}
-            <div class="flex items-center justify-end gap-3 px-8 py-5 border-t border-gray-100">
+            <div class="flex flex-col sm:flex-row items-center justify-end gap-3 px-8 py-5 border-t border-gray-100">
                 <button type="button" @click="open = false" :disabled="loading"
-                        class="px-5 py-2.5 text-sm font-semibold text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-xl transition">Hủy</button>
+                        class="w-full sm:w-auto px-8 py-3 text-base font-semibold text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-xl transition">
+                    Hủy
+                </button>
                 <button type="submit" :disabled="loading"
-                        class="px-6 py-2.5 text-sm font-bold text-white bg-amber-500 hover:bg-amber-600 rounded-xl shadow transition disabled:opacity-60">
-                    📨 Gửi yêu cầu
+                        class="w-full sm:w-auto px-10 py-3 text-base font-bold text-white bg-amber-500 hover:bg-amber-600 rounded-xl shadow-lg shadow-amber-200 transition disabled:opacity-60 flex items-center justify-center gap-2">
+                    <span>📨</span> <span>Gửi yêu cầu</span>
                 </button>
             </div>
         </form>
@@ -1248,33 +1250,41 @@ function createCollection(name, isPublic, onSuccess) {
 </style>
 
 <script>
-function submitCTV(formEl, data) {
-    const form    = formEl;
-    const fd      = new FormData(form);
-    const csrf    = document.querySelector('meta[name="csrf-token"]').content;
-    data.loading  = true;
-    data.errorMsg = '';
+function ctvModal() {
+    return {
+        open: false,
+        loading: false,
+        success: false,
+        errorMsg: '',
+        submit(formEl) {
+            const fd   = new FormData(formEl);
+            const csrf = document.querySelector('meta[name="csrf-token"]').content;
+            this.loading  = true;
+            this.errorMsg = '';
 
-    fetch('{{ route("contributor.request.store") }}', {
-        method: 'POST',
-        headers: { 'X-CSRF-TOKEN': csrf, 'Accept': 'application/json' },
-        body: fd,
-    })
-    .then(res => res.json())
-    .then(json => {
-        data.loading = false;
-        if (json.success) {
-            data.success = true;
-        } else {
-            // Validation errors
-            const errs = json.errors ? Object.values(json.errors).flat().join(' ') : (json.error || 'Có lỗi xảy ra.');
-            data.errorMsg = errs;
+            fetch('{{ route("contributor.request.store") }}', {
+                method: 'POST',
+                headers: { 'X-CSRF-TOKEN': csrf, 'Accept': 'application/json' },
+                body: fd,
+            })
+            .then(res => res.json())
+            .then(json => {
+                this.loading = false;
+                if (json.success) {
+                    this.success = true;
+                } else {
+                    const errs = json.errors
+                        ? Object.values(json.errors).flat().join(' ')
+                        : (json.error || 'Có lỗi xảy ra.');
+                    this.errorMsg = errs;
+                }
+            })
+            .catch(() => {
+                this.loading  = false;
+                this.errorMsg = 'Không thể kết nối. Vui lòng thử lại.';
+            });
         }
-    })
-    .catch(() => {
-        data.loading  = false;
-        data.errorMsg = 'Không thể kết nối. Vui lòng thử lại.';
-    });
+    };
 }
 </script>
 @endif

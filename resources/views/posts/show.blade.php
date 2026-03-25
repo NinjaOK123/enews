@@ -544,40 +544,44 @@
 {{-- Reading progress bar --}}
 <div id="readProgress"></div>
 
-<div class="article-page">
-
   {{-- ════════════════════════════════════════════════
        EDITOR/ADMIN REVIEW BAR (Only for pending posts)
   ════════════════════════════════════════════════════ --}}
   @auth
-    @if(in_array(auth()->user()->role, ['admin', 'editor']))
-      @if($post->status === 'pending')
-      <div style="width: 100%; background: #fff8e1; border: 1px solid #ffc107; border-radius: 8px; padding: 12px 16px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
-        <div>
-          <strong style="color: #f57f17; font-size: .95rem;"><i class="bi bi-shield-lock-fill"></i> Chế độ Kiểm duyệt</strong>
-          <span style="font-size: .8rem; color: #666; margin-left: 8px;">Bài viết đang chờ duyệt. Vui lòng đọc kỹ trước khi quyết định.</span>
+    @if(in_array(auth()->user()->role, ['admin', 'editor']) && $post->status === 'pending')
+      <div class="w-full bg-amber-50 border border-amber-200 rounded-2xl p-4 mb-8 flex flex-col md:flex-row items-center justify-between gap-4 shadow-sm animate-fade-in-up">
+        <div class="flex items-center gap-3 text-amber-900">
+          <div class="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center shrink-0">
+            <i class="bi bi-shield-lock-fill text-xl text-amber-600"></i>
+          </div>
+          <div>
+            <h4 class="font-bold text-[15px] leading-tight mb-0.5">Chế độ Kiểm duyệt</h4>
+            <p class="text-[13px] text-amber-700/80 mb-0">Bài viết đang chờ duyệt. Vui lòng đọc kỹ trước khi quyết định.</p>
+          </div>
         </div>
-        <div style="display: flex; gap: 8px;">
-          <form action="{{ route('editor.posts.approve', $post) }}" method="POST">
+        
+        <div class="flex flex-wrap items-center gap-2">
+          <form action="{{ route('editor.posts.approve', $post) }}" method="POST" class="m-0">
             @csrf
-            <button type="submit" style="background: var(--green,#2a7a27); color: #fff; border: none; padding: 6px 16px; border-radius: 6px; font-weight: 700; font-size: .8rem; cursor: pointer;">
-              <i class="bi bi-check-circle"></i> Duyệt bài
+            <button type="submit" class="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white rounded-xl text-sm font-semibold shadow-sm transition-all hover:shadow-emerald-500/20">
+              <i class="bi bi-check-circle"></i> Duyệt bài xuất bản
             </button>
           </form>
-          <form action="{{ route('editor.posts.reject', $post) }}" method="POST">
+          <form action="{{ route('editor.posts.reject', $post) }}" method="POST" class="m-0">
             @csrf
-            <button type="submit" style="background: #e53935; color: #fff; border: none; padding: 6px 16px; border-radius: 6px; font-weight: 700; font-size: .8rem; cursor: pointer;">
+            <button type="submit" class="flex items-center gap-2 px-4 py-2 bg-white border border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 rounded-xl text-sm font-semibold transition-all shadow-sm shadow-red-500/5">
               <i class="bi bi-x-circle"></i> Từ chối
             </button>
           </form>
-          <a href="{{ route('contributor.posts.edit', $post) }}" style="background: #fff; color: #333; border: 1px solid #ccc; padding: 6px 16px; border-radius: 6px; font-weight: 700; font-size: .8rem; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 4px;">
+          <a href="{{ route('contributor.posts.edit', $post) }}" class="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 hover:border-gray-300 rounded-xl text-sm font-semibold transition-all shadow-sm">
             <i class="bi bi-pencil-square"></i> Sửa bài
           </a>
         </div>
       </div>
-      @endif
     @endif
   @endauth
+
+<div class="article-page">
 
   {{-- ════════════════════════════════════════════════
        MAIN CONTENT COLUMN
@@ -607,8 +611,14 @@
 
     {{-- Lead / excerpt --}}
     @if($post->excerpt)
-    <p class="article-lead">{!! nl2br(e(html_entity_decode(strip_tags($post->excerpt), ENT_QUOTES | ENT_HTML5, 'UTF-8'))) !!}</p>
+    @php
+        $leadText = strip_tags($post->excerpt);
+        $leadText = html_entity_decode($leadText, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        $leadText = preg_replace('/&[a-zA-Z0-9#]{1,10}(?!;)/', '', $leadText);
+    @endphp
+    <p class="article-lead">{{ $leadText }}</p>
     @endif
+
 
     {{-- Meta row --}}
     <div class="article-meta">
@@ -801,6 +811,13 @@
     </script>
     @endpush
 
+    {{-- Tác giả / Nguồn --}}
+    @if($post->source_author)
+    <div style="text-align:right; margin: 1.2rem 0 0.5rem; padding-top: 0.8rem;">
+        <strong style="font-size:0.95rem; color:#1a1a1a;">{{ $post->source_author }}</strong>
+    </div>
+    @endif
+
     {{-- Tags --}}
     @if($post->category)
     <div class="article-tags">
@@ -812,6 +829,7 @@
       </a>
     </div>
     @endif
+
 
     {{-- Action bar: Like / Lưu / Chia sẻ --}}
     @php $shareUrl = urlencode(route('post.show', $post->slug)); @endphp

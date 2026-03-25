@@ -41,6 +41,7 @@ class PostController extends Controller
         $post->author_id = auth()->id();
         $post->content = $validated['content'];
         $post->excerpt = Str::limit(strip_tags($validated['content']), 150);
+        $post->source_author = $request->input('source_author');
         $post->status = $request->input('action') === 'pending' ? 'pending' : 'draft';
 
         if ($request->hasFile('thumbnail')) {
@@ -81,6 +82,7 @@ class PostController extends Controller
         $post->category_id = $validated['category_id'];
         $post->content = $validated['content'];
         $post->excerpt = Str::limit(strip_tags($validated['content']), 150);
+        $post->source_author = $request->input('source_author');
 
         if ($request->hasFile('thumbnail')) {
             // Delete old thumbnail if needed
@@ -90,8 +92,16 @@ class PostController extends Controller
             $post->thumbnail = $this->processThumbnail($request->file('thumbnail'));
         }
 
-        if ($request->has('action') && $request->input('action') === 'pending') {
-            $post->status = 'pending';
+        if ($request->has('action')) {
+            $action = $request->input('action');
+            if ($action === 'pending') {
+                $post->status = 'pending';
+            } elseif ($action === 'approve' && in_array(auth()->user()->role, ['admin', 'editor'])) {
+                $post->status = 'published';
+                $post->published_at = now();
+            } elseif ($action === 'reject' && in_array(auth()->user()->role, ['admin', 'editor'])) {
+                $post->status = 'rejected';
+            }
         }
 
         $post->save();
@@ -101,6 +111,10 @@ class PostController extends Controller
 
         if ($post->status === 'pending') {
              return redirect()->route('contributor.dashboard')->with('success', 'Đã cập nhật và gửi bài viết chờ duyệt thành công.');
+        } elseif ($post->status === 'published' && request()->input('action') === 'approve') {
+             return redirect()->route('admin.posts.index')->with('success', 'Đã cập nhật và duyệt bài viết thành công. Bài viết đã được xuất bản.');
+        } elseif ($post->status === 'rejected' && request()->input('action') === 'reject') {
+             return redirect()->route('admin.posts.index')->with('success', 'Đã gỡ/từ chối bài viết thành công.');
         }
 
         return redirect()->route('contributor.posts.edit', $post)->with('success', 'Đã cập nhật bài viết nháp.');
@@ -213,31 +227,98 @@ class PostController extends Controller
         ]);
 
         $file = $request->file('document');
-        
-        // Sử dụng PhpWord để đọc file .docx
         $phpWord = IOFactory::load($file->getRealPath());
-        $content = '';
-        $title = '';
+
+        $html   = '';
+        $title  = '';
 
         foreach ($phpWord->getSections() as $section) {
             foreach ($section->getElements() as $element) {
-                // Read text elements
-                if (method_exists($element, 'getText')) {
-                    $text = $element->getText();
-                    if (!empty(trim($text))) {
-                        if (!$title) {
-                            $title = trim($text); // Gán title là đoạn text đầu tiên tìm thấy
-                        } else {
-                            $content .= '<p>' . htmlspecialchars(trim($text)) . '</p>';
-                        }
-                    }
-                }
+                $html .= $this->parseWordElement($element, $title);
             }
         }
 
-        return response()->json([
-            'title' => $title,
-            'content' => $content
-        ]);
+        return response()->json(['title' => $title, 'content' => $html]);
     }
+
+    private function parseWordElement($element, &$title): string
+    {
+        $class = get_class($element);
+
+        // TextRun (paragraph with multiple runs)
+        if ($element instanceof \PhpOffice\PhpWord\Element\TextRun) {
+            $inner = '';
+            foreach ($element->getElements() as $run) {
+                $inner .= $this->parseWordElement($run, $title);
+            }
+            if (!$title && trim(strip_tags($inner))) {
+                $title = trim(strip_tags($inner));
+                return '';
+            }
+            return $inner ? "<p>{$inner}</p>\n" : '';
+        }
+
+        // Plain Text
+        if ($element instanceof \PhpOffice\PhpWord\Element\Text) {
+            $text = htmlspecialchars($element->getText() ?? '');
+            $font = $element->getFontStyle();
+            if (is_object($font)) {
+                if ($font->getBold())   $text = "<strong>{$text}</strong>";
+                if ($font->getItalic()) $text = "<em>{$text}</em>";
+            }
+            return $text;
+        }
+
+        // Paragraph (Heading or regular)
+        if ($element instanceof \PhpOffice\PhpWord\Element\Paragraph) {
+            $inner = '';
+            foreach ($element->getElements() as $child) {
+                $inner .= $this->parseWordElement($child, $title);
+            }
+            $inner = trim($inner);
+            if (!$inner) return '';
+
+            $style = $element->getParagraphStyle();
+            $styleName = is_object($style) ? ($style->getStyleName() ?? '') : (is_string($style) ? $style : '');
+
+            if (preg_match('/heading\s*1/i', $styleName)) return "<h1>{$inner}</h1>\n";
+            if (preg_match('/heading\s*2/i', $styleName)) return "<h2>{$inner}</h2>\n";
+            if (preg_match('/heading\s*3/i', $styleName)) return "<h3>{$inner}</h3>\n";
+
+            if (!$title) { $title = strip_tags($inner); return ''; }
+            return "<p>{$inner}</p>\n";
+        }
+
+        // List item
+        if ($element instanceof \PhpOffice\PhpWord\Element\ListItem) {
+            $inner = htmlspecialchars($element->getTextObject()->getText() ?? '');
+            return "<li>{$inner}</li>\n";
+        }
+
+        // Table
+        if ($element instanceof \PhpOffice\PhpWord\Element\Table) {
+            $tableHtml = '<table border="1" style="border-collapse:collapse;width:100%;">';
+            foreach ($element->getRows() as $row) {
+                $tableHtml .= '<tr>';
+                foreach ($row->getCells() as $cell) {
+                    $cellContent = '';
+                    foreach ($cell->getElements() as $cellEl) {
+                        $cellContent .= $this->parseWordElement($cellEl, $title);
+                    }
+                    $tableHtml .= "<td style=\"padding:6px 10px;\">{$cellContent}</td>";
+                }
+                $tableHtml .= '</tr>';
+            }
+            $tableHtml .= '</table>';
+            return $tableHtml . "\n";
+        }
+
+        // Image
+        if ($element instanceof \PhpOffice\PhpWord\Element\Image) {
+            return ''; // Bỏ qua ảnh (không extract được từ docx dễ dàng)
+        }
+
+        return '';
+    }
+
 }

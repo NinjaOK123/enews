@@ -18,12 +18,21 @@ class UserController extends Controller
     {
         $query = User::query();
         
-        // Example simple filter by role
-        if ($request->has('role') && $request->role != '') {
+        // Lọc theo từ khóa (tên, email, mssv)
+        if ($request->filled('search')) {
+            $query->where(function($q) use ($request) {
+                $q->where('name', 'like', '%' . $request->search . '%')
+                  ->orWhere('email', 'like', '%' . $request->search . '%')
+                  ->orWhere('username', 'like', '%' . $request->search . '%');
+            });
+        }
+        
+        // Lọc theo vai trò
+        if ($request->filled('role')) {
             $query->where('role', $request->role);
         }
 
-        $users = $query->latest()->paginate(15);
+        $users = $query->latest()->paginate(15)->withQueryString();
         return view('admin.users.index', compact('users'));
     }
 
@@ -99,5 +108,55 @@ class UserController extends Controller
 
         $user->delete();
         return redirect()->route('admin.users.index')->with('success', 'User deleted successfully.');
+    }
+
+    /**
+     * Bulk action: Nâng quyền, hạ quyền, khoá...
+     */
+    public function bulkAction(Request $request)
+    {
+        $action = $request->input('bulk_action');
+        $userIds = $request->input('user_ids', []);
+
+        if (!$action || empty($userIds)) {
+            return back()->with('error', 'Vui lòng chọn ít nhất 1 người dùng và thao tác cần thực hiện.');
+        }
+
+        $users = User::whereIn('id', $userIds)->get();
+        $successCount = 0;
+
+        foreach ($users as $user) {
+            if ($user->id === auth()->id()) continue; // Không tự xử lý account của chính mình
+
+            if ($action === 'upgrade_contributor') {
+                $user->update(['role' => 'contributor']);
+                \App\Models\Notification::create([
+                    'user_id' => $user->id,
+                    'title' => 'Cập nhật tài khoản',
+                    'message' => '🎉 Bạn đã được Ban biên tập NÂNG CẤP thành Cộng tác viên! Hãy bắt đầu gửi bài viết ngay nào.',
+                    'type' => 'success',
+                    'link' => route('contributor.dashboard')
+                ]);
+                $successCount++;
+            } elseif ($action === 'downgrade_reader') {
+                $user->update(['role' => 'reader']);
+                \App\Models\Notification::create([
+                    'user_id' => $user->id,
+                    'title' => 'Cập nhật tài khoản',
+                    'message' => '⚠️ Quyền thay đổi: Tài khoản của bạn hiện đang là Người đọc thông thường.',
+                    'type' => 'error',
+                ]);
+                $successCount++;
+            } elseif ($action === 'delete') {
+                $user->delete();
+                $successCount++;
+            }
+        }
+
+        if ($successCount === 0) {
+            return back()->with('error', 'Không có người dùng nào được áp dụng (Bạn không thể tự thao tác trên chính tài khoản của bạn).');
+        }
+
+        return back()->with('success', "Đã áp dụng thành công thao tác trên {$successCount} tài khoản.");
     }
 }
