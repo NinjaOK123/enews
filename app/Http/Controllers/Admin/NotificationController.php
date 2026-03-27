@@ -24,7 +24,8 @@ class NotificationController extends Controller
      */
     public function create()
     {
-        return view('admin.notifications.create');
+        $groupedUsers = User::orderBy('name')->get()->groupBy('role');
+        return view('admin.notifications.create', compact('groupedUsers'));
     }
 
     /**
@@ -36,16 +37,25 @@ class NotificationController extends Controller
             'title' => 'required|string|max:255',
             'content' => 'required|string',
             'recipients' => 'required|array',
+        ], [
+            'title.required' => 'Vui lòng nhập Tiêu đề thông báo.',
+            'content.required' => 'Vui lòng nhập Nội dung thông báo (Nếu ô nhập bị mờ, hãy thử gõ vào).',
+            'recipients.required' => 'Bạn chưa chọn Đối tượng nhận thông báo nào.',
+            'recipients.array' => 'Định dạng đối tượng nhận không hợp lệ.'
         ]);
 
-        Notification::create([
+        $notification = Notification::create([
             'title' => $request->title,
             'content' => $request->content,
             'recipients' => $request->recipients,
             'sent_at' => null // Draft initially until sent
         ]);
 
-        return redirect()->route('admin.notifications.index')->with('success', 'Thông báo đã được tạo thành công.');
+        if ($request->input('action') === 'send') {
+            return $this->send($notification);
+        }
+
+        return redirect()->route('admin.notifications.index')->with('success', 'Thông báo lưu nháp thành công.');
     }
 
     /**
@@ -53,7 +63,8 @@ class NotificationController extends Controller
      */
     public function edit(Notification $notification)
     {
-        return view('admin.notifications.edit', compact('notification'));
+        $groupedUsers = User::orderBy('name')->get()->groupBy('role');
+        return view('admin.notifications.edit', compact('notification', 'groupedUsers'));
     }
 
     /**
@@ -65,6 +76,11 @@ class NotificationController extends Controller
             'title' => 'required|string|max:255',
             'content' => 'required|string',
             'recipients' => 'required|array',
+        ], [
+            'title.required' => 'Vui lòng nhập Tiêu đề thông báo.',
+            'content.required' => 'Vui lòng nhập Nội dung thông báo (Nếu ô nhập bị mờ, hãy thử gõ vào).',
+            'recipients.required' => 'Bạn chưa chọn Đối tượng nhận thông báo nào.',
+            'recipients.array' => 'Định dạng đối tượng nhận không hợp lệ.'
         ]);
 
         $notification->update([
@@ -73,7 +89,11 @@ class NotificationController extends Controller
             'recipients' => $request->recipients,
         ]);
 
-        return redirect()->route('admin.notifications.index')->with('success', 'Thông báo đã được cập nhật thành công.');
+        if ($request->input('action') === 'send') {
+            return $this->send($notification);
+        }
+
+        return redirect()->route('admin.notifications.index')->with('success', 'Thông báo đã lưu thay đổi.');
     }
 
     /**
@@ -85,34 +105,53 @@ class NotificationController extends Controller
         return redirect()->route('admin.notifications.index')->with('success', 'Đã xoá thông báo.');
     }
 
-    /**
-     * Simulate sending the notification.
-     */
     public function send(Notification $notification)
     {
-        if ($notification->sent_at) {
-            return back()->with('error', 'Thông báo này đã được gửi trước đó.');
-        }
-
-        $recipients = $notification->recipients;
+        $recipients = $notification->recipients ?? [];
         $usersToNotify = collect();
 
         // Interpret recipients logic
         if (in_array('all', $recipients)) {
             $usersToNotify = User::all();
         } else {
-            // Get users with matching roles
-            $usersToNotify = User::whereIn('role', $recipients)->get();
+            $roles = [];
+            $userIds = [];
+            foreach ($recipients as $item) {
+                if (str_starts_with($item, 'user_')) {
+                    $userIds[] = (int)str_replace('user_', '', $item);
+                } else {
+                    $roles[] = $item;
+                }
+            }
+
+            $query = User::query();
+            if (count($roles) > 0) {
+                $query->whereIn('role', $roles);
+            }
+            if (count($userIds) > 0) {
+                if (count($roles) > 0) {
+                    $query->orWhereIn('id', $userIds);
+                } else {
+                    $query->whereIn('id', $userIds);
+                }
+            }
+            
+            if (count($roles) > 0 || count($userIds) > 0) {
+                $usersToNotify = $query->get();
+            }
         }
 
-        // Mock sending process
-        // In a real scenario, use Laravel Notification system:
-        // NotificationFacade::send($usersToNotify, new \App\Notifications\GeneralNotification($notification));
+        // Send Email via BCC chunks to avoid SMTP limits and protect privacy
+        if ($usersToNotify->count() > 0) {
+            foreach ($usersToNotify->chunk(50) as $chunk) {
+                Mail::bcc($chunk)->send(new \App\Mail\SystemNotificationMail($notification));
+            }
+        }
 
         // Mark as sent
         $notification->update(['sent_at' => now()]);
 
         return redirect()->route('admin.notifications.index')
-            ->with('success', "Thông báo đã được gửi đến " . $usersToNotify->count() . " người/nhóm.");
+            ->with('success', "Thông báo đã được gửi qua Email đến " . $usersToNotify->count() . " người nhận.");
     }
 }

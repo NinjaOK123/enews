@@ -14,8 +14,15 @@ class MediaController extends Controller
      */
     public function show(Media $media)
     {
+        $canAccess = $media->user_id === auth()->id() || 
+            ($media->is_shared && (
+                (is_null($media->shared_role) && is_null($media->shared_user_id)) ||
+                $media->shared_role === auth()->user()->role ||
+                $media->shared_user_id === auth()->id()
+            ));
+
         // Chỉ cấp quyền xem nếu media là của user hiện tại hoặc admin đã share
-        if ($media->user_id === auth()->id() || $media->is_shared) {
+        if ($canAccess) {
             $path = $media->absolutePath();
 
             if (!file_exists($path)) {
@@ -41,7 +48,13 @@ class MediaController extends Controller
 
     public function getSharedMedia()
     {
-        $media = Media::where('is_shared', true)->latest()->get()->map(function($m) {
+        $media = Media::where('is_shared', true)
+            ->where(function ($q) {
+                $q->whereNull('shared_role')->whereNull('shared_user_id')
+                  ->orWhere('shared_role', auth()->user()->role)
+                  ->orWhere('shared_user_id', auth()->id());
+            })
+            ->latest()->get()->map(function($m) {
             $m->url = route('contributor.media.view', $m->id);
             return $m;
         });

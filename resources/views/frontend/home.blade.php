@@ -22,39 +22,41 @@
          }"
          style="position:relative;">
 
-      {{-- Slides --}}
-      @foreach($heroPosts as $i => $hero)
-      <div x-show="current === {{ $i }}"
-           x-transition:enter="transition-opacity duration-500"
-           x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
-           x-transition:leave="transition-opacity duration-300"
-           x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
-           class="hero-slide" {{ $i > 0 ? 'style=display:none' : '' }}>
-        <a href="{{ route('post.show', $hero->slug) }}" style="display:block;">
-          <img src="{{ $hero->thumbnail_url }}" alt="{{ $hero->title }}"
-               loading="{{ $i === 0 ? 'eager' : 'lazy' }}">
-        </a>
-        <div class="hero-content">
-          <div class="hero-cat-badge">{{ $hero->category->name ?? 'Tin nổi bật' }}</div>
-          <a href="{{ route('post.show', $hero->slug) }}" class="hero-title" style="text-decoration:none;display:block;">
-            {{ $hero->title }}
-          </a>
-          <div class="hero-meta">
-            <span><i class="bi bi-person"></i> {{ $hero->author->name ?? 'Ban Biên tập' }}</span>
-            <span><i class="bi bi-calendar3"></i> {{ $hero->published_at?->format('d/m/Y') }}</span>
-            <span><i class="bi bi-eye"></i> {{ number_format($hero->view_count) }}</span>
+      {{-- Slides Wrapper --}}
+      <div class="hero-slides-container">
+          @foreach($heroPosts as $i => $hero)
+          <div x-show="current === {{ $i }}"
+               x-transition:enter="transition-opacity duration-500 ease-out"
+               x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+               x-transition:leave="transition-opacity duration-400 ease-in"
+               x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
+               class="hero-slide" {{ $i > 0 ? 'style=display:none' : '' }}>
+            <a href="{{ route('post.show', $hero->slug) }}" style="display:block;">
+              <img src="{{ $hero->thumbnail_url }}" alt="{{ $hero->title }}"
+                   loading="{{ $i === 0 ? 'eager' : 'lazy' }}">
+            </a>
+            <div class="hero-content">
+              <div class="hero-cat-badge">{{ $hero->category->name ?? 'Tin nổi bật' }}</div>
+              <a href="{{ route('post.show', $hero->slug) }}" class="hero-title" style="text-decoration:none;display:block;">
+                {{ $hero->title }}
+              </a>
+              <div class="hero-meta">
+                <span><i class="bi bi-person"></i> {{ $hero->author->name ?? 'Ban Biên tập' }}</span>
+                <span><i class="bi bi-calendar3"></i> {{ $hero->published_at?->format('d/m/Y') }}</span>
+                <span><i class="bi bi-eye"></i> {{ number_format($hero->view_count) }}</span>
+              </div>
+            </div>
           </div>
-        </div>
-      </div>
-      @endforeach
+          @endforeach
 
-      {{-- Glass nav buttons --}}
-      <button @click="prev()" type="button" class="hero-nav-btn prev" aria-label="Trước">
-        <i class="bi bi-chevron-left" style="font-size:.85rem;"></i>
-      </button>
-      <button @click="next()" type="button" class="hero-nav-btn next" aria-label="Sau">
-        <i class="bi bi-chevron-right" style="font-size:.85rem;"></i>
-      </button>
+          {{-- Glass nav buttons --}}
+          <button @click.prevent="prev()" type="button" class="hero-nav-btn prev" aria-label="Trước">
+            <i class="bi bi-chevron-left" style="font-size:.85rem;"></i>
+          </button>
+          <button @click.prevent="next()" type="button" class="hero-nav-btn next" aria-label="Sau">
+            <i class="bi bi-chevron-right" style="font-size:.85rem;"></i>
+          </button>
+      </div>
 
       {{-- Progress dots --}}
       <div class="hero-dots">

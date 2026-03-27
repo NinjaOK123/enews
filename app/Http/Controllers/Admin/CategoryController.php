@@ -46,7 +46,9 @@ class CategoryController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'parent_id' => 'nullable|exists:categories,id',
-            'is_active' => 'boolean'
+            'order' => 'nullable|integer',
+            'is_active' => 'boolean',
+            'show_in_menu' => 'boolean'
         ]);
 
         $validated['slug'] = Str::slug($validated['name']);
@@ -66,7 +68,9 @@ class CategoryController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'parent_id' => 'nullable|exists:categories,id',
-            'is_active' => 'boolean'
+            'order' => 'nullable|integer',
+            'is_active' => 'boolean',
+            'show_in_menu' => 'boolean'
         ]);
 
         $validated['slug'] = Str::slug($validated['name']);
@@ -83,5 +87,110 @@ class CategoryController extends Controller
 
         $category->delete();
         return redirect()->route('admin.categories.index')->with('success', 'Đã xoá chuyên mục.');
+    }
+
+    public function toggleMenu(Request $request, Category $category)
+    {
+        $validated = $request->validate([
+            'show_in_menu' => 'required|boolean'
+        ]);
+
+        $category->update([
+            'show_in_menu' => $validated['show_in_menu']
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Đã cập nhật trạng thái menu ngang.',
+            'show_in_menu' => $category->show_in_menu
+        ]);
+    }
+
+    public function bulkAction(Request $request)
+    {
+        $validated = $request->validate([
+            'action' => 'required|in:show_menu,hide_menu',
+            'ids' => 'required|array',
+            'ids.*' => 'exists:categories,id'
+        ]);
+
+        if ($validated['action'] === 'show_menu') {
+            Category::whereIn('id', $validated['ids'])->update(['show_in_menu' => true]);
+            $msg = 'Đã hiển thị các chuyên mục đã chọn lên menu.';
+        } elseif ($validated['action'] === 'hide_menu') {
+            Category::whereIn('id', $validated['ids'])->update(['show_in_menu' => false]);
+            $msg = 'Đã ẩn các chuyên mục đã chọn khỏi menu.';
+        }
+
+        return redirect()->route('admin.categories.index')->with('success', $msg);
+    }
+
+    public function updateOrder(Request $request, Category $category)
+    {
+        $validated = $request->validate([
+            'order' => 'required|integer|min:1'
+        ]);
+        
+        $newOrder = $validated['order'];
+        $oldOrder = $category->order;
+        
+        if ($newOrder != $oldOrder) {
+            if ($newOrder < $oldOrder) {
+                Category::where('id', '!=', $category->id)
+                    ->whereBetween('order', [$newOrder, $oldOrder - 1])
+                    ->increment('order');
+            } else {
+                Category::where('id', '!=', $category->id)
+                    ->whereBetween('order', [$oldOrder + 1, $newOrder])
+                    ->decrement('order');
+            }
+            
+            $category->update(['order' => $newOrder]);
+            $this->normalizeOrders();
+        }
+        
+        return response()->json([
+            'success' => true,
+            'message' => 'Đã cập nhật thứ tự.'
+        ]);
+    }
+
+    public function reorder(Request $request)
+    {
+        $validated = $request->validate([
+            'orders' => 'required|array',
+            'orders.*' => 'exists:categories,id'
+        ]);
+
+        $ids = $validated['orders'];
+        if (empty($ids)) return response()->json(['success' => true]);
+
+        $minOrder = Category::whereIn('id', $ids)->min('order') ?? 1;
+
+        foreach ($ids as $index => $id) {
+            Category::where('id', $id)->update(['order' => $minOrder + $index]);
+        }
+
+        $this->normalizeOrders();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Đã cập nhật vị trí.'
+        ]);
+    }
+
+    private function normalizeOrders()
+    {
+        $categories = Category::orderBy('order', 'asc')->orderBy('updated_at', 'desc')->get();
+        $currentOrder = 1;
+        
+        foreach ($categories as $cat) {
+            if ($cat->order != $currentOrder) {
+                $cat->timestamps = false; // Ngăn không tự động cập nhật updated_at
+                $cat->update(['order' => $currentOrder]);
+                $cat->timestamps = true;
+            }
+            $currentOrder++;
+        }
     }
 }

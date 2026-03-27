@@ -17,7 +17,14 @@ class Media extends Model
         'file_type',
         'file_size',
         'is_shared',
+        'shared_role',
+        'shared_user_id',
     ];
+
+    public function sharedUser()
+    {
+        return $this->belongsTo(User::class, 'shared_user_id');
+    }
 
     public function user()
     {
@@ -44,5 +51,17 @@ class Media extends Model
         }
 
         return public_path($path);
+    }
+
+    public function publicUrl(): string
+    {
+        $path = (string) $this->file_path;
+        if (str_starts_with($path, 'http')) {
+            return $path;
+        }
+        if (str_starts_with($path, '/storage/')) {
+            return asset($path);
+        }
+        return asset('storage/' . $path);
     }
 }

@@ -84,13 +84,18 @@ Route::prefix('admin')
          Route::get('posts/{post}/revisions', [\App\Http\Controllers\Admin\PostController::class, 'revisions'])->name('posts.revisions');
          Route::resource('posts', \App\Http\Controllers\Admin\PostController::class)->except(['show', 'create', 'store', 'update']);
          
-         // Quản lý Chuyên mục
-         Route::resource('categories', \App\Http\Controllers\Admin\CategoryController::class)->except(['show']);
+         // Quản lý chuyên mục
+         Route::post('categories/reorder', [\App\Http\Controllers\Admin\CategoryController::class, 'reorder'])->name('categories.reorder');
+         Route::post('categories/bulk-action', [\App\Http\Controllers\Admin\CategoryController::class, 'bulkAction'])->name('categories.bulk-action');
+         Route::post('categories/{category}/toggle-menu', [\App\Http\Controllers\Admin\CategoryController::class, 'toggleMenu'])->name('categories.toggle-menu');
+         Route::post('categories/{category}/update-order', [\App\Http\Controllers\Admin\CategoryController::class, 'updateOrder'])->name('categories.update-order');
+    Route::resource('categories', \App\Http\Controllers\Admin\CategoryController::class)->except(['show']);
 
          // Quản lý Media (Thư viện)
          Route::group(['prefix' => 'media', 'as' => 'media.'], function () {
              Route::get('/', [App\Http\Controllers\Admin\MediaController::class, 'index'])->name('index');
              Route::post('/upload', [App\Http\Controllers\Admin\MediaController::class, 'upload'])->name('upload');
+             Route::put('/{media}/share', [App\Http\Controllers\Admin\MediaController::class, 'updateShare'])->name('update-share');
              Route::delete('/{media}', [App\Http\Controllers\Admin\MediaController::class, 'destroy'])->name('destroy');
              Route::get('/{media}/view', [App\Http\Controllers\Admin\MediaController::class, 'show'])->name('show');
          });

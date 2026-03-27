@@ -464,14 +464,23 @@
   {{-- ═══ CATEGORY NAV (green sticky bar) ═══ --}}
   @php
     $allNavCategories = $navCategories ?? \App\Models\Category::active()->roots()->get();
-    $filteredNavCats  = $allNavCategories->filter(fn($c) => strtolower($c->name) !== 'chưa phân loại' && $c->slug !== 'chua-phan-loai');
+    // Lấy các danh mục được đánh dấu show_in_menu, sắp xếp theo order
+    $filteredNavCats = \App\Models\Category::active()
+                            ->where('show_in_menu', true)
+                            ->orderBy('order', 'asc')
+                            ->orderBy('id', 'asc')
+                            ->get();
+                            
+    $visibleHorizontalCount = 10;
+    $horizontalCats = $filteredNavCats->take($visibleHorizontalCount);
+    $dropdownCats = $filteredNavCats->skip($visibleHorizontalCount);
   @endphp
   <nav class="cat-nav sticky top-0 z-30 bg-[#2a7a27]" id="cat-nav">
     <div class="cat-nav-inner flex items-stretch min-h-[42px]">
 
       {{-- Category links wrapper (hidden on mobile) --}}
       <div class="cat-nav-links hidden md:flex flex-1 overflow-hidden items-stretch min-w-0">
-        @foreach($filteredNavCats->take(9) as $cat)
+        @foreach($horizontalCats as $cat)
         <a href="{{ route('category', $cat->slug) }}"
            class="cat-nav-item flex-1 flex items-center justify-center text-center px-2.5 text-[.79rem] font-semibold text-white/92 no-underline border-r border-white/14 transition-colors duration-200 whitespace-nowrap
                   hover:bg-white/15 hover:text-white
@@ -481,14 +490,16 @@
         @endforeach
       </div>
 
-      {{-- ≡ Hamburger: all categories dropdown --}}
-      <button id="catMenuToggle" onclick="toggleCatMenu()" title="Tất cả chuyên mục"
+      {{-- ≡ Hamburger: remaining categories dropdown (only show if any) --}}
+      @if($dropdownCats->isNotEmpty())
+      <button id="catMenuToggle" onclick="toggleCatMenu()" title="Xem thêm chuyên mục"
               aria-expanded="false" aria-controls="catMenuDropdown"
               class="flex-shrink-0 self-stretch flex flex-col items-center justify-center gap-1 px-3.5 w-11 bg-transparent border-none text-white cursor-pointer transition-colors duration-200 hover:bg-white/15">
         <span class="block w-4 h-0.5 bg-white rounded"></span>
         <span class="block w-4 h-0.5 bg-white rounded"></span>
         <span class="block w-4 h-0.5 bg-white rounded"></span>
       </button>
+      @endif
 
       {{-- 🔍 Search --}}
       <button type="button" onclick="toggleAdvSearch()" title="Tìm kiếm"
@@ -502,11 +513,12 @@
   </nav>
 
   {{-- ═══ CATEGORY DROPDOWN (khi bấm ≡) ═══ --}}
+  @if($dropdownCats->isNotEmpty())
   <div id="catMenuDropdown"
        class="hidden relative z-[29] bg-white border-b-4 border-[#2a7a27] shadow-xl">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
       <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-1">
-        @foreach($filteredNavCats as $cat)
+        @foreach($dropdownCats as $cat)
         <a href="{{ route('category', $cat->slug) }}"
            onclick="closeCatMenu()"
            class="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-semibold text-gray-800 no-underline transition-colors duration-200
@@ -520,6 +532,7 @@
     </div>
   </div>
   <div id="catMenuBackdrop" onclick="closeCatMenu()" class="hidden fixed inset-0 z-[28]"></div>
+  @endif
 
   {{-- ═══ ADVANCED SEARCH PANEL ═══ --}}
   <div id="advSearchPanel"

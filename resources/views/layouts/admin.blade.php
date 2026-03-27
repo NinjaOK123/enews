@@ -17,6 +17,9 @@
     {{-- Tailwind + Alpine via Vite --}}
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
+    {{-- SweetAlert2 for beautiful popups --}}
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
     @stack('styles')
 
     <style>
@@ -265,5 +268,73 @@
 
     @yield('scripts')
     @stack('scripts')
+
+    {{-- Global SweetAlert2 Form Helpers --}}
+    <script>
+        window.confirmSubmit = function(event, btnElement, actionValue, message) {
+            event.preventDefault();
+            const form = btnElement.closest('form');
+            if (!form) return;
+
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+
+            Swal.fire({
+                title: 'Xác nhận',
+                text: message,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#10b981',
+                cancelButtonColor: '#ef4444',
+                confirmButtonText: 'Đồng ý',
+                cancelButtonText: 'Hủy bỏ',
+                customClass: {
+                    title: 'text-xl font-bold text-gray-800 font-sans',
+                    popup: 'rounded-2xl shadow-2xl border border-gray-100',
+                    confirmButton: 'px-5 mx-2 rounded-xl font-semibold shadow text-white',
+                    cancelButton: 'px-5 mx-2 rounded-xl font-semibold shadow text-white'
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    if (actionValue) {
+                        const oldInput = form.querySelector('input[name="action"]');
+                        if (oldInput) oldInput.remove();
+                        const input = document.createElement('input');
+                        input.type = 'hidden';
+                        input.name = 'action';
+                        input.value = actionValue;
+                        form.appendChild(input);
+                    }
+                    form.submit();
+                }
+            });
+        };
+
+        window.confirmAction = function(event, formElement, message) {
+            event.preventDefault();
+            Swal.fire({
+                title: 'Xác nhận',
+                text: message,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#10b981',
+                cancelButtonColor: '#ef4444',
+                confirmButtonText: 'Xác nhận',
+                cancelButtonText: 'Hủy bỏ',
+                customClass: {
+                    title: 'text-xl font-bold font-sans',
+                    popup: 'rounded-2xl shadow-2xl',
+                    confirmButton: 'px-5 mx-2 rounded-xl font-semibold shadow text-white',
+                    cancelButton: 'px-5 mx-2 rounded-xl font-semibold shadow text-white'
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    formElement.submit();
+                }
+            });
+        };
+    </script>
 </body>
 </html>

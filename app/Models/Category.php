@@ -8,9 +8,12 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Category extends Model
 {
-    protected $fillable = ['name', 'slug', 'description', 'parent_id', 'order', 'is_active'];
+    protected $fillable = ['name', 'slug', 'description', 'parent_id', 'order', 'is_active', 'show_in_menu'];
 
-    protected $casts = ['is_active' => 'boolean'];
+    protected $casts = [
+        'is_active' => 'boolean',
+        'show_in_menu' => 'boolean'
+    ];
 
     // ─── Relationships ────────────────────────────────────────────────────────
 

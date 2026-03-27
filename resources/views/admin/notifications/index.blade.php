@@ -73,30 +73,26 @@
                             <td>{{ $notification->created_at->format('d/m/Y H:i') }}</td>
                             <td class="text-end">
                                 <div class="d-flex gap-1 justify-content-end flex-wrap">
-                                    {{-- Edit (chỉ cho phép nếu chưa gửi) --}}
-                                    @unless($notification->sent_at)
-                                        <a href="{{ route('admin.notifications.edit', $notification) }}"
-                                           class="btn btn-sm btn-light border text-primary" title="Chỉnh sửa">
-                                            <i class="bi bi-pencil"></i>
-                                        </a>
-                                    @endunless
+                                    {{-- Edit --}}
+                                    <a href="{{ route('admin.notifications.edit', $notification) }}"
+                                       class="btn btn-sm btn-light border text-primary" title="Chỉnh sửa">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
 
                                     {{-- Gửi --}}
-                                    @unless($notification->sent_at)
-                                        <form action="{{ route('admin.notifications.send', $notification) }}"
-                                              method="POST"
-                                              onsubmit="return confirm('Gửi thông báo «{{ addslashes($notification->title) }}» ngay bây giờ?')">
-                                            @csrf
-                                            <button type="submit" class="btn btn-sm btn-success" title="Gửi ngay">
-                                                <i class="bi bi-send"></i>
-                                            </button>
-                                        </form>
-                                    @endunless
+                                    <form action="{{ route('admin.notifications.send', $notification) }}"
+                                          method="POST"
+                                          onsubmit="window.confirmAction(event, this, '{{ $notification->sent_at ? 'Bạn có chắc muốn GỬI LẠI thông báo này vào tất cả email của người nhận?' : 'Gửi thông báo «' . addslashes($notification->title) . '» ngay bây giờ?' }}')">
+                                        @csrf
+                                        <button type="submit" class="btn btn-sm {{ $notification->sent_at ? 'btn-outline-success' : 'btn-success' }}" title="{{ $notification->sent_at ? 'Gửi lại (Resend)' : 'Gửi ngay' }}">
+                                            <i class="bi {{ $notification->sent_at ? 'bi-arrow-repeat' : 'bi-send' }}"></i>
+                                        </button>
+                                    </form>
 
                                     {{-- Xóa --}}
                                     <form action="{{ route('admin.notifications.destroy', $notification) }}"
                                           method="POST"
-                                          onsubmit="return confirm('Bạn có chắc muốn xoá thông báo này không?')">
+                                          onsubmit="window.confirmAction(event, this, 'Bạn có chắc muốn xoá thông báo này không? Việc này không thể phục hồi.')">
                                         @csrf @method('DELETE')
                                         <button type="submit" class="btn btn-sm btn-light border text-danger" title="Xoá">
                                             <i class="bi bi-trash"></i>

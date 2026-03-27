@@ -156,10 +156,17 @@ img { max-width: 100%; height: auto; display: block; }
 .hero-area { display: flex; gap: 16px; margin-top: 32px; margin-bottom: 20px; }
 .hero-slider-wrap { flex: 1; min-width: 0; position: relative; }
 
-.hero-slide {
+.hero-slides-container {
   position: relative;
+  height: 390px;
   border-radius: var(--radius-lg);
   overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+
+.hero-slide {
+  position: absolute;
+  inset: 0;
 }
 
 /* Ken Burns zoom effect on images */
@@ -694,6 +701,7 @@ hr.fusion {
 
 /* ══ RESPONSIVE ══ */
 @media (max-width: 960px) {
+  .hero-slides-container { height: 320px; }
   .hero-slide img { height: 320px; }
   .hero-title { font-size: 1.15rem; }
   .sections-row { gap: 12px; }

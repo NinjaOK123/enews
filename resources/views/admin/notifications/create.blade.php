@@ -1,6 +1,10 @@
 @extends('layouts.admin')
 @section('title', 'Tạo thông báo mới')
 
+@push('styles')
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css" />
+@endpush
+
 @section('styles')
 <style>
     .ck-editor__editable_inline {
@@ -138,11 +142,31 @@
                             </label>
                         </div>
                     </div>
+
+                    {{-- Chọn người dùng cụ thể --}}
+                    <div class="mt-4">
+                        <label class="form-label fw-semibold d-block">Gửi đích danh (Tuỳ chọn)</label>
+                        <p class="text-muted small mb-2">Bạn có thể gõ tên hoặc email để tìm và chọn thêm từng cá nhân nhận thông báo.</p>
+                        <select name="recipients[]" id="specificUsers" class="form-select" multiple>
+                            @foreach($groupedUsers as $role => $users)
+                                <optgroup label="Nhóm {{ ucfirst($role) }}">
+                                    @foreach($users as $user)
+                                        <option value="user_{{ $user->id }}" {{ in_array('user_'.$user->id, old('recipients', [])) ? 'selected' : '' }}>
+                                            {{ $user->name }} ({{ $user->email }})
+                                        </option>
+                                    @endforeach
+                                </optgroup>
+                            @endforeach
+                        </select>
+                    </div>
                 </div>
 
                 {{-- Actions --}}
                 <div class="d-flex gap-2">
-                    <button type="submit" class="btn btn-success px-4 fw-semibold">
+                    <button type="button" onclick="window.confirmSubmit(event, this, 'send', 'Bạn có chắc chắn muốn TẠO & GỬI NGAY thông báo này? Hệ thống sẽ phát hành thông báo và bắn Hàng loạt Email đến người nhận (việc này có thể mất vài giây).')" class="btn btn-primary px-4 fw-semibold text-white">
+                        <i class="bi bi-send-fill me-1"></i> Gửi ngay
+                    </button>
+                    <button type="button" onclick="window.confirmSubmit(event, this, 'draft', 'Bạn có muốn LƯU NHÁP bản thông báo này để xem lại sau không?')" class="btn btn-success px-4 fw-semibold">
                         <i class="bi bi-save me-1"></i> Lưu nháp
                     </button>
                     <a href="{{ route('admin.notifications.index') }}" class="btn btn-light border px-4">Huỷ</a>
@@ -154,9 +178,23 @@
 @endsection
 
 @section('scripts')
+<script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
 {{-- CKEditor 5 CDN --}}
 <script src="https://cdn.ckeditor.com/ckeditor5/41.4.2/classic/ckeditor.js"></script>
 <script>
+    setTimeout(function() {
+        const element = document.getElementById('specificUsers');
+        if (element) {
+            new Choices(element, {
+                removeItemButton: true,
+                searchPlaceholderValue: 'Tìm tên hoặc email...',
+                placeholderValue: 'Gõ để tìm người dùng cụ thể...',
+                noResultsText: 'Không tìm thấy kết quả',
+                noChoicesText: 'Không còn người dùng nào để chọn',
+                itemSelectText: 'Nhấn để chọn'
+            });
+        }
+    }, 100);
     ClassicEditor
         .create(document.querySelector('#notifContent'), {
             toolbar: ['heading', '|', 'bold', 'italic', 'underline', 'strikethrough', '|',

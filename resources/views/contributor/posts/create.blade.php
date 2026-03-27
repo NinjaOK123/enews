@@ -279,10 +279,10 @@
     <div class="flex-1 overflow-y-auto p-6">
       {{-- Upload Tab --}}
       <div id="tab-upload" class="media-tab-pane">
-        <label for="mediaUploadInput"
-               class="flex flex-col items-center gap-3 h-40 border-2 border-dashed border-gray-200 rounded-2xl cursor-pointer hover:border-green-400 hover:bg-green-50/30 transition justify-center w-full">
+        <label for="mediaUploadInput" id="mediaDropZone"
+               class="flex flex-col items-center gap-3 h-40 border-2 border-dashed border-gray-200 rounded-2xl cursor-pointer hover:border-green-400 hover:bg-green-50/30 transition justify-center w-full relative">
           <svg class="w-10 h-10 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
-          <span class="text-sm text-gray-400">Click hoặc kéo thả file ảnh/video vào đây</span>
+          <span class="text-sm text-gray-400" id="mediaUploadText">Click hoặc kéo thả file ảnh/video vào đây</span>
         </label>
         <input type="file" id="mediaUploadInput" accept="image/*,video/*" class="hidden">
         <button type="button" id="btnUploadMediaFile"
@@ -306,6 +306,15 @@
         </div>
       </div>
     </div>
+  </div>
+</div>
+
+{{-- ══════ CUTE TOAST NOTIFICATION ══════ --}}
+<div id="cuteToast" class="fixed top-24 right-5 z-[200] transform transition-all duration-500 translate-x-[150%] opacity-0 flex items-center gap-4 bg-white px-5 py-4 rounded-[1.25rem] shadow-2xl shadow-green-900/10 border-b-4 border-emerald-400">
+  <div id="cuteToastIcon" class="text-3xl animate-bounce">✨📝</div>
+  <div>
+    <h4 id="cuteToastTitle" class="font-bold text-emerald-600 text-sm mb-0.5">Xong rồi nè!</h4>
+    <p id="cuteToastMsg" class="text-xs text-gray-500 font-medium leading-relaxed">Đã copy nội dung vào trình soạn thảo.</p>
   </div>
 </div>
 
@@ -403,17 +412,69 @@ document.addEventListener('paste', function(e) {
     }
 });
 
+// Cute Toast Function
+function showCuteToast(type, title, msg) {
+    const toast = document.getElementById('cuteToast');
+    const icon = document.getElementById('cuteToastIcon');
+    const tTitle = document.getElementById('cuteToastTitle');
+    const tMsg = document.getElementById('cuteToastMsg');
+    
+    // Setup Icon & Colors
+    if (type === 'success') {
+        icon.innerHTML = '✨📝';
+        tTitle.className = 'font-bold text-emerald-600 text-sm mb-0.5';
+        toast.className = 'fixed top-24 right-5 z-[200] transform transition-all duration-500 flex items-center gap-4 bg-white px-5 py-4 rounded-[1.25rem] shadow-2xl shadow-green-900/10 border-b-4 border-emerald-400 translate-x-[150%] opacity-0';
+    } else {
+        icon.innerHTML = '😿💔';
+        tTitle.className = 'font-bold text-red-600 text-sm mb-0.5';
+        toast.className = 'fixed top-24 right-5 z-[200] transform transition-all duration-500 flex items-center gap-4 bg-white px-5 py-4 rounded-[1.25rem] shadow-2xl shadow-red-900/10 border-b-4 border-red-400 translate-x-[150%] opacity-0';
+    }
+    
+    tTitle.textContent = title;
+    tMsg.textContent = msg;
+    
+    // Float It In
+    requestAnimationFrame(() => {
+        setTimeout(() => toast.classList.remove('translate-x-[150%]', 'opacity-0'), 100);
+    });
+    
+    // Fly It Out after 4 seconds
+    setTimeout(() => {
+        toast.classList.add('translate-x-[150%]', 'opacity-0');
+    }, 4000);
+}
+
 // Import Word
-document.getElementById('btnImportWord').addEventListener('click', () => document.getElementById('wordFileInput').click());
+const btnImportWord = document.getElementById('btnImportWord');
+btnImportWord.addEventListener('click', () => document.getElementById('wordFileInput').click());
+
 document.getElementById('wordFileInput').addEventListener('change', function(e) {
     if(!e.target.files.length) return;
-    const fd = new FormData(); fd.append('document', e.target.files[0]); fd.append('_token', '{{ csrf_token() }}');
+    
+    // Magic Loading State
+    const originalText = btnImportWord.innerHTML;
+    btnImportWord.innerHTML = '⏳ Đang hút chữ...';
+    btnImportWord.classList.add('opacity-70', 'pointer-events-none', 'animate-pulse');
+    
+    const fd = new FormData(); 
+    fd.append('document', e.target.files[0]); 
+    fd.append('_token', '{{ csrf_token() }}');
+    
     fetch("{{ route('contributor.posts.import-word') }}", { method:'POST', body:fd })
-    .then(r => r.json()).then(data => {
+    .then(r => r.json())
+    .then(data => {
         if(data.title) document.getElementById('title').value = data.title;
         if(data.content && myEditor) myEditor.setData(myEditor.getData() + data.content);
-        alert('Import thành công!');
-    }).catch(() => alert('Lỗi khi import file Word'));
+        
+        showCuteToast('success', 'Hút chữ thành công! 🎉', 'Mọi thứ đã ngoan ngoãn chui vào khung soạn thảo.');
+    }).catch(() => {
+        showCuteToast('error', 'Ôi hỏng! 😿', 'Có gì đó sai sai, không thể bóc tách file Word này.');
+    }).finally(() => {
+        // Reset Magic Component
+        btnImportWord.innerHTML = originalText;
+        btnImportWord.classList.remove('opacity-70', 'pointer-events-none', 'animate-pulse');
+        e.target.value = ''; // Reset the input to allow selecting same file again
+    });
 });
 
 // AI Generate
@@ -445,18 +506,62 @@ document.querySelectorAll('.media-tab-btn').forEach(btn => {
     });
 });
 
+// Xử lý kéo thả (Drag and Drop)
+const dropZone = document.getElementById('mediaDropZone');
+const fi = document.getElementById('mediaUploadInput');
+const uploadText = document.getElementById('mediaUploadText');
+
+['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+    dropZone.addEventListener(eventName, preventDefaults, false);
+});
+function preventDefaults(e) { e.preventDefault(); e.stopPropagation(); }
+
+['dragenter', 'dragover'].forEach(eventName => {
+    dropZone.addEventListener(eventName, () => dropZone.classList.add('border-green-400', 'bg-green-50'));
+});
+['dragleave', 'drop'].forEach(eventName => {
+    dropZone.addEventListener(eventName, () => dropZone.classList.remove('border-green-400', 'bg-green-50'));
+});
+
+dropZone.addEventListener('drop', function(e) {
+    const dt = e.dataTransfer;
+    if (dt.files && dt.files.length > 0) {
+        fi.files = dt.files;
+        fi.dispatchEvent(new Event('change'));
+    }
+});
+
+fi.addEventListener('change', function() {
+    if (this.files && this.files.length > 0) {
+        uploadText.innerHTML = `<span class="text-green-600 font-medium tracking-tight whitespace-normal break-all line-clamp-2 px-4 shadow-sm">Đã chọn: ${this.files[0].name}</span>`;
+    } else {
+        uploadText.innerHTML = 'Click hoặc kéo thả file ảnh/video vào đây';
+    }
+});
+
 // Upload media
 document.getElementById('btnUploadMediaFile').addEventListener('click', function() {
-    const fi = document.getElementById('mediaUploadInput');
-    if(!fi.files.length) return;
+    if(!fi.files.length) { alert('Vui lòng chọn 1 file trước khi tải lên!'); return; }
+    
+    // Đổi trạng thái nút
+    const originalText = this.innerHTML;
+    this.disabled = true;
+    this.innerHTML = '<i class="bi bi-hourglass-split animate-spin me-2"></i> Đang tải...';
+    
     const fd = new FormData(); fd.append('upload', fi.files[0]); fd.append('_token', '{{ csrf_token() }}');
     fetch(uploadMediaUrl, { method:'POST', body:fd })
     .then(r => r.json()).then(data => {
+        this.disabled = false; this.innerHTML = originalText;
         if(data.url) {
-            document.getElementById('uploadResult').innerHTML = `<p class="text-green-600 text-xs">✅ Upload thành công!</p>`;
+            document.getElementById('uploadResult').innerHTML = `<p class="text-green-600 text-xs mt-2">✅ Upload thành công!</p>`;
             insertMediaToEditor(data.url, data.type);
-        } else { alert('Upload thất bại'); }
-    }).catch(() => alert('Upload thất bại'));
+            fi.value = ''; // Reset input
+            fi.dispatchEvent(new Event('change'));
+        } else { alert('Upload thất bại: ' + (data.error?.message || 'Không rõ lỗi')); }
+    }).catch(() => {
+        this.disabled = false; this.innerHTML = originalText;
+        alert('Upload thất bại, mã mạng lỗi'); 
+    });
 });
 
 // Paste event cho Media Modal
