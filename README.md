@@ -1,126 +1,33 @@
-# E-News AGU
+# E-News - Dự án Trình duyệt Tin Tức Sinh Viên 🚀
 
-Website tin tuc sinh vien cho Truong Dai hoc An Giang (AGU), xay dung bang Laravel 12.
+Đây là phiên bản được cấu trúc bằng kiến trúc TALL Stack siêu mượt (Tailwind CSS 4, Alpine.js, Laravel 11/12, Livewire).
 
-## Tong quan
+## 🐳 Hướng dẫn Chạy Nhanh Dự Án (Bằng Docker)
 
-- Framework: Laravel 12 (PHP 8.2+)
-- Frontend: Blade + Bootstrap 5 + CSS tuy bien
-- Build tool: Vite
-- Co ho tro dang nhap Google OAuth (tai khoan AGU)
+Dự án đã được tích hợp bộ công cụ tự động biên dịch, vì vậy bất kỳ nhân sự nào trong team cũng có thể tải về và chạy với 2 dòng lệnh duy nhất (Mà **KHÔNG** cần phải cài đặt PHP, Composer, hay NPM vào máy tính).
 
-## Yeu cau moi truong
+### Yêu cầu duy nhất: 
+Máy tính phải cài sẵn phần mềm **[Docker Desktop](https://www.docker.com/products/docker-desktop/)** (Mở ứng dụng lên để chắc chắn nó đang chạy nền).
 
-- PHP 8.2 tro len
-- Composer
-- Node.js + npm
-- MySQL (hoac SQLite de test nhanh)
-
-## Cai dat du an
-
-1. Clone source:
-
+### Thực hiện:
+1. Mở Terminal (Powershell / CMD / Bash) tại thư mục chứa source code vừa giải nén.
+2. Gõ thần chú:
 ```bash
-git clone https://github.com/NinjaOK123/enews.git
-cd enews
+docker-compose up -d --build
 ```
+3. Uống một tách trà, hệ thống sẽ tự động khởi tạo trong khoảng 1-2 phút (Và chỉ mất khoảng 5 giây cho các lần khởi động ngày hôm sau). Cấu trúc máy ảo Mạng Nhện sẽ tự động sao chép mã khoá Laravel, tải Plugin Composer, cày thư viện Node.js, rặn Build giao diện Vite, tự nặn ra cơ sở dữ liệu `enews` và bơm dữ liệu đệm vào DB.
+4. Xong! Cứ thế dạo bước vào: 👉 [http://localhost:8000](http://localhost:8000)
 
-2. Cai dependency:
+*(Tips: Lần đầu tiên chạy có thể máy tính hay Docker chặn Tường lửa Firewalls, bạn cứ Allow là được)*
 
-```bash
-composer install
-npm install
-```
+---
 
-3. Tao file moi truong:
+## 🛠️ Trợ Giúp Vận Hành (Dành cho Devs không dùng Docker)
 
-```bash
-cp .env.example .env
-php artisan key:generate
-```
-
-4. Chinh `.env` cho database:
-
-```env
-DB_CONNECTION=mysql
-DB_HOST=127.0.0.1
-DB_PORT=3306
-DB_DATABASE=enews
-DB_USERNAME=root
-DB_PASSWORD=your_password
-```
-
-5. Chay migration:
-
-```bash
-php artisan migrate
-```
-
-## Cau hinh dang nhap Google AGU
-
-Trong `.env`, cap nhat:
-
-```env
-APP_URL=http://enews.com
-
-GOOGLE_CLIENT_ID=your-google-client-id
-GOOGLE_CLIENT_SECRET=your-google-client-secret
-GOOGLE_REDIRECT_URI=http://enews.test/auth/google/callback
-GOOGLE_ALLOWED_DOMAINS=student.agu.edu.vn,agu.edu.vn
-```
-
-Luu y quan trong:
-
-- Redirect URI trong Google Cloud Console phai trung khop 100% voi `GOOGLE_REDIRECT_URI`.
-- Neu doi `.env`, nho clear cache:
-
-```bash
-php artisan optimize:clear
-```
-
-## Chay du an
-
-Chay backend:
-
-```bash
-php artisan serve
-```
-
-Chay frontend dev:
-
-```bash
-npm run dev
-```
-
-Neu muon chay dong thoi cac service:
-
-```bash
-composer run dev
-```
-
-## Cac lenh hay dung
-
-```bash
-# Chay test
-php artisan test
-
-# Build frontend
-npm run build
-
-# Clear cache he thong
-php artisan optimize:clear
-```
-
-## Cau truc thu muc chinh
-
-- `app/Http/Controllers`: Controller xu ly request
-- `resources/views`: Giao dien Blade
-- `routes/web.php`: Route web
-- `config/services.php`: Cau hinh dich vu ngoai (Google OAuth)
-- `database/migrations`: Cac file migration DB
-
-## Ghi chu
-
-- File `.env` khong commit len git.
-- Neu gap loi Google `400 malformed`, thuong do sai `client_id` hoac sai redirect URI.
-
+Nếu bạn thiết lập môi trường bằng Laragon hay XAMPP, vui lòng làm theo các bước truyền thống:
+1. Copy `.env.example` sang `.env`, chỉnh Database trùng với DB bạn đã thiết kế ở localhost.
+2. Cài Composer Pkgs: `composer install`
+3. Generate Key: `php artisan key:generate`
+4. Sinh DB: `php artisan migrate --seed`
+5. Khởi chạy Vite (Chờ chừng 2s rồi mở 1 terminal mới): `npm install && npm run build`
+6. Nếu chạy serve ảo thì: `php artisan serve` (Chạy ở localhost:8000)
