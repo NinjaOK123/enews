@@ -45,6 +45,25 @@
   </style>
 
   @stack('styles')
+
+  {{-- Speculation Rules API: Tải trước siêu tốc các trang cốt lõi --}}
+  <script type="speculationrules">
+  {
+    "prerender": [
+      {
+        "source": "list",
+        "urls": [
+          "{{ route('home') }}",
+          "{{ route('about') }}",
+          "{{ route('rules') }}",
+          "{{ route('contact') }}",
+          "{{ route('doc-suy-ngam') }}"
+        ],
+        "eagerness": "moderate"
+      }
+    ]
+  }
+  </script>
 </head>
 <body class="bg-gray-50 text-gray-900 antialiased">
 

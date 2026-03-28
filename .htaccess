@@ -1,0 +1,16 @@
+<IfModule mod_rewrite.c>
+    # Điều hướng mọi luồng truy cập (request) chạy thẳng vào thư mục /public/
+    # (Đề phòng trường hợp hosting chưa set đúng thư mục gốc là /public)
+    RewriteEngine On
+    RewriteRule ^(.*)$ public/$1 [L]
+</IfModule>
+
+# CỰC KỲ QUAN TRỌNG: Ngăn chặn tuyệt đối hành vi gõ đường dẫn để đọc file hệ thống
+# Cấm tải và xem tất cả các file ẩn (bắt đầu bằng dấu chấm .) và các tệp nhạy cảm
+<FilesMatch "^\.|\.(env|example|json|lock|yml|yaml|md|ini)$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# Cấm duyệt xem danh sách các file trong thư mục
+Options -Indexes

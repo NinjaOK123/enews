@@ -22,6 +22,7 @@ Route::get('/bai-viet/{post:slug}', [PostController::class, 'show'])->name('post
 Route::get('/gioi-thieu',         [PageController::class, 'gioiThieu'])->name('about');
 Route::get('/quy-dinh',           [PageController::class, 'quyDinh'])->name('rules');
 Route::get('/lien-he',            [PageController::class, 'lienHe'])->name('contact');
+Route::post('/lien-he',           [PageController::class, 'sendContactEmail'])->name('contact.send');
 Route::get('/enews-doc-va-suy-ngam', [PageController::class, 'docVaSuyNgam'])->name('doc-suy-ngam');
 
 // ─── Bình luận (yêu cầu đăng nhập) ────────────────────────────
@@ -84,6 +85,9 @@ Route::prefix('admin')
 
          Route::get('posts/{post}/revisions', [\App\Http\Controllers\Admin\PostController::class, 'revisions'])->name('posts.revisions');
          Route::resource('posts', \App\Http\Controllers\Admin\PostController::class)->except(['show', 'create', 'store', 'update']);
+
+         // API Kiểm tra đạo văn (AJAX)
+         Route::post('plagiarism-check', [\App\Http\Controllers\Admin\PlagiarismController::class, 'checkSentence'])->name('plagiarism.check');
          
          // Quản lý chuyên mục
          Route::post('categories/reorder', [\App\Http\Controllers\Admin\CategoryController::class, 'reorder'])->name('categories.reorder');

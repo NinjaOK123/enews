@@ -32,6 +32,11 @@ class UserController extends Controller
             $query->where('role', $request->role);
         }
 
+        // Lọc theo trạng thái
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
         $users = $query->latest()->paginate(15)->withQueryString();
         return view('admin.users.index', compact('users'));
     }
@@ -146,6 +151,12 @@ class UserController extends Controller
                     'message' => '⚠️ Quyền thay đổi: Tài khoản của bạn hiện đang là Người đọc thông thường.',
                     'type' => 'error',
                 ]);
+                $successCount++;
+            } elseif ($action === 'lock_account') {
+                $user->update(['status' => 'inactive']);
+                $successCount++;
+            } elseif ($action === 'unlock_account') {
+                $user->update(['status' => 'active']);
                 $successCount++;
             } elseif ($action === 'delete') {
                 $user->delete();

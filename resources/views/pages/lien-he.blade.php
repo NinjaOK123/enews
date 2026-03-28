@@ -392,34 +392,48 @@
         <i class="bi bi-chat-dots-fill"></i> Gửi tin nhắn cho chúng tôi
       </div>
       <div class="cf-body">
+        
+        @if(session('success'))
+          <div style="background:#e8f5e9; color:#2a7a27; border:1px solid #c8e6c9; padding:12px 16px; border-radius:8px; margin-bottom:18px; font-size:0.85rem; font-weight:600;">
+            <i class="bi bi-check-circle-fill me-1"></i> {{ session('success') }}
+          </div>
+        @endif
+
+        <form action="{{ route('contact.send') }}" method="POST">
+          @csrf
         <div class="cf-grid">
           <div>
             <label class="cf-label">Họ và tên <span style="color:#e53935;">*</span></label>
-            <input type="text" class="cf-input" placeholder="Nguyễn Văn A">
+            <input type="text" name="name" class="cf-input" placeholder="Nguyễn Văn A" required>
+            @error('name') <span style="color:red; font-size:12px;">{{ $message }}</span> @enderror
           </div>
           <div>
             <label class="cf-label">Email <span style="color:#e53935;">*</span></label>
-            <input type="email" class="cf-input" placeholder="email@agu.edu.vn">
+            <input type="email" name="email" class="cf-input" placeholder="email@agu.edu.vn" required>
+            @error('email') <span style="color:red; font-size:12px;">{{ $message }}</span> @enderror
           </div>
         </div>
         <div style="margin-bottom:14px;">
           <label class="cf-label">Tiêu đề</label>
-          <input type="text" class="cf-input" placeholder="Chủ đề liên hệ...">
+          <input type="text" name="subject" class="cf-input" placeholder="Chủ đề liên hệ...">
+          @error('subject') <span style="color:red; font-size:12px;">{{ $message }}</span> @enderror
         </div>
         <div style="margin-bottom:18px;">
           <label class="cf-label">Nội dung <span style="color:#e53935;">*</span></label>
-          <textarea class="cf-textarea" placeholder="Nhập nội dung liên hệ, góp ý hoặc gửi bài..."></textarea>
+          <textarea name="message" class="cf-textarea" placeholder="Nhập nội dung liên hệ, góp ý hoặc gửi bài..." required></textarea>
+          @error('message') <span style="color:red; font-size:12px;">{{ $message }}</span> @enderror
         </div>
         <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;">
           <p style="font-size:.74rem; color:#aaa; margin:0;">
             <i class="bi bi-info-circle"></i>
-            Để gửi bài, hãy đính kèm file qua email
+            Để gửi bài viết, hãy gửi file qua email
             <a href="mailto:enews@agu.edu.vn" style="color:#2a7a27;">enews@agu.edu.vn</a>
           </p>
           <button type="submit" class="cf-submit">
             <i class="bi bi-send-fill"></i> Gửi tin nhắn
           </button>
         </div>
+      </form>
       </div>
     </div>
 

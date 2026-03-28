@@ -93,7 +93,7 @@
                 </button>
                 <input type="file" id="wordFileInput" accept=".docx,.doc" class="hidden">
 
-                <button type="button" id="btnAIGenerate"
+                <button type="button" id="btnAIGenerate" onclick="document.getElementById('aiPromptTarget').classList.toggle('hidden'); setTimeout(() => document.getElementById('aiPromptInput').focus(), 100);"
                         class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-purple-600 bg-purple-50 hover:bg-purple-100 rounded-lg border border-purple-200 transition">
                   <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
                   AI viết
@@ -134,10 +134,10 @@
 
               <div class="h-8 w-px bg-gray-200 hidden xl:block mx-1"></div>
 
-              <a href="https://free-turnitin-plagiarism-checker-tfrg.onrender.com/" target="_blank"
+              <button type="button" onclick="openPlagiarismModal()"
                  class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-3 text-sm font-bold text-gray-700 bg-white hover:bg-gray-50 rounded-xl border border-gray-200 shadow-sm transition">
-                <i class="bi bi-shield-check text-indigo-500 text-lg"></i> Check Đạo Văn
-              </a>
+                <i class="bi bi-shield-check text-indigo-500 text-lg"></i> Check Đạo Văn (Nội bộ)
+              </button>
               @else
               @if(!isset($post) || !in_array($post->status, ['pending', 'published']))
               <button type="submit" name="action" value="pending" id="btnSubmitReview"
@@ -497,7 +497,7 @@ ClassicEditor.create(document.querySelector('#editor'), {
     },
     language: 'vi',
     ckfinder: { uploadUrl: uploadMediaUrl + '?_token={{ csrf_token() }}' }
-}).then(e => { myEditor = e; }).catch(console.error);
+}).then(e => { window.myEditor = e; }).catch(console.error);
 
 
 // Thumbnail drag-drop preview
@@ -593,7 +593,7 @@ document.getElementById('wordFileInput').addEventListener('change', function(e) 
     .then(r => r.json())
     .then(data => {
         if(data.title) document.getElementById('title').value = data.title;
-        if(data.content && myEditor) myEditor.setData(myEditor.getData() + data.content);
+        if(data.content && window.myEditor) window.myEditor.setData(window.myEditor.getData() + data.content);
         
         showCuteToast('success', 'Hút chữ thành công! 🎉', 'Mọi thứ đã ngoan ngoãn chui vào khung soạn thảo.');
     }).catch(() => {
@@ -606,22 +606,7 @@ document.getElementById('wordFileInput').addEventListener('change', function(e) 
     });
 });
 
-// AI Generate
-document.getElementById('btnAIGenerate').addEventListener('click', () => {
-    document.getElementById('aiPromptTarget').classList.toggle('hidden');
-});
-document.getElementById('btnExecuteAI').addEventListener('click', function() {
-    const prompt = document.getElementById('aiPromptInput').value;
-    if(!prompt) { alert('Vui lòng nhập chủ đề'); return; }
-    this.disabled = true; this.textContent = 'Đang xử lý...';
-    const fd = new FormData(); fd.append('prompt', prompt); fd.append('_token', '{{ csrf_token() }}');
-    fetch("{{ route('ai.generate-post') }}", { method:'POST', body:fd })
-    .then(r => r.json()).then(data => {
-        if(data.content && myEditor) myEditor.setData(myEditor.getData() + data.content);
-        this.disabled = false; this.textContent = 'Tạo nội dung';
-        document.getElementById('aiPromptTarget').classList.add('hidden');
-    }).catch(() => { alert('Lỗi AI'); this.disabled = false; this.textContent = 'Tạo nội dung'; });
-});
+// AI Generate — Đã chuyển sang onclick inline + Web-LLM script cuối file
 
 // Media tabs
 document.querySelectorAll('.media-tab-btn').forEach(btn => {
@@ -873,5 +858,434 @@ if(postId) {
         }).catch(console.error);
     }, 30000);
 }
+
+// ─── PLAGIARISM CHECKER (PHP NATIVE) ─────────────────────────────────
+function openPlagiarismModal() {
+    document.getElementById('plagiarismModal').classList.remove('hidden');
+}
+
+function closePlagiarismModal() {
+    document.getElementById('plagiarismModal').classList.add('hidden');
+    document.getElementById('plagiarismResults').innerHTML = '';
+    document.getElementById('plagiarismStartScreen').classList.remove('hidden');
+    document.getElementById('plagiarismProgressScreen').classList.add('hidden');
+    document.getElementById('plagiarismReportScreen').classList.add('hidden');
+}
+
+async function startPlagiarismCheck() {
+    // 1. Get plain text from editor
+    let htmlContent = '';
+    if (typeof myEditor !== 'undefined') {
+        htmlContent = myEditor.getData();
+    } else {
+        htmlContent = document.getElementById('editor').value;
+    }
+    
+    // Tạo element tạm để gỡ HTML tag
+    const tempDiv = document.createElement("div");
+    tempDiv.innerHTML = htmlContent;
+    const plainText = tempDiv.textContent || tempDiv.innerText || "";
+    
+    if (plainText.trim().length < 50) {
+        alert("Bài viết quá ngắn. Cần ít nhất 50 ký tự để kiểm tra đạo văn.");
+        return;
+    }
+
+    // 2. Chẻ câu (split by punctuation)
+    // Tách bằng ".", "!", "?" nhưng loại trừ viết tắt kiểu "v.v.", "PGS.TS."
+    let sentences = plainText.split(/(?<=[.?!])\s+/).map(s => s.trim()).filter(s => s.length > 20);
+    
+    if (sentences.length === 0) {
+        alert("Không tìm thấy câu văn hợp lệ nào dài hơn 20 chữ.");
+        return;
+    }
+
+    // Giới hạn check tối đa 20 câu để tránh bị server chặn / tốn thời gian
+    if (sentences.length > 20) {
+        sentences = sentences.slice(0, 20);
+    }
+
+    // 3. Chuẩn bị UI
+    document.getElementById('plagiarismStartScreen').classList.add('hidden');
+    document.getElementById('plagiarismProgressScreen').classList.remove('hidden');
+    const progressBar = document.getElementById('plagProgressBar');
+    const progressText = document.getElementById('plagProgressText');
+    const currentSentenceEl = document.getElementById('plagCurrentSentence');
+    
+    let plagiarizedCount = 0;
+    let totalScore = 0;
+    const resultsHtml = [];
+
+    // 4. Process từng câu qua AJAX
+    for (let i = 0; i < sentences.length; i++) {
+        const sentence = sentences[i];
+        
+        // Update Tiền trình UI
+        const percent = Math.round((i / sentences.length) * 100);
+        progressBar.style.width = percent + '%';
+        progressText.textContent = `Đang quét: ${i+1}/${sentences.length} câu (${percent}%)`;
+        currentSentenceEl.textContent = sentence.substring(0, 60) + '...';
+
+        try {
+            const formData = new FormData();
+            formData.append('sentence', sentence);
+            formData.append('_token', '{{ csrf_token() }}');
+
+            const response = await fetch('/plagiarism-check', {
+                method: 'POST',
+                body: formData
+            });
+
+            if (!response.ok) throw new Error('API Error');
+
+            const result = await response.json();
+            
+            totalScore += result.similarity;
+            if (result.isPlagiarized) plagiarizedCount++;
+
+            // Lưu lại kết quả câu này để show Report
+            if (result.similarity > 15) {
+                let sourcesList = result.sources.map(src => `<a href="${src.url}" target="_blank" class="block text-blue-600 hover:underline truncate" title="${src.url}">🔹 ${src.similarity}% - ${src.url}</a>`).join('');
+                
+                resultsHtml.push(`
+                    <div class="mb-4 p-4 rounded-xl ${result.isPlagiarized ? 'bg-red-50 border border-red-200' : 'bg-orange-50 border border-orange-200'}">
+                        <p class="text-sm font-semibold text-gray-800 mb-2">"${result.sentence}"</p>
+                        <div class="flex items-center gap-2 mb-2">
+                            <span class="px-2 py-1 rounded text-xs font-bold ${result.isPlagiarized ? 'bg-red-500 text-white' : 'bg-orange-400 text-white'}">Trùng khớp: ${result.similarity}%</span>
+                        </div>
+                        <div class="space-y-1 text-xs pl-2 border-l-2 ${result.isPlagiarized ? 'border-red-300' : 'border-orange-300'}">
+                            ${sourcesList}
+                        </div>
+                    </div>
+                `);
+            }
+
+        } catch (err) {
+            console.error("Lỗi khi check câu:", sentence, err);
+        }
+
+        // Delay 1s giữa mỗi câu để tránh Rate Limit DuckDuckGo
+        await new Promise(r => setTimeout(r, 1000));
+    }
+
+    // Hoàn tất!
+    progressBar.style.width = '100%';
+    progressText.textContent = `Hoàn tất! 100%`;
+
+    // 5. Hiển thị trang kết quả (Report Screen)
+    document.getElementById('plagiarismProgressScreen').classList.add('hidden');
+    document.getElementById('plagiarismReportScreen').classList.remove('hidden');
+
+    const avgScore = Math.round(totalScore / sentences.length);
+    const plagPercent = Math.round((plagiarizedCount / sentences.length) * 100);
+
+    // Xác định mức độ màu sắc
+    let colorClass = 'text-green-600';
+    let ringClass = 'ring-green-500';
+    let statusText = 'An toàn';
+    if (plagPercent > 15) { colorClass = 'text-yellow-600'; ringClass = 'ring-yellow-500'; statusText = 'Đáng ngờ'; }
+    if (plagPercent > 35) { colorClass = 'text-orange-600'; ringClass = 'ring-orange-500'; statusText = 'Đạo văn một phần'; }
+    if (plagPercent > 60) { colorClass = 'text-red-600'; ringClass = 'ring-red-500'; statusText = 'Cảnh báo ĐẠO VĂN NẶNG!'; }
+
+    document.getElementById('plagScoreUi').className = `text-4xl font-extrabold ${colorClass}`;
+    document.getElementById('plagScoreUi').textContent = `${plagPercent}%`;
+    document.getElementById('plagStatusUi').textContent = statusText;
+    document.getElementById('plagStatusUi').className = `text-sm font-bold mt-1 ${colorClass}`;
+
+    const reportOverview = document.getElementById('plagReportOverview');
+    reportOverview.innerHTML = `
+        <div class="grid grid-cols-2 gap-4 mt-4">
+            <div class="bg-gray-50 rounded-lg p-3 text-center border border-gray-100">
+                <p class="text-xs text-gray-500 uppercase">Tổng số câu quét</p>
+                <p class="text-xl font-bold text-gray-800">${sentences.length}</p>
+            </div>
+            <div class="bg-gray-50 rounded-lg p-3 text-center border border-gray-100">
+                <p class="text-xs text-gray-500 uppercase">Câu vi phạm (>50%)</p>
+                <p class="text-xl font-bold text-red-600">${plagiarizedCount}</p>
+            </div>
+        </div>
+    `;
+
+    if (resultsHtml.length > 0) {
+        document.getElementById('plagDetailedResults').innerHTML = resultsHtml.join('');
+    } else {
+        document.getElementById('plagDetailedResults').innerHTML = `
+            <div class="text-center py-8">
+                <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-green-100 text-green-500 mb-3">
+                    <i class="bi bi-shield-check text-2xl"></i>
+                </div>
+                <p class="text-gray-500 text-sm">Tuyệt vời! Không phát hiện câu nào có dấu hiệu sao chép (trùng khớp > 15%).</p>
+            </div>
+        `;
+    }
+}
 </script>
+
+{{-- ============================== --}}
+{{-- PLAGIARISM CHECK MODAL --}}
+{{-- ============================== --}}
+<div id="plagiarismModal" class="hidden fixed inset-0 z-[100] flex items-center justify-center">
+  <!-- Backdrop -->
+  <div class="absolute inset-0 bg-gray-900/60 backdrop-blur-sm transition-opacity" onclick="closePlagiarismModal()"></div>
+  
+  <!-- Modal Content -->
+  <div class="relative bg-white rounded-3xl shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col overflow-hidden animate-in fade-in zoom-in duration-200">
+    <!-- Header -->
+    <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-gray-50/50">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-indigo-100 text-indigo-600 flex items-center justify-center">
+          <i class="bi bi-shield-check text-xl"></i>
+        </div>
+        <div>
+          <h3 class="text-lg font-bold text-gray-900 leading-tight">Mắt Thần E-News</h3>
+          <p class="text-xs text-gray-500">Công cụ rà soát đạo văn bằng N-Gram & Cosine</p>
+        </div>
+      </div>
+      <button type="button" onclick="closePlagiarismModal()" class="text-gray-400 hover:text-red-500 hover:bg-red-50 p-2 rounded-xl transition">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+
+    <!-- Body -->
+    <div class="p-6 overflow-y-auto flex-1 bg-white">
+      
+      <!-- SCREEN 1: Bắt đầu -->
+      <div id="plagiarismStartScreen" class="text-center py-10">
+        <img src="https://cdni.iconscout.com/illustration/premium/thumb/detective-searching-document-4438848-3718485.png" alt="Scan" class="w-48 mx-auto mb-6 opacity-80">
+        <h4 class="text-xl font-bold text-gray-800 mb-2">Chuẩn bị quét tài liệu</h4>
+        <p class="text-gray-500 text-sm max-w-md mx-auto mb-6">Hệ thống sẽ bẻ gãy bài viết của bạn thành từng mảnh nhỏ và đối chiếu với hơn 40 tỷ trang web trên Internet.</p>
+        <button type="button" onclick="startPlagiarismCheck()" class="inline-flex items-center justify-center gap-2 px-8 py-3 text-base font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-full shadow-lg shadow-indigo-600/30 transition transform hover:scale-105">
+          <i class="bi bi-radar"></i> Khởi chạy Mắt Thần
+        </button>
+      </div>
+
+      <!-- SCREEN 2: Tiến trình quét -->
+      <div id="plagiarismProgressScreen" class="hidden py-16 text-center max-w-sm mx-auto">
+        <div class="relative w-24 h-24 mx-auto mb-8">
+            <div class="absolute inset-0 rounded-full border-4 border-gray-100"></div>
+            <div class="absolute inset-0 rounded-full border-4 border-indigo-600 border-t-transparent animate-spin"></div>
+            <i class="bi bi-radar absolute inset-0 flex items-center justify-center text-3xl text-indigo-600 animate-pulse"></i>
+        </div>
+        
+        <h4 class="text-lg font-bold text-gray-800 mb-4" id="plagProgressText">Đang khởi động thuật toán...</h4>
+        
+        <!-- Progress Bar -->
+        <div class="w-full bg-gray-100 rounded-full h-3 mb-3 overflow-hidden">
+          <div id="plagProgressBar" class="bg-gradient-to-r from-indigo-500 to-purple-500 h-3 rounded-full transition-all duration-300" style="width: 0%"></div>
+        </div>
+        <p class="text-xs text-gray-400 italic" id="plagCurrentSentence">Đang bóc tách cú pháp...</p>
+      </div>
+
+      <!-- SCREEN 3: Kết quả -->
+      <div id="plagiarismReportScreen" class="hidden">
+        <div class="flex flex-col md:flex-row gap-6">
+            <!-- Left: Overview Card -->
+            <div class="md:w-1/3">
+                <div class="bg-white border rounded-2xl p-6 shadow-sm sticky top-0 text-center">
+                    <div class="inline-flex items-center justify-center w-24 h-24 rounded-full bg-gray-50 border-8 border-gray-100 mb-4">
+                        <span id="plagScoreUi" class="text-4xl font-extrabold text-gray-900">0%</span>
+                    </div>
+                    <p class="text-xs text-gray-500 uppercase tracking-widest font-semibold">Tỷ lệ Trùng Lặp</p>
+                    <p id="plagStatusUi" class="text-sm font-bold text-gray-800 mt-1">An toàn</p>
+                    <div id="plagReportOverview"></div>
+                </div>
+            </div>
+
+            <!-- Right: Detailed Results -->
+            <div class="md:w-2/3">
+                <h4 class="text-base font-bold text-gray-900 border-b pb-3 mb-4">Chi tiết nguồn vi phạm</h4>
+                <div id="plagDetailedResults" class="space-y-4">
+                    <!-- JS sẽ append kết quả vào đây -->
+                </div>
+            </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+{{-- ============================== --}}
+{{-- AI GENERATE SCRIPT (Server-side Gemini) --}}
+{{-- ============================== --}}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const aiPromptTarget = document.getElementById('aiPromptTarget');
+    const aiPromptInput = document.getElementById('aiPromptInput');
+    const btnExecuteAI = document.getElementById('btnExecuteAI');
+
+    if (!aiPromptTarget || !btnExecuteAI) return;
+
+    btnExecuteAI.addEventListener('click', async () => {
+        const promptText = aiPromptInput.value.trim();
+        if (!promptText) {
+            alert('Vui lòng nhập chủ đề viết bài cho AI!');
+            aiPromptInput.focus();
+            return;
+        }
+
+        const originalBtnHtml = btnExecuteAI.innerHTML;
+        btnExecuteAI.disabled = true;
+        aiPromptInput.disabled = true;
+
+        // Tạo/lấy khung trạng thái
+        let progressEl = document.getElementById('aiProgressState');
+        if (!progressEl) {
+            progressEl = document.createElement('div');
+            progressEl.id = 'aiProgressState';
+            progressEl.className = 'mt-3 text-xs text-indigo-700 bg-indigo-100/60 p-3 rounded-xl border border-indigo-200';
+            aiPromptTarget.querySelector('.bg-gradient-to-r').appendChild(progressEl);
+        }
+
+        // Animation giả lập tiến trình
+        let fakeProgress = 0;
+        const steps = [
+            { p: 15, text: 'Đang phân tích chủ đề...' },
+            { p: 35, text: 'Đang nghiên cứu ngữ cảnh...' },
+            { p: 55, text: 'Đang viết bản nháp bài viết...' },
+            { p: 75, text: 'Đang hoàn thiện nội dung...' },
+            { p: 90, text: 'Đang kiểm tra chất lượng...' },
+        ];
+        let stepIdx = 0;
+
+        function renderProgress(percent, text) {
+            progressEl.innerHTML = `
+                <div class="flex justify-between items-center mb-1.5">
+                    <span class="text-[11px] font-semibold text-indigo-700 truncate">
+                        <i class="bi bi-stars mr-1 text-purple-500 animate-pulse"></i> ${text}
+                    </span>
+                    <span class="text-xs font-bold text-indigo-800 ml-2 whitespace-nowrap shrink-0">${percent}%</span>
+                </div>
+                <div class="w-full bg-indigo-200/50 rounded-full h-2.5 overflow-hidden shadow-inner">
+                    <div class="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 h-2.5 rounded-full transition-all duration-700 ease-out" style="width: ${percent}%"></div>
+                </div>
+            `;
+        }
+
+        renderProgress(5, 'Đang kết nối đến AI Gemini...');
+        btnExecuteAI.innerHTML = '<i class="bi bi-hourglass-split animate-spin"></i> Đang xử lý...';
+
+        // Chạy animation giả cho đẹp
+        const progressTimer = setInterval(() => {
+            if (stepIdx < steps.length) {
+                renderProgress(steps[stepIdx].p, steps[stepIdx].text);
+                stepIdx++;
+            }
+        }, 2500);
+
+        try {
+            const fd = new FormData();
+            fd.append('prompt', promptText);
+            fd.append('_token', document.querySelector('meta[name="csrf-token"]').content);
+
+            const response = await fetch("{{ route('ai.generate-post') }}", {
+                method: 'POST',
+                body: fd,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+
+            clearInterval(progressTimer);
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.error || 'Lỗi không xác định từ server.');
+            }
+
+            if (data.content) {
+                renderProgress(100, `Hoàn thành bằng ${data.provider || 'AI'}! Đang chèn vào trình soạn thảo...`);
+
+                // 1. Gắn Tiêu đề
+                const titleInput = document.getElementById('title');
+                if (titleInput && data.title && (!titleInput.value || titleInput.value.trim() === '')) {
+                    titleInput.value = data.title;
+                }
+
+                // 2. Insert Nội dung vào CKEditor
+                let currentContent = window.myEditor ? window.myEditor.getData() : '';
+                if (currentContent === '<p>&nbsp;</p>' || currentContent === '<p><br></p>') currentContent = '';
+
+                const aiBlock = `<br/><h2>📝 Bản nháp AI (Nguồn: ${data.provider || 'AI'})</h2>` + data.content;
+
+                if (window.myEditor) {
+                    window.myEditor.setData(currentContent + aiBlock);
+                } else {
+                    const editorEl = document.getElementById('editor');
+                    if (editorEl) editorEl.value = (editorEl.value || '') + '\n\n' + data.content;
+                }
+
+                // 3. Tự động mượn tạm Ảnh đại diện (nếu chưa có)
+                const thumbDropzone = document.getElementById('thumbDropzone');
+                const thumbnailInput = document.getElementById('thumbnail');
+                const thumbPreview = document.getElementById('thumbPreview');
+                const thumbPreviewWrap = document.getElementById('thumbPreviewWrap');
+
+                if (data.cover_image_prompt && thumbnailInput && !thumbnailInput.files.length && thumbDropzone && (!thumbPreview.src || thumbPreview.src.includes('undefined'))) {
+                    try {
+                        renderProgress(100, `Hoàn thành bài viết (${data.provider || 'AI'}). Đang tự vẽ ảnh bìa...`);
+                        
+                        // Gọi Pollinations API để lấy ảnh AI miễn phí
+                        const imageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(data.cover_image_prompt)}?width=800&height=500&nologo=true`;
+                        const imgRes = await fetch(imageUrl);
+                        const blob = await imgRes.blob();
+                        const file = new File([blob], `ai-cover-${Date.now()}.jpg`, { type: 'image/jpeg' });
+
+                        const dataTransfer = new DataTransfer();
+                        dataTransfer.items.add(file);
+                        thumbnailInput.files = dataTransfer.files;
+
+                        // Hiển thị Preview
+                        const reader = new FileReader();
+                        reader.onload = ev => {
+                            thumbPreview.src = ev.target.result;
+                            thumbPreviewWrap.classList.remove('hidden');
+                            thumbDropzone.classList.add('hidden');
+                        };
+                        reader.readAsDataURL(file);
+                    } catch (e) {
+                        console.warn("Không thể tự động tải ảnh bìa AI", e);
+                    }
+                }
+
+                // Thông báo thành công
+                setTimeout(() => {
+                    progressEl.innerHTML = `
+                        <div class="flex items-center gap-2 text-green-700">
+                            <i class="bi bi-check-circle-fill text-green-500 text-base"></i>
+                            <span class="font-bold">AI đã hoàn thành bài viết!</span>
+                            <span class="text-green-600/70 text-[10px]">Vui lòng đọc lại và chỉnh sửa cho phù hợp.</span>
+                        </div>
+                    `;
+                    progressEl.className = 'mt-3 text-xs p-3 rounded-xl border border-green-200 bg-green-50';
+                }, 500);
+
+                // Ẩn khung AI sau 4 giây
+                setTimeout(() => {
+                    aiPromptTarget.classList.add('hidden');
+                    aiPromptInput.value = '';
+                    progressEl.remove();
+                }, 4000);
+            }
+
+        } catch (error) {
+            clearInterval(progressTimer);
+            console.error('AI Error:', error);
+            progressEl.innerHTML = `
+                <div class="flex items-center gap-2 text-red-700">
+                    <i class="bi bi-exclamation-triangle-fill text-red-500 text-base"></i>
+                    <span class="font-bold">${error.message}</span>
+                </div>
+            `;
+            progressEl.className = 'mt-3 text-xs p-3 rounded-xl border border-red-200 bg-red-50';
+        } finally {
+            btnExecuteAI.disabled = false;
+            aiPromptInput.disabled = false;
+            btnExecuteAI.innerHTML = originalBtnHtml;
+        }
+    });
+});
+</script>
+
 @endpush

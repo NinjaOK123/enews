@@ -43,4 +43,15 @@ return [
         'allowed_domains' => env('GOOGLE_ALLOWED_DOMAINS', 'student.agu.edu.vn,agu.edu.vn'),
     ],
 
+    // AI Providers (Sinh nội dung bài viết)
+    'gemini' => [
+        'api_key' => env('GEMINI_API_KEY'),
+    ],
+    'groq' => [
+        'api_key' => env('GROQ_API_KEY'),
+    ],
+    'deepseek' => [
+        'api_key' => env('DEEPSEEK_API_KEY'),
+    ],
+
 ];

@@ -1041,34 +1041,37 @@
      class="fixed inset-0 z-[999] flex items-center justify-center p-4"
      style="display:none;">
     <div class="absolute inset-0 bg-black/50" @click="open = false"></div>
-    <div class="relative w-full max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden" @click.stop
+    <div class="relative w-full max-w-xl bg-white rounded-2xl shadow-2xl overflow-hidden" @click.stop
          x-transition:enter="transition ease-out duration-200"
          x-transition:enter-start="opacity-0 scale-95"
          x-transition:enter-end="opacity-100 scale-100">
-        <div class="flex items-center justify-between px-6 py-4 bg-gradient-to-r from-[#1a5c38] to-[#2d9e60]">
-            <h5 class="text-white font-bold text-lg">🔖 Tạo bộ sưu tập mới</h5>
+        <div class="flex items-center justify-between px-8 py-5 bg-gradient-to-r from-[#1a5c38] to-[#2d9e60]">
+            <h5 class="text-white font-bold text-xl">🔖 Tạo bộ sưu tập mới</h5>
             <button @click="open = false" class="text-white/80 hover:text-white transition-colors">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/>
                 </svg>
             </button>
         </div>
-        <div class="p-6 flex flex-col gap-4">
+        <div class="p-8 flex flex-col gap-6">
             <div>
-                <label class="block text-sm font-semibold text-gray-700 mb-1.5">Tên bộ sưu tập</label>
+                <label class="block text-base font-bold text-gray-700 mb-2">Tên bộ sưu tập</label>
                 <input type="text" x-model="name" maxlength="100" placeholder="Ví dụ: Bài viết yêu thích"
-                       class="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-[#2a7a27] focus:ring-2 focus:ring-[#2a7a27]/20 transition">
+                       class="w-full border border-gray-300 rounded-xl px-5 py-3.5 text-base outline-none focus:border-[#2a7a27] focus:ring-2 focus:ring-[#2a7a27]/20 transition shadow-sm">
             </div>
-            <label class="flex items-center gap-2 cursor-pointer">
-                <input type="checkbox" x-model="isPublic" class="w-4 h-4 accent-[#2a7a27]">
-                <span class="text-sm text-gray-600">Công khai (mọi người đều xem được)</span>
+            <label class="flex items-center gap-3 cursor-pointer p-2 hover:bg-gray-50 rounded-lg transition-colors -ml-2">
+                <input type="checkbox" x-model="isPublic" class="w-5 h-5 accent-[#2a7a27] rounded cursor-pointer">
+                <span class="text-base text-gray-700 font-medium cursor-pointer">Công khai (mọi người đều xem được)</span>
             </label>
         </div>
-        <div class="flex items-center justify-end gap-3 px-6 py-4 border-t border-gray-100">
+        <div class="flex items-center justify-end gap-3 px-8 py-5 border-t border-gray-100 bg-gray-50/50">
             <button type="button" @click="open = false"
-                    class="px-4 py-2 text-sm font-semibold text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-xl transition">Hủy</button>
+                    class="px-6 py-2.5 text-base font-semibold text-gray-600 bg-white border border-gray-200 hover:bg-gray-100 rounded-xl transition-colors shadow-sm">Hủy</button>
             <button type="button" @click="createCollection(name, isPublic, () => open = false)"
-                    class="px-5 py-2 text-sm font-bold text-white bg-[#2a7a27] hover:bg-[#1b5e20] rounded-xl shadow transition">🔖 Tạo bộ sưu tập</button>
+                    class="px-6 py-2.5 text-base font-bold text-white bg-[#2a7a27] hover:bg-[#1b5e20] rounded-xl shadow-md transition-colors flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
+                Tạo bộ sưu tập
+            </button>
         </div>
     </div>
 </div>

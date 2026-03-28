@@ -1,7 +1,7 @@
 @extends('layouts.admin')
 @section('title', 'Quản lý người dùng')
 @section('content')
-<div class="p-6 max-w-7xl mx-auto">
+<div class="p-6 max-w-7xl mx-auto" x-data="{ showBulkConfirm: false, selectedActionText: '', showDeleteConfirm: false, deleteUrl: '' }">
     <!-- Header -->
     <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
         <h3 class="text-2xl font-bold text-gray-800 tracking-tight">Quản lý người dùng</h3>
@@ -60,16 +60,27 @@
         <div class="flex flex-col sm:flex-row items-center justify-between gap-4 mb-4 bg-white p-3 rounded-2xl shadow-sm border border-gray-100">
             <div class="flex items-center gap-3 w-full sm:w-auto">
                 <span class="text-sm text-gray-600 font-medium pl-2"><i class="bi bi-ui-checks"></i> Chọn nhiều:</span>
-                <select name="bulk_action" class="flex-1 sm:flex-none px-4 py-2 border border-gray-200 rounded-xl text-sm outline-none focus:border-green-400 focus:ring-2 focus:ring-green-100 min-w-[200px] cursor-pointer" required>
+                <select name="bulk_action" id="bulkActionSelect" class="flex-1 sm:flex-none px-4 py-2 border border-gray-200 rounded-xl text-sm outline-none focus:border-green-400 focus:ring-2 focus:ring-green-100 min-w-[200px] cursor-pointer" required>
                     <option value="">-- Chọn thao tác hàng loạt --</option>
-                    <option value="upgrade_contributor">🚀 Nâng hạng lên Cộng tác viên</option>
+                    <option value="upgrade_contributor" {{ request('bulk_action') == 'upgrade_contributor' ? 'selected' : '' }}>🚀 Nâng hạng lên Cộng tác viên</option>
                     <option value="downgrade_reader">Ngưng cấp quyền (Về Người đọc)</option>
                     <option value="lock_account">🔒 Khoá tài khoản</option>
                     <option value="unlock_account">🔓 Mở khoá tài khoản</option>
                     <option value="delete">🗑 Xoá tài khoản</option>
                 </select>
             </div>
-            <button type="submit" onclick="return confirm('Bạn có chắc chắn muốn áp dụng thao tác này lên các tài khoản được tick chọn? Hành động này sẽ gửi thông báo đến họ.')" class="w-full sm:w-auto px-6 py-2 text-sm font-bold text-white bg-green-600 hover:bg-green-700 rounded-xl shadow-sm transition">
+            <button type="button" @click="
+                let actionSelect = document.getElementById('bulkActionSelect');
+                let checkedCount = document.querySelectorAll('.user-checkbox:checked').length;
+                if(checkedCount === 0) {
+                    alert('Vui lòng chọn ít nhất 1 người dùng!');
+                } else if(actionSelect.value === '') {
+                    alert('Vui lòng chọn thao tác hàng loạt!');
+                } else {
+                    selectedActionText = actionSelect.options[actionSelect.selectedIndex].text;
+                    showBulkConfirm = true;
+                }
+            " class="w-full sm:w-auto px-6 py-2 text-sm font-bold text-white bg-green-600 hover:bg-green-700 rounded-xl shadow-sm transition">
                 Áp dụng thao tác
             </button>
         </div>
@@ -142,12 +153,9 @@
                                     <i class="bi bi-pencil-square"></i>
                                 </a>
                                 @if(auth()->id() !== $user->id)
-                                <form action="{{ route('admin.users.destroy', $user) }}" method="POST" class="m-0" onsubmit="return confirm('Bạn có chắc xoá người dùng này không? Hành động này không thể hoàn tác.');">
-                                    @csrf @method('DELETE')
-                                    <button type="submit" class="w-8 h-8 flex items-center justify-center rounded-lg bg-red-50 text-red-600 hover:bg-red-600 hover:text-white transition-colors shadow-sm" title="Xóa tài khoản">
+                                    <button type="button" @click="deleteUrl = '{{ route('admin.users.destroy', $user) }}'; showDeleteConfirm = true;" class="w-8 h-8 flex items-center justify-center rounded-lg bg-red-50 text-red-600 hover:bg-red-600 hover:text-white transition-colors shadow-sm" title="Xóa tài khoản">
                                         <i class="bi bi-trash3"></i>
                                     </button>
-                                </form>
                                 @else
                                 <div class="w-8 h-8 flex items-center justify-center rounded-lg bg-gray-50 text-gray-300 cursor-not-allowed" title="Không thể tự xóa chính mình">
                                     <i class="bi bi-trash3"></i>
@@ -161,7 +169,11 @@
                         <td colspan="6" class="px-6 py-16 text-center text-gray-500">
                             <div class="flex flex-col items-center justify-center gap-3">
                                 <i class="bi bi-people text-4xl text-gray-300"></i>
-                                <p>Chưa có người dùng nào được tìm thấy.</p>
+                                @if(request('status') === 'inactive')
+                                    <p>Hiện tại không có tài khoản nào bị khoá.</p>
+                                @else
+                                    <p>Chưa có người dùng nào được tìm thấy.</p>
+                                @endif
                             </div>
                         </td>
                     </tr>
@@ -169,6 +181,7 @@
                 </tbody>
             </table>
         </div>
+        </form>
         
         <!-- Pagination -->
         @if($users->hasPages())
@@ -177,6 +190,138 @@
         </div>
         @endif
     </div>
+    
+    <!-- Alpine Modal Xác Nhận -->
+    <div x-show="showBulkConfirm" x-cloak
+         class="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/60 backdrop-blur-sm px-4"
+         x-transition:enter="transition ease-out duration-200"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         x-transition:leave="transition ease-in duration-150"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0">
+        
+        <div @click.outside="showBulkConfirm = false" 
+             class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden"
+             x-transition:enter="transition ease-out duration-200"
+             x-transition:enter-start="opacity-0 translate-y-4 scale-95"
+             x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+             x-transition:leave="transition ease-in duration-150"
+             x-transition:leave-start="opacity-100 translate-y-0 scale-100"
+             x-transition:leave-end="opacity-0 translate-y-4 scale-95">
+             
+            <div class="p-6">
+                <div class="w-12 h-12 rounded-full bg-yellow-100 text-yellow-600 flex items-center justify-center mb-4 text-2xl mx-auto border-4 border-yellow-50">
+                    <i class="bi bi-exclamation-triangle-fill"></i>
+                </div>
+                <h3 class="text-xl font-bold text-center text-gray-800 mb-2">Xác nhận thao tác</h3>
+                <p class="text-gray-600 text-center text-sm leading-relaxed mb-4">
+                    Bạn sắp thực hiện thao tác <br> <strong class="text-green-700" x-text="selectedActionText"></strong> <br>lên các tài khoản đã chọn.
+                </p>
+                <div class="bg-gray-50 border border-gray-100 rounded-lg p-3 text-xs text-center text-gray-500 font-medium mb-6">
+                    <i class="bi bi-info-circle mr-1"></i>Hành động này sẽ gửi một thông báo trực tiếp đến họ.
+                </div>
+                
+                <div class="flex gap-3">
+                    <button type="button" @click="showBulkConfirm = false" class="flex-1 px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-xl transition-colors">
+                        Hủy bỏ
+                    </button>
+                    <button type="button" onclick="document.getElementById('bulkForm').submit()" class="flex-1 px-4 py-2.5 bg-green-600 hover:bg-green-700 text-white font-bold rounded-xl shadow-sm shadow-green-600/30 transition-colors">
+                        Xác nhận
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Alpine Modal Xác Nhận Xóa Từng User -->
+    <div x-show="showDeleteConfirm" x-cloak
+         class="fixed inset-0 z-[60] flex items-center justify-center bg-gray-900/60 backdrop-blur-sm px-4"
+         x-transition:enter="transition ease-out duration-200"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         x-transition:leave="transition ease-in duration-150"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0">
+        
+        <div @click.outside="showDeleteConfirm = false" 
+             class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden"
+             x-transition:enter="transition ease-out duration-200"
+             x-transition:enter-start="opacity-0 translate-y-4 scale-95"
+             x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+             x-transition:leave="transition ease-in duration-150"
+             x-transition:leave-start="opacity-100 translate-y-0 scale-100"
+             x-transition:leave-end="opacity-0 translate-y-4 scale-95">
+             
+            <div class="p-6">
+                <!-- Icon cảnh báo mức độ cao (Xóa) -->
+                <div class="w-12 h-12 rounded-full bg-red-100 text-red-600 flex items-center justify-center mb-4 text-2xl mx-auto border-4 border-red-50">
+                    <i class="bi bi-trash3-fill"></i>
+                </div>
+                
+                <h3 class="text-xl font-bold text-center text-gray-800 mb-2">Xóa người dùng</h3>
+                <p class="text-gray-600 text-center text-sm leading-relaxed mb-4">
+                    Bạn có chắc chắn muốn xóa tài khoản này không?
+                </p>
+                
+                <div class="bg-red-50 border border-red-100 rounded-lg p-3 text-xs text-center text-red-700 font-medium mb-6">
+                    <i class="bi bi-exclamation-triangle-fill mr-1"></i>Hành động này không thể hoàn tác và sẽ xóa toàn bộ dữ liệu liên quan.
+                </div>
+                
+                <form method="POST" :action="deleteUrl" class="m-0">
+                    @csrf
+                    @method('DELETE')
+                    <div class="flex w-full gap-3">
+                        <button type="button" @click="showDeleteConfirm = false" class="flex-1 px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-xl transition-colors">
+                            Hủy bỏ
+                        </button>
+                        <button type="submit" class="flex-1 px-4 py-2.5 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl shadow-sm shadow-red-600/30 transition-colors">
+                            Xác nhận xóa
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const select = document.getElementById('bulkActionSelect');
+        select.addEventListener('change', function() {
+            const val = this.value;
+            if (!val) return;
+            
+            const urlParams = new URLSearchParams(window.location.search);
+            let shouldRedirect = false;
+
+            if (val === 'upgrade_contributor') {
+                if (urlParams.get('role') !== 'reader') {
+                    urlParams.set('role', 'reader');
+                    shouldRedirect = true;
+                }
+            } 
+            else if (val === 'unlock_account') {
+                if (urlParams.get('status') !== 'inactive') {
+                    urlParams.set('status', 'inactive');
+                    urlParams.delete('role'); // xoá bộ lọc chức danh nếu có
+                    shouldRedirect = true;
+                }
+            }
+            else if (val === 'lock_account' || val === 'delete') {
+                if (urlParams.has('status') || urlParams.has('role')) {
+                    urlParams.delete('status');
+                    urlParams.delete('role');
+                    shouldRedirect = true;
+                }
+            }
+
+            if (shouldRedirect) {
+                urlParams.set('bulk_action', val); // Giữ lại lựa chọn hiện tại
+                window.location.href = window.location.pathname + '?' + urlParams.toString();
+            }
+        });
+    });
+</script>
 @endsection
 
