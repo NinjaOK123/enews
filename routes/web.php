@@ -22,7 +22,7 @@ Route::get('/bai-viet/{post:slug}', [PostController::class, 'show'])->name('post
 Route::get('/gioi-thieu',         [PageController::class, 'gioiThieu'])->name('about');
 Route::get('/quy-dinh',           [PageController::class, 'quyDinh'])->name('rules');
 Route::get('/lien-he',            [PageController::class, 'lienHe'])->name('contact');
-Route::post('/lien-he',           [PageController::class, 'sendContactEmail'])->name('contact.send');
+Route::post('/lien-he',           [PageController::class, 'sendContactEmail'])->name('contact.send')->middleware('throttle:3,1');
 Route::get('/enews-doc-va-suy-ngam', [PageController::class, 'docVaSuyNgam'])->name('doc-suy-ngam');
 
 // ─── Bình luận (yêu cầu đăng nhập) ────────────────────────────
@@ -189,7 +189,7 @@ Route::prefix('contributor')
          
          // Posts management
          Route::get('/posts/create', [App\Http\Controllers\Contributor\PostController::class, 'create'])->name('posts.create');
-         Route::post('/posts', [App\Http\Controllers\Contributor\PostController::class, 'store'])->name('posts.store');
+         Route::post('/posts', [App\Http\Controllers\Contributor\PostController::class, 'store'])->name('posts.store')->middleware('throttle:10,1');
          Route::get('/posts/{post}/edit', [App\Http\Controllers\Contributor\PostController::class, 'edit'])->name('posts.edit');
          Route::post('/posts/{post}/update', [App\Http\Controllers\Contributor\PostController::class, 'update'])->name('posts.update');
          Route::delete('/posts/{post}', [App\Http\Controllers\Contributor\PostController::class, 'destroy'])->name('posts.destroy');
@@ -206,7 +206,7 @@ Route::prefix('contributor')
 
 // AI endpoints
 Route::middleware(['auth'])->group(function () {
-    Route::post('/ai/generate-post', [App\Http\Controllers\AIController::class, 'generatePost'])->name('ai.generate-post');
+    Route::post('/ai/generate-post', [App\Http\Controllers\AIController::class, 'generatePost'])->name('ai.generate-post')->middleware('throttle:5,1');
 });
 
 // ─── Google OAuth ───────────────────────────────────────────────

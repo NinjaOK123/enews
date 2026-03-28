@@ -39,8 +39,8 @@ class PostController extends Controller
         $post->slug = Str::slug($validated['title']) . '-' . uniqid();
         $post->category_id = $validated['category_id'];
         $post->author_id = auth()->id();
-        $post->content = $validated['content'];
-        $post->excerpt = Str::limit(strip_tags($validated['content']), 150);
+        $post->content = clean($validated['content']);
+        $post->excerpt = Str::limit(strip_tags($post->content), 150);
         $post->source_author = $request->input('source_author');
         $post->photographer = $request->input('photographer');
         $post->status = $request->input('action') === 'pending' ? 'pending' : 'draft';
@@ -88,8 +88,8 @@ class PostController extends Controller
 
         $post->title = $validated['title'];
         $post->category_id = $validated['category_id'];
-        $post->content = $validated['content'];
-        $post->excerpt = Str::limit(strip_tags($validated['content']), 150);
+        $post->content = clean($validated['content']);
+        $post->excerpt = Str::limit(strip_tags($post->content), 150);
         $post->source_author = $request->input('source_author');
         $post->photographer = $request->input('photographer');
 
@@ -169,7 +169,7 @@ class PostController extends Controller
         $this->authorize('update', $post);
         
         // Cập nhật nội dung nhưng không đổi trạng thái
-        $post->content = $request->input('content', $post->content);
+        $post->content = clean($request->input('content', $post->content));
         $post->excerpt = Str::limit(strip_tags($post->content), 150);
         $post->save();
 
