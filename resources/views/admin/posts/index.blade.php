@@ -5,10 +5,13 @@
     <!-- Header -->
     <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
         <h3 class="text-2xl font-bold text-gray-800 tracking-tight">Quản lý bài viết</h3>
-        <!-- Admin can create posts by redirecting to contributor create -->
-        <a href="{{ route('contributor.posts.create') }}" class="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white rounded-xl text-sm font-semibold shadow-sm transition-all hover:shadow-emerald-500/20">
-            <i class="bi bi-pencil-square"></i> Viết bài mới
-        </a>
+        <div class="flex items-center gap-3">
+
+            <!-- Admin can create posts by redirecting to contributor create -->
+            <a href="{{ route('contributor.posts.create') }}" class="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white rounded-xl text-sm font-semibold shadow-sm transition-all hover:shadow-emerald-500/20">
+                <i class="bi bi-pencil-square"></i> Viết bài mới
+            </a>
+        </div>
     </div>
 
     @if(session('success'))
@@ -91,13 +94,14 @@
     <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
         <div class="overflow-x-auto">
             <table class="w-full text-left text-sm whitespace-nowrap">
-                <thead class="bg-gray-50/80 border-b border-gray-100 text-gray-500 font-semibold tracking-wide text-xs uppercase">
+                <thead class="bg-gray-50 border-b border-gray-100 text-gray-500 font-semibold text-[11px] tracking-wider uppercase">
                     <tr>
-                        <th class="px-6 py-5">Tiêu đề</th>
-                        <th class="px-6 py-5">Chuyên mục</th>
-                        <th class="px-6 py-5">Người đăng</th>
+                        <th class="px-6 py-5 text-center">Tiêu đề</th>
+                        <th class="px-6 py-5 text-center">Chuyên mục</th>
+                        <th class="px-6 py-5 text-center">Người đăng</th>
                         <th class="px-6 py-5 text-center">Trạng thái</th>
-                        <th class="px-6 py-5">Ngày tạo</th>
+                        <th class="px-6 py-5 text-center">Hiện Slider</th>
+                        <th class="px-6 py-5 text-center">Ngày tạo</th>
                         <th class="px-6 py-5 text-right">Hành động</th>
                     </tr>
                 </thead>
@@ -131,8 +135,43 @@
                                 <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gray-50 text-gray-600 text-xs font-bold border border-gray-200/60 shadow-sm"><i class="bi bi-file-earmark-text text-[10px]"></i> Bản nháp</span>
                             @endif
                         </td>
-                        <td class="px-6 py-5 align-top text-gray-500 text-[13px] font-medium">
-                            <i class="bi bi-clock me-1 text-gray-400"></i> {{ $post->created_at->format('d/m/Y H:i') }}
+                        <td class="px-6 py-5 align-top text-center">
+                            <div x-data="{
+                                isOn: {{ $post->is_featured ? 'true' : 'false' }},
+                                loading: false,
+                                toggle() {
+                                    if(this.loading) return;
+                                    this.loading = true;
+                                    axios.post('{{ route('admin.posts.toggle-slider', $post->id) }}')
+                                    .then(res => {
+                                        if(res.data.success) {
+                                            this.isOn = res.data.is_featured;
+                                        }
+                                    })
+                                    .catch(err => {
+                                        if (err.response && err.response.data && err.response.data.message) {
+                                            alert(err.response.data.message);
+                                        } else {
+                                            alert('Lỗi cập nhật Slide!');
+                                        }
+                                    })
+                                    .finally(() => {
+                                        this.loading = false;
+                                    });
+                                }
+                            }" class="flex flex-col items-center justify-center gap-1.5 w-full">
+                                <button type="button" @click="toggle()" :class="isOn ? 'bg-blue-600' : 'bg-gray-200'" class="relative inline-flex h-5 w-9 flex-shrink-0 cursor-pointer !rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1" :disabled="loading">
+                                    <span class="sr-only">Toggle Slider</span>
+                                    <span aria-hidden="true" :class="isOn ? 'translate-x-4' : 'translate-x-0'" class="pointer-events-none inline-block h-4 w-4 transform !rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out flex items-center justify-center">
+                                        <svg x-show="loading" class="animate-spin h-3 w-3 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path></svg>
+                                    </span>
+                                </button>
+                                <span x-text="isOn ? 'Hiện Slide' : 'Đang ẩn'" class="text-[11px] font-bold" :class="isOn ? 'text-blue-700' : 'text-gray-400'"></span>
+                            </div>
+                        </td>
+                        <td class="px-6 py-5 align-top text-center text-gray-500 text-[13px] font-medium">
+                            <i class="bi bi-clock me-1 text-gray-400"></i> {{ $post->created_at->format('d/m/Y') }}<br>
+                            {{ $post->created_at->format('H:i') }}
                         </td>
                         <td class="px-6 py-5 align-top text-right relative" x-data="{ actOpen: false }" @click.outside="actOpen = false">
                             <div class="flex items-center justify-end">

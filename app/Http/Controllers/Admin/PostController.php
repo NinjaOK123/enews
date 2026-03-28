@@ -43,6 +43,7 @@ class PostController extends Controller
             $query->whereDate('created_at', $request->date);
         }
 
+
         $posts = $query->latest()->paginate(15)->withQueryString();
         $categories = Category::orderBy('name')->get();
         
@@ -56,8 +57,9 @@ class PostController extends Controller
     public function edit(Post $post): View
     {
         $categories = \App\Models\Category::all();
+        $royaltyRates = \App\Models\RoyaltyRate::orderBy('group_name')->orderBy('name')->get();
         // Uses the same view as contributor, or a dedicated admin view.
-        return view('contributor.posts.create', compact('post', 'categories'));
+        return view('contributor.posts.create', compact('post', 'categories', 'royaltyRates'));
     }
 
     /**
@@ -86,6 +88,32 @@ class PostController extends Controller
     {
         $post->update(['status' => 'rejected']);
         return back()->with('success', 'Đã từ chối/gỡ bài viết thành công.');
+    }
+
+    /**
+     * Bật / Tắt trạng thái hiển thị trên Slider của bài viết (tối đa 5 bài)
+     */
+    public function toggleSlider(Post $post)
+    {
+        // Nếu bài viết đang không hiện trên Slider và được yêu cầu bật
+        if (!$post->is_featured) {
+            $currentCount = Post::where('is_featured', true)->count();
+            if ($currentCount >= 5) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Bạn chỉ được phép bật tối đa 5 bài trên Slider. Vui lòng tắt một bài bất kỳ trước khi bật bài này!'
+                ], 400);
+            }
+        }
+
+        $post->is_featured = !$post->is_featured;
+        $post->save();
+
+        return response()->json([
+            'success' => true,
+            'is_featured' => $post->is_featured,
+            'message' => $post->is_featured ? 'Đã bật bài viết trên Slider.' : 'Đã tắt bài viết trên Slider.'
+        ]);
     }
 
     /**

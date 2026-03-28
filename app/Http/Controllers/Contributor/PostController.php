@@ -42,10 +42,15 @@ class PostController extends Controller
         $post->content = $validated['content'];
         $post->excerpt = Str::limit(strip_tags($validated['content']), 150);
         $post->source_author = $request->input('source_author');
+        $post->photographer = $request->input('photographer');
         $post->status = $request->input('action') === 'pending' ? 'pending' : 'draft';
 
         if ($request->hasFile('thumbnail')) {
             $post->thumbnail = $this->processThumbnail($request->file('thumbnail'));
+        }
+
+        if (in_array(auth()->user()->role, ['admin', 'editor'])) {
+            $post->is_featured = $request->has('is_featured');
         }
 
         $post->save();
@@ -64,7 +69,8 @@ class PostController extends Controller
     {
         $this->authorize('update', $post);
         $categories = Category::all();
-        return view('contributor.posts.create', compact('post', 'categories'));
+        $royaltyRates = \App\Models\RoyaltyRate::orderBy('group_name')->orderBy('name')->get();
+        return view('contributor.posts.create', compact('post', 'categories', 'royaltyRates'));
     }
 
     public function update(Request $request, Post $post)
@@ -76,6 +82,8 @@ class PostController extends Controller
             'category_id' => 'required|exists:categories,id',
             'thumbnail' => 'nullable|image|max:5120',
             'content' => 'required|min:200',
+            'royalty_rate_id' => 'nullable|exists:royalty_rates,id',
+            'image_count' => 'nullable|integer|min:0',
         ]);
 
         $post->title = $validated['title'];
@@ -83,6 +91,7 @@ class PostController extends Controller
         $post->content = $validated['content'];
         $post->excerpt = Str::limit(strip_tags($validated['content']), 150);
         $post->source_author = $request->input('source_author');
+        $post->photographer = $request->input('photographer');
 
         if ($request->hasFile('thumbnail')) {
             // Delete old thumbnail if needed
@@ -101,6 +110,20 @@ class PostController extends Controller
                 $post->published_at = now();
             } elseif ($action === 'reject' && in_array(auth()->user()->role, ['admin', 'editor'])) {
                 $post->status = 'rejected';
+            }
+        }
+
+        if (in_array(auth()->user()->role, ['admin', 'editor'])) {
+            $post->is_featured = $request->has('is_featured');
+            $post->royalty_rate_id = $request->input('royalty_rate_id');
+            $post->image_count = $request->input('image_count', 0);
+            $post->royalty_multiplier = 1;
+            
+            if ($post->royalty_rate_id) {
+                $rate = \App\Models\RoyaltyRate::find($post->royalty_rate_id);
+                $post->royalty_total = ($rate->amount * $post->royalty_multiplier) + ($post->image_count * 10000);
+            } else {
+                $post->royalty_total = 0;
             }
         }
 

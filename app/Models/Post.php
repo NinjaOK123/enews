@@ -15,6 +15,7 @@ class Post extends Model
         'title', 'slug', 'excerpt', 'content', 'thumbnail',
         'author_id', 'category_id', 'status', 'published_at', 'view_count',
         'is_featured', 'meta_desc', 'meta_key', 'source_author',
+        'royalty_rate_id', 'royalty_multiplier', 'image_count', 'royalty_total'
     ];
 
     protected $casts = [
@@ -81,6 +82,11 @@ class Post extends Model
     public function author(): BelongsTo
     {
         return $this->belongsTo(User::class, 'author_id');
+    }
+
+    public function royaltyRate(): BelongsTo
+    {
+        return $this->belongsTo(RoyaltyRate::class, 'royalty_rate_id');
     }
 
     public function category(): BelongsTo

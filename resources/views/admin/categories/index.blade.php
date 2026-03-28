@@ -131,9 +131,8 @@
                         <th class="px-3 py-4 w-28 text-center" title="Sắp xếp">Thứ tự</th>
                         <th class="px-5 py-4">Tên chuyên mục</th>
                         <th class="px-4 py-4">Slug</th>
-                        <th class="px-4 py-4 text-center whitespace-nowrap">Bài viết</th>
-                        <th class="px-4 py-4 text-center whitespace-nowrap">Trạng thái</th>
-                        <th class="px-4 py-4 text-center whitespace-nowrap">Menu Ngang</th>
+                        <th class="px-4 py-4 text-left whitespace-nowrap">Trạng thái</th>
+                        <th class="px-4 py-4 text-left whitespace-nowrap">Hiển thị Menu</th>
                         <th class="px-5 py-4 text-right whitespace-nowrap">Thao tác</th>
                     </tr>
                 </thead>
@@ -172,17 +171,38 @@
                         <td class="px-4 py-3 text-gray-500 font-mono text-xs">
                             {{ $category->slug }}
                         </td>
-                        <td class="px-4 py-3 text-center">
-                            <span class="inline-flex px-2.5 py-1 rounded-full bg-gray-100 text-gray-600 text-[11px] font-bold">{{ $category->posts_count }}</span>
+                        <td class="px-4 py-3">
+                            <div x-data="{
+                                isOn: {{ $category->is_active ? 'true' : 'false' }},
+                                loading: false,
+                                toggle() {
+                                    if(this.loading) return;
+                                    this.loading = true;
+                                    axios.post('{{ route('admin.categories.toggle-active', $category->id) }}')
+                                    .then(res => {
+                                        if(res.data.success) {
+                                            this.isOn = !this.isOn;
+                                        }
+                                    })
+                                    .catch(err => {
+                                        alert('Đã xảy ra lỗi cập nhật!');
+                                        console.error(err);
+                                    })
+                                    .finally(() => {
+                                        this.loading = false;
+                                    });
+                                }
+                            }" class="flex justify-start items-center gap-2.5 w-max">
+                                <button type="button" @click="toggle()" :class="isOn ? 'bg-emerald-500' : 'bg-gray-200'" class="relative inline-flex h-5 w-9 flex-shrink-0 cursor-pointer !rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-1" :disabled="loading">
+                                    <span class="sr-only">Toggle Status</span>
+                                    <span aria-hidden="true" :class="isOn ? 'translate-x-4' : 'translate-x-0'" class="pointer-events-none inline-block h-4 w-4 transform !rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out flex items-center justify-center">
+                                        <svg x-show="loading" class="animate-spin h-3 w-3 text-emerald-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path></svg>
+                                    </span>
+                                </button>
+                                <span x-text="isOn ? 'Đang hiện' : 'Đang tắt'" class="text-[12px] font-bold" :class="isOn ? 'text-emerald-700' : 'text-gray-500'"></span>
+                            </div>
                         </td>
-                        <td class="px-4 py-3 text-center">
-                            @if($category->is_active)
-                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 text-[11px] font-bold border border-emerald-200/60 shadow-sm"><i class="bi bi-check-circle-fill"></i> Đang hiện</span>
-                            @else
-                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-gray-100 text-gray-500 text-[11px] font-bold border border-gray-200/60 shadow-sm"><i class="bi bi-eye-slash-fill"></i> Đang ẩn</span>
-                            @endif
-                        </td>
-                        <td class="px-4 py-3 text-center">
+                        <td class="px-4 py-3">
                             <div x-data="{
                                 isOn: {{ $category->show_in_menu ? 'true' : 'false' }},
                                 loading: false,
@@ -197,21 +217,17 @@
                                             this.isOn = !this.isOn;
                                         }
                                     })
-                                    .catch(err => {
-                                        alert('Đã xảy ra lỗi cập nhật!');
-                                        console.error(err);
-                                    })
-                                    .finally(() => {
-                                        this.loading = false;
-                                    });
+                                    .catch(err => alert('Lỗi!'))
+                                    .finally(() => this.loading = false);
                                 }
-                            }" class="flex justify-center">
-                                <button type="button" @click="toggle()" :class="isOn ? 'bg-blue-500' : 'bg-gray-200'" class="relative inline-flex h-5 w-9 flex-shrink-0 cursor-pointer !rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1" :disabled="loading">
+                            }" class="flex justify-start items-center gap-2.5 w-max">
+                                <button type="button" @click="toggle()" :class="isOn ? 'bg-blue-500' : 'bg-gray-200'" class="relative inline-flex h-5 w-9 flex-shrink-0 cursor-pointer !rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1" :disabled="loading" title="Bật/Tắt hiển thị trên navbar">
                                     <span class="sr-only">Toggle Menu</span>
                                     <span aria-hidden="true" :class="isOn ? 'translate-x-4' : 'translate-x-0'" class="pointer-events-none inline-block h-4 w-4 transform !rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out flex items-center justify-center">
                                         <svg x-show="loading" class="animate-spin h-3 w-3 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path></svg>
                                     </span>
                                 </button>
+                                <span x-text="isOn ? 'Hiển thị Menu' : 'Ẩn khỏi Menu'" class="text-[12px] font-bold" :class="isOn ? 'text-blue-700' : 'text-gray-500'"></span>
                             </div>
                         </td>
                         <td class="px-5 py-3 text-right">

@@ -177,6 +177,97 @@
             @error('category_id')<p class="mt-1 text-xs text-red-500">{{ $message }}</p>@enderror
           </div>
 
+          {{-- Đặt làm Tiêu Điểm / Nổi bật (Chỉ dành cho Ban Biên tập) --}}
+          @if(in_array(auth()->user()->role ?? '', ['admin', 'editor']))
+          <div class="bg-gradient-to-br from-indigo-50 to-blue-50 rounded-2xl border border-indigo-100 shadow-sm p-5 relative overflow-hidden">
+            <div class="absolute -right-4 -bottom-4 text-indigo-200 opacity-20">
+              <i class="bi bi-star-fill" style="font-size: 6rem;"></i>
+            </div>
+            <label class="flex items-center gap-3 cursor-pointer relative z-10">
+              <input type="checkbox" name="is_featured" value="1"
+                     {{ old('is_featured', $post->is_featured ?? false) ? 'checked' : '' }}
+                     class="w-5 h-5 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500 transition">
+              <span class="text-sm font-bold text-indigo-800 tracking-wide uppercase"><i class="bi bi-star me-1"></i> Đặt làm Bài Tiêu biểu</span>
+            </label>
+            <p class="text-[11px] text-indigo-600 mt-2 relative z-10 font-medium">✨ Bài viết này sẽ được ưu tiên xuất hiện lướt nhẹ nhàng trên banner siêu to khổng lồ ở đầu Trang chủ.</p>
+          </div>
+          @endif
+
+          {{-- Nhuận bút (Chỉ dành cho Ban Biên tập) --}}
+          @if(in_array(auth()->user()->role ?? '', ['admin', 'editor']) && isset($royaltyRates))
+          <div class="bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl border border-green-100 shadow-sm p-5 relative overflow-hidden">
+            <div class="absolute -right-4 -top-4 text-green-200 opacity-30">
+              <i class="bi bi-wallet2" style="font-size: 5rem;"></i>
+            </div>
+            <label class="block text-xs font-bold text-green-700 uppercase tracking-wider mb-3 relative z-10">
+              <i class="bi bi-cash-coin me-1"></i> Định mức Nhuận bút
+            </label>
+            
+            <div class="space-y-3 relative z-10">
+              <div>
+                <label class="block text-xs text-gray-600 mb-1">Thể loại bài viết</label>
+                <select name="royalty_rate_id" id="royalty_rate_id"
+                        class="w-full border border-green-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-green-500 focus:ring-2 focus:ring-green-200 bg-white transition">
+                  <option value="">-- Bỏ qua (Không tính) --</option>
+                  @php $currentGroup = ''; @endphp
+                  @foreach($royaltyRates as $rate)
+                    @if($currentGroup != $rate->group_name)
+                      @if($currentGroup != '') </optgroup> @endif
+                      <optgroup label="{{ $rate->group_name }}">
+                      @php $currentGroup = $rate->group_name; @endphp
+                    @endif
+                    <option value="{{ $rate->id }}" data-amount="{{ $rate->amount }}"
+                      {{ old('royalty_rate_id', $post->royalty_rate_id ?? '') == $rate->id ? 'selected' : '' }}>
+                      {{ $rate->name }} ({{ number_format($rate->amount) }}đ)
+                    </option>
+                  @endforeach
+                  @if($currentGroup != '') </optgroup> @endif
+                </select>
+              </div>
+              
+              <div>
+                <label class="block text-xs text-gray-600 mb-1">Số lượng Ảnh (Chiết tính)</label>
+                <div class="flex items-center gap-2">
+                  <input type="number" name="image_count" id="image_count" min="0" value="{{ old('image_count', $post->image_count ?? 0) }}"
+                         class="w-20 border border-green-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-green-500 bg-white transition text-center">
+                  <span class="text-xs text-gray-500 cursor-pointer hover:text-green-600" onclick="document.getElementById('image_count').value = (document.getElementById('editor').value.match(/<img/g) || []).length">
+                    <i class="bi bi-arrow-repeat"></i> Đếm tự động
+                  </span>
+                </div>
+                <p class="text-[10px] text-green-600 mt-1">* 10.000đ / ảnh</p>
+              </div>
+              
+              <div class="pt-2 mt-2 border-t border-green-200 flex justify-between items-center bg-white/50 px-3 py-2 rounded-lg">
+                <span class="text-xs font-semibold text-gray-600">Thành tiền:</span>
+                <span class="text-sm font-bold text-green-700" id="royaltyTotalPreview">0 đ</span>
+              </div>
+            </div>
+          </div>
+          
+          <script>
+            document.addEventListener('DOMContentLoaded', function() {
+              const rateSelect = document.getElementById('royalty_rate_id');
+              const imageInput = document.getElementById('image_count');
+              const totalPreview = document.getElementById('royaltyTotalPreview');
+              
+              function updateRoyaltyPreview() {
+                if(!rateSelect || !imageInput || !totalPreview) return;
+                const option = rateSelect.options[rateSelect.selectedIndex];
+                const amount = option && option.value ? parseInt(option.getAttribute('data-amount') || 0) : 0;
+                const images = parseInt(imageInput.value || 0);
+                const total = amount + (images * 10000);
+                totalPreview.textContent = total.toLocaleString('vi-VN') + ' đ';
+              }
+              
+              if(rateSelect) rateSelect.addEventListener('change', updateRoyaltyPreview);
+              if(imageInput) imageInput.addEventListener('input', updateRoyaltyPreview);
+              
+              // Run once on load
+              setTimeout(updateRoyaltyPreview, 500);
+            });
+          </script>
+          @endif
+
           {{-- Thumbnail --}}
           <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
             <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
@@ -212,6 +303,44 @@
                    placeholder="VD: Cẩm Thiều - TV"
                    class="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-green-400 focus:ring-2 focus:ring-green-100 transition">
             <p class="text-xs text-gray-400 mt-1.5">Hiển thị in đậm cuối bài viết</p>
+          </div>
+
+          {{-- Người chụp ảnh --}}
+          <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5" x-data="{
+              sameAsAuthor: {{ old('photographer_same', (!isset($post) || (isset($post) && $post->photographer === $post->source_author)) ? 'true' : 'false') }},
+              photographerVal: '{{ old('photographer', $post->photographer ?? '') }}',
+              authorVal: '{{ old('source_author', $post->source_author ?? '') }}',
+              init() {
+                  const authorInput = document.getElementById('source_author');
+                  if (authorInput) {
+                      authorInput.addEventListener('input', (e) => {
+                          this.authorVal = e.target.value;
+                          if (this.sameAsAuthor) this.photographerVal = e.target.value;
+                      });
+                  }
+                  
+                  this.$watch('sameAsAuthor', (val) => {
+                      if (val) {
+                          this.photographerVal = document.getElementById('source_author')?.value || '';
+                      }
+                  });
+              }
+          }">
+            <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
+              <i class="bi bi-camera"></i> Người chụp ảnh
+            </label>
+            <label class="flex items-center gap-2 mb-2.5 cursor-pointer select-none">
+              <input type="checkbox" x-model="sameAsAuthor"
+                     class="w-4 h-4 text-green-600 rounded border-gray-300 focus:ring-green-500 transition">
+              <span class="text-xs text-gray-600 font-medium">Cùng tác giả bài viết</span>
+            </label>
+            <input type="text" name="photographer" id="photographer"
+                   x-model="photographerVal"
+                   :readonly="sameAsAuthor"
+                   :class="sameAsAuthor ? 'bg-gray-50 text-gray-400 cursor-not-allowed' : 'bg-white'"
+                   placeholder="VD: Nguyễn Văn A"
+                   class="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-green-400 focus:ring-2 focus:ring-green-100 transition">
+            <p class="text-xs text-gray-400 mt-1.5">Dùng để tính nhuận bút ảnh riêng biệt</p>
           </div>
 
           {{-- Tips card --}}

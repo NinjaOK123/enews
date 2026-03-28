@@ -90,8 +90,11 @@
                     $navItems[] = ['route'=>$dashRoute,'is'=>'*.dashboard','icon'=>'bi-speedometer2','label'=>'Dashboard'];
                 if(in_array($role,['admin','editor']))
                     $navItems[] = ['route'=>route('admin.posts.index'),'is'=>'admin.posts.*','icon'=>'bi-file-earmark-text','label'=>'Bài viết'];
+
                 if(in_array($role,['admin','editor']))
                     $navItems[] = ['route'=>route('admin.categories.index'),'is'=>'admin.categories.*','icon'=>'bi-tags','label'=>'Chuyên mục'];
+                if(in_array($role,['admin','editor']))
+                    $navItems[] = ['route'=>route('admin.banners.index'),'is'=>'admin.banners.*','icon'=>'bi-images','label'=>'Banners Cuộc thi'];
                 if(in_array($role,['admin','editor','contributor']))
                     $navItems[] = ['route'=>route('contributor.posts.create'),'is'=>'contributor.posts.*','icon'=>'bi-pencil-square','label'=>'Viết bài mới'];
                 if($role==='admin')
@@ -99,7 +102,9 @@
                 if(in_array($role,['admin','editor']))
                     $navItems[] = ['route'=>route('admin.media.index'),'is'=>'admin.media.*','icon'=>'bi-images','label'=>'Media Library'];
                 if($role==='admin')
-                    $navItems[] = ['route'=>route('admin.reports.index'),'is'=>'admin.reports.*','icon'=>'bi-bar-chart-line','label'=>'Báo cáo & Thống kê'];
+                    $navItems[] = ['route'=>route('admin.reports.index'),'is'=>'admin.reports.index','icon'=>'bi-bar-chart-line','label'=>'Báo cáo Tổng quát'];
+                if($role==='admin')
+                    $navItems[] = ['route'=>route('admin.reports.royalty.index'),'is'=>'admin.reports.royalty.*','icon'=>'bi-wallet2','label'=>'Báo cáo Nhuận bút'];
                 if($role==='admin')
                     $navItems[] = ['route'=>route('admin.notifications.index'),'is'=>'admin.notifications.*','icon'=>'bi-bell','label'=>'Thông báo'];
                 if($role==='admin') {

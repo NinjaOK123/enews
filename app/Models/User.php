@@ -34,6 +34,7 @@ class User extends Authenticatable
         'role',
         'google_id',
         'avatar',
+        'unit_name',
         'cover_photo',
         'bio',
         'status',

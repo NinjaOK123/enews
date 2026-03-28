@@ -12,8 +12,10 @@ class CategoryController extends Controller
     {
         $category = Category::where('slug', $slug)->where('is_active', true)->firstOrFail();
 
+        $categoryIds = array_merge([$category->id], $category->getAllDescendantIds());
+
         $posts = Post::published()
-            ->where('category_id', $category->id)
+            ->whereIn('category_id', $categoryIds)
             ->with(['author:id,name,avatar', 'category:id,name,slug'])
             ->latest()
             ->paginate(12);

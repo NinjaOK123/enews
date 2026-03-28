@@ -20,7 +20,7 @@
            prev() { this.current = (this.current - 1 + this.total) % this.total; },
            go(n)  { this.current = n; clearInterval(this.timer); this.timer = setInterval(() => this.next(), 5000); }
          }"
-         style="position:relative;">
+         style="position:relative; flex: 1; display: flex; flex-direction: column;">
 
       {{-- Slides Wrapper --}}
       <div class="hero-slides-container">
@@ -72,15 +72,40 @@
       <p>Chưa có bài viết nào.</p>
     </div>
     @endif
+
+    {{-- ═══ BANNER CUỘC THI — Marquee chạy vòng ═══ --}}
+    @if($banners->isNotEmpty())
+    <div class="banner-marquee-wrap">
+      <div class="banner-marquee-track">
+        {{-- Render 2 lần để tạo hiệu ứng vòng liên tục --}}
+        @foreach([1, 2] as $_)
+        <div class="banner-marquee-row">
+          @foreach($banners as $banner)
+          @if($banner->link)
+          <a href="{{ $banner->link }}" target="_blank" rel="noopener" class="banner-item">
+            <img src="{{ $banner->image_url }}" alt="{{ $banner->title }}" loading="lazy">
+          </a>
+          @else
+          <div class="banner-item">
+            <img src="{{ $banner->image_url }}" alt="{{ $banner->title }}" loading="lazy">
+          </div>
+          @endif
+          @endforeach
+        </div>
+        @endforeach
+      </div>
+    </div>
+    @endif
   </div>
 
-  {{-- SIDEBAR: Mới nhất --}}
+  {{-- SIDEBAR: Top lượt xem --}}
   <div class="sidebar-latest">
     <div class="widget-title"><i class="bi bi-lightning-fill"></i> Mới nhất</div>
     <div class="latest-list">
       @forelse($sidebarLatest as $item)
-      <a href="{{ route('post.show', $item->slug) }}" class="latest-item">
-        {{ $item->title }}
+      <a href="{{ route('post.show', $item->slug) }}" class="latest-item" style="display:block; padding: 10px 10px 10px 22px; border-bottom: 1px dashed var(--border);">
+        <div style="font-size: .82rem; font-weight: 600; line-height: 1.35; margin-bottom: 4px;">{{ $item->title }}</div>
+        <div style="font-size: .68rem; color: #888; font-weight: normal;"><i class="bi bi-eye"></i> {{ number_format($item->view_count) }} lượt xem</div>
       </a>
       @empty
       <p style="padding:10px;font-size:.8rem;color:#aaa;">Chưa có bài viết.</p>
@@ -89,30 +114,6 @@
   </div>
 
 </div>{{-- /hero-area --}}
-
-{{-- ═══ BANNER CUỘC THI — Marquee chạy vòng ═══ --}}
-@if($banners->isNotEmpty())
-<div class="banner-marquee-wrap">
-  <div class="banner-marquee-track">
-    {{-- Render 2 lần để tạo hiệu ứng vòng liên tục --}}
-    @foreach([1, 2] as $_)
-    <div class="banner-marquee-row">
-      @foreach($banners as $banner)
-      @if($banner->link)
-      <a href="{{ $banner->link }}" target="_blank" rel="noopener" class="banner-item">
-        <img src="{{ $banner->image_url }}" alt="{{ $banner->title }}" loading="lazy">
-      </a>
-      @else
-      <div class="banner-item">
-        <img src="{{ $banner->image_url }}" alt="{{ $banner->title }}" loading="lazy">
-      </div>
-      @endif
-      @endforeach
-    </div>
-    @endforeach
-  </div>
-</div>
-@endif
 
 <hr class="fusion">
 

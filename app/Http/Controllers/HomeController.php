@@ -15,12 +15,23 @@ class HomeController extends Controller
         // Cache toàn bộ data trang chủ 5 phút (300s)
         // Khi có bài mới, cache tự hết hạn sau 5 phút
         $homeData = Cache::remember('home.page.data', 300, function () {
-            // ── Hero: 5 bài mới nhất ──────────────────────────────────────
+            // ── Hero: 5 bài TIÊU BIỂU (Bật Slider) ─────────────────────────
             $heroPosts = Post::published()
+                ->where('is_featured', true)
                 ->with(['category:id,name,slug', 'author:id,name'])
+                ->orderBy('featured_order', 'asc')
                 ->latest()
                 ->limit(5)
                 ->get();
+
+            // Nếu không có bài tiêu biểu nào, fallback lấy 5 bài mới nhất
+            if ($heroPosts->isEmpty()) {
+                $heroPosts = Post::published()
+                    ->with(['category:id,name,slug', 'author:id,name'])
+                    ->latest()
+                    ->limit(5)
+                    ->get();
+            }
 
             // ── "Mới nhất" sidebar ────────────────────────────────────────
             $sidebarLatest = Post::published()

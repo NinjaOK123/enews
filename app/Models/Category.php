@@ -37,6 +37,24 @@ class Category extends Model
         return $this->hasMany(Category::class, 'parent_id');
     }
 
+    /**
+     * Get all descendant IDs recursively
+     */
+    public function getAllDescendantIds(): array
+    {
+        $ids = [];
+        // Lading children if not loaded
+        if (!$this->relationLoaded('children')) {
+            $this->load('children');
+        }
+        
+        foreach ($this->children as $child) {
+            $ids[] = $child->id;
+            $ids = array_merge($ids, $child->getAllDescendantIds());
+        }
+        return $ids;
+    }
+
     // ─── Scopes ──────────────────────────────────────────────────────────────
 
     public function scopeActive($query)

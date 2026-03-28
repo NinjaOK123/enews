@@ -81,6 +81,7 @@ Route::prefix('admin')
          // Quản lý Bài viết (Admin & Editor)
          Route::post('posts/{post}/approve', [\App\Http\Controllers\Admin\PostController::class, 'approve'])->name('posts.approve');
          Route::post('posts/{post}/reject', [\App\Http\Controllers\Admin\PostController::class, 'reject'])->name('posts.reject');
+
          Route::get('posts/{post}/revisions', [\App\Http\Controllers\Admin\PostController::class, 'revisions'])->name('posts.revisions');
          Route::resource('posts', \App\Http\Controllers\Admin\PostController::class)->except(['show', 'create', 'store', 'update']);
          
@@ -88,8 +89,17 @@ Route::prefix('admin')
          Route::post('categories/reorder', [\App\Http\Controllers\Admin\CategoryController::class, 'reorder'])->name('categories.reorder');
          Route::post('categories/bulk-action', [\App\Http\Controllers\Admin\CategoryController::class, 'bulkAction'])->name('categories.bulk-action');
          Route::post('categories/{category}/toggle-menu', [\App\Http\Controllers\Admin\CategoryController::class, 'toggleMenu'])->name('categories.toggle-menu');
+         Route::post('categories/{category}/toggle-active', [\App\Http\Controllers\Admin\CategoryController::class, 'toggleActive'])->name('categories.toggle-active');
          Route::post('categories/{category}/update-order', [\App\Http\Controllers\Admin\CategoryController::class, 'updateOrder'])->name('categories.update-order');
-    Route::resource('categories', \App\Http\Controllers\Admin\CategoryController::class)->except(['show']);
+         Route::resource('categories', \App\Http\Controllers\Admin\CategoryController::class)->except(['show']);
+
+         // Slider Bài Viết
+         Route::post('posts/{post}/toggle-slider', [\App\Http\Controllers\Admin\PostController::class, 'toggleSlider'])->name('posts.toggle-slider');
+
+         // Banners Cuộc thi
+         Route::post('banners/update-order', [\App\Http\Controllers\Admin\BannerController::class, 'updateOrder'])->name('banners.update-order');
+         Route::post('banners/{banner}/toggle-active', [\App\Http\Controllers\Admin\BannerController::class, 'toggleActive'])->name('banners.toggle-active');
+         Route::resource('banners', \App\Http\Controllers\Admin\BannerController::class)->except(['show']);
 
          // Quản lý Media (Thư viện)
          Route::group(['prefix' => 'media', 'as' => 'media.'], function () {
@@ -116,6 +126,8 @@ Route::prefix('admin')
          Route::group(['prefix' => 'reports', 'as' => 'reports.'], function () {
              Route::get('/', [App\Http\Controllers\Admin\ReportController::class, 'index'])->name('index');
              Route::get('/export-csv', [App\Http\Controllers\Admin\ReportController::class, 'exportCsv'])->name('export-csv');
+             Route::get('/royalty', [App\Http\Controllers\Admin\ReportController::class, 'royaltyIndex'])->name('royalty.index');
+             Route::get('/royalty/export', [App\Http\Controllers\Admin\ReportController::class, 'exportRoyaltyExcel'])->name('royalty.export');
          });
 
          // ADMIN: Quản lý Thông báo

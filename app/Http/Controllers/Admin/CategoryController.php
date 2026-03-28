@@ -89,6 +89,17 @@ class CategoryController extends Controller
         return redirect()->route('admin.categories.index')->with('success', 'Đã xoá chuyên mục.');
     }
 
+    public function toggleActive(Request $request, Category $category)
+    {
+        $category->update(['is_active' => !$category->is_active]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Đã cập nhật trạng thái hoạt động.',
+            'is_active' => $category->is_active
+        ]);
+    }
+
     public function toggleMenu(Request $request, Category $category)
     {
         $validated = $request->validate([

@@ -21,4 +21,15 @@ class Banner extends Model
     {
         return \Storage::disk('public')->url($this->image);
     }
+
+    protected static function booted()
+    {
+        static::saved(function () {
+            \Illuminate\Support\Facades\Cache::forget('home.page.data');
+        });
+
+        static::deleted(function () {
+            \Illuminate\Support\Facades\Cache::forget('home.page.data');
+        });
+    }
 }

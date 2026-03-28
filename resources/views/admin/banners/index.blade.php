@@ -1,220 +1,336 @@
 @extends('layouts.admin')
-
-@section('title', 'Quản lý Banner Cuộc thi')
-
+@section('title', 'Quản lý Banners Cuộc thi')
 @section('content')
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-
-  {{-- Header --}}
-  <div class="flex items-center justify-between mb-6">
-    <div>
-      <h1 class="text-2xl font-bold text-gray-800">🖼️ Banner Cuộc thi</h1>
-      <p class="text-sm text-gray-500 mt-1">Quản lý banner chạy trên trang chủ</p>
-    </div>
-  </div>
-
-  {{-- Flash messages --}}
-  @if(session('success'))
-  <div class="bg-green-50 border border-green-200 text-green-800 rounded-lg px-4 py-3 mb-4 flex items-center gap-2">
-    <svg class="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
-    {{ session('success') }}
-  </div>
-  @endif
-
-  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-
-    {{-- ══ Form Thêm Banner ══ --}}
-    <div class="lg:col-span-1">
-      <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
-        <h2 class="text-base font-semibold text-gray-700 mb-4">➕ Thêm Banner Mới</h2>
-        <form action="{{ route('admin.banners.store') }}" method="POST" enctype="multipart/form-data" class="space-y-4">
-          @csrf
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Tên banner <span class="text-red-500">*</span></label>
-            <input type="text" name="title" required
-              class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
-              placeholder="Cuộc thi Sáng tác 2026...">
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Ảnh banner <span class="text-red-500">*</span></label>
-            <input type="file" name="image" required accept="image/*"
-              class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500">
-            <p class="text-xs text-gray-400 mt-1">JPG, PNG, GIF, WebP. Tối đa 5MB. Tỷ lệ ngang (landscape) đẹp hơn.</p>
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Link khi click</label>
-            <input type="url" name="link"
-              class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
-              placeholder="https://...">
-          </div>
-          <div class="grid grid-cols-2 gap-3">
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Thứ tự</label>
-              <input type="number" name="order" value="0" min="0"
-                class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500">
-            </div>
-            <div class="flex items-end pb-2">
-              <label class="flex items-center gap-2 cursor-pointer">
-                <input type="checkbox" name="is_active" value="1" checked class="w-4 h-4 text-green-600">
-                <span class="text-sm text-gray-700">Hiển thị</span>
-              </label>
-            </div>
-          </div>
-          <button type="submit"
-            class="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg transition text-sm">
-            ✅ Thêm Banner
-          </button>
-        </form>
-      </div>
-    </div>
-
-    {{-- ══ Danh sách Banner ══ --}}
-    <div class="lg:col-span-2">
-      <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-        <div class="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
-          <h2 class="text-base font-semibold text-gray-700">📋 Danh sách Banner</h2>
-          <span class="text-sm text-gray-400">{{ $banners->count() }} banner</span>
-        </div>
-
-        @if($banners->isEmpty())
-        <div class="text-center py-12 text-gray-400">
-          <svg class="w-12 h-12 mx-auto mb-3 opacity-40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-          </svg>
-          <p class="text-sm">Chưa có banner nào. Thêm banner đầu tiên!</p>
-        </div>
-        @else
-        <div class="divide-y divide-gray-100">
-          @foreach($banners as $banner)
-          <div class="p-4 flex items-start gap-4 hover:bg-gray-50 transition" id="banner-{{ $banner->id }}">
-
-            {{-- Ảnh preview --}}
-            <div class="flex-shrink-0">
-              @if($banner->link)
-              <a href="{{ $banner->link }}" target="_blank">
-                <img src="{{ $banner->image_url }}" alt="{{ $banner->title }}"
-                     class="w-28 h-16 object-cover rounded-lg border border-gray-200">
-              </a>
-              @else
-              <img src="{{ $banner->image_url }}" alt="{{ $banner->title }}"
-                   class="w-28 h-16 object-cover rounded-lg border border-gray-200">
-              @endif
-            </div>
-
-            {{-- Info --}}
-            <div class="flex-1 min-w-0">
-              <p class="text-sm font-semibold text-gray-800 truncate">{{ $banner->title }}</p>
-              @if($banner->link)
-              <a href="{{ $banner->link }}" target="_blank" class="text-xs text-blue-500 hover:underline truncate block">{{ Str::limit($banner->link, 40) }}</a>
-              @endif
-              <div class="flex items-center gap-2 mt-1">
-                <span class="text-xs text-gray-400">Thứ tự: {{ $banner->order }}</span>
-                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium
-                  {{ $banner->is_active ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500' }}">
-                  {{ $banner->is_active ? '● Hiển thị' : '○ Ẩn' }}
-                </span>
-              </div>
-            </div>
-
-            {{-- Actions --}}
-            <div class="flex items-center gap-2 flex-shrink-0">
-              {{-- Toggle active --}}
-              <form action="{{ route('admin.banners.toggle', $banner) }}" method="POST">
-                @csrf
-                <button type="submit" title="{{ $banner->is_active ? 'Ẩn banner' : 'Hiện banner' }}"
-                  class="p-1.5 rounded-lg {{ $banner->is_active ? 'text-green-600 hover:bg-green-50' : 'text-gray-400 hover:bg-gray-100' }} transition">
-                  <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="{{ $banner->is_active ? 'M10 12a2 2 0 100-4 2 2 0 000 4z M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z' : 'M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21' }}"/>
-                  </svg>
-                </button>
-              </form>
-
-              {{-- Edit (inline modal) --}}
-              <button onclick="openEdit({{ $banner->id }}, '{{ addslashes($banner->title) }}', '{{ $banner->link }}', {{ $banner->order }}, {{ $banner->is_active ? 1 : 0 }})"
-                class="p-1.5 text-blue-500 hover:bg-blue-50 rounded-lg transition">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                </svg>
-              </button>
-
-              {{-- Delete --}}
-              <form action="{{ route('admin.banners.destroy', $banner) }}" method="POST"
-                    onsubmit="return confirm('Xóa banner này?')">
-                @csrf @method('DELETE')
-                <button type="submit" class="p-1.5 text-red-400 hover:bg-red-50 rounded-lg transition">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                  </svg>
-                </button>
-              </form>
-            </div>
-          </div>
-          @endforeach
-        </div>
-        @endif
-      </div>
-    </div>
-  </div>
-</div>
-
-{{-- Edit Modal --}}
-<div id="editModal" class="fixed inset-0 z-50 hidden">
-  <div class="absolute inset-0 bg-black/50" onclick="closeEdit()"></div>
-  <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white rounded-xl shadow-xl p-6 w-full max-w-md">
-    <h3 class="text-base font-semibold text-gray-800 mb-4">✏️ Sửa Banner</h3>
-    <form id="editForm" method="POST" enctype="multipart/form-data" class="space-y-4">
-      @csrf @method('PUT')
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">Tên banner</label>
-        <input type="text" name="title" id="editTitle" required
-          class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500">
-      </div>
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">Ảnh mới (để trống nếu giữ ảnh cũ)</label>
-        <input type="file" name="image" accept="image/*"
-          class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
-      </div>
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">Link khi click</label>
-        <input type="url" name="link" id="editLink"
-          class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500">
-      </div>
-      <div class="grid grid-cols-2 gap-3">
+<div class="p-6 max-w-7xl mx-auto" x-data="bannerManager()">
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Thứ tự</label>
-          <input type="number" name="order" id="editOrder" min="0"
-            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
+            <h3 class="text-2xl font-bold text-gray-800 tracking-tight">
+                <i class="bi bi-images text-emerald-500 me-2"></i>Quản lý Banners
+            </h3>
+            <p class="text-sm text-gray-500 mt-1">Sắp xếp, thêm mới và quản lý các hình ảnh slider cuộc thi</p>
         </div>
-        <div class="flex items-end pb-2">
-          <label class="flex items-center gap-2 cursor-pointer">
-            <input type="checkbox" name="is_active" id="editActive" value="1" class="w-4 h-4 text-green-600">
-            <span class="text-sm text-gray-700">Hiển thị</span>
-          </label>
+        <button @click="openModal('add')" type="button" class="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white rounded-xl text-sm font-semibold shadow-sm transition-all hover:shadow-emerald-500/20">
+            <i class="bi bi-plus-circle text-lg"></i> Thêm Banner
+        </button>
+    </div>
+
+    @if(session('success'))
+        <div class="mb-6 px-4 py-3 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl flex items-center gap-3 animate-fade-in-up">
+            <i class="bi bi-check-circle-fill text-xl text-emerald-500 shrink-0"></i> 
+            <span class="text-sm font-medium">{{ session('success') }}</span>
         </div>
-      </div>
-      <div class="flex gap-3">
-        <button type="submit" class="flex-1 bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg transition text-sm">
-          💾 Lưu thay đổi
-        </button>
-        <button type="button" onclick="closeEdit()" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-2 px-4 rounded-lg transition text-sm">
-          Hủy
-        </button>
-      </div>
-    </form>
-  </div>
+    @endif
+    
+    @if($errors->any())
+        <div class="mb-6 px-4 py-3 bg-red-50 border border-red-200 text-red-800 rounded-xl flex items-center gap-3 animate-fade-in-up">
+            <i class="bi bi-exclamation-circle-fill text-xl text-red-500 shrink-0"></i> 
+            <span class="text-sm font-medium">Lỗi: {{ $errors->first() }}</span>
+        </div>
+    @endif
+
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 mb-6 relative pb-4">
+        <div class="overflow-x-auto rounded-t-2xl">
+            <table class="w-full text-left text-sm">
+                <thead class="bg-gray-50 border-b border-gray-100 text-gray-500 font-semibold text-[11px] tracking-wider uppercase">
+                    <tr>
+                        <th class="px-3 py-4 w-16 text-center" title="Sắp xếp">STT</th>
+                        <th class="px-5 py-4 w-48 text-center">Hình ảnh</th>
+                        <th class="px-5 py-4">Tiêu đề & Link</th>
+                        <th class="px-4 py-4 text-center whitespace-nowrap w-32">Hiển thị</th>
+                        <th class="px-5 py-4 text-right whitespace-nowrap w-24">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-50 text-gray-700" id="sortable-banners">
+                    @forelse($banners as $banner)
+                    <tr data-id="{{ $banner->id }}" class="hover:bg-gray-50/80 transition-colors group">
+                        <td class="px-3 py-3 text-center align-middle">
+                            <span class="drag-handle cursor-move opacity-50 hover:opacity-100 transition-opacity" title="Kéo thả để di chuyển">
+                                <i class="bi bi-grip-vertical text-xl text-gray-400 hover:text-emerald-600"></i>
+                            </span>
+                        </td>
+                        <td class="px-5 py-3 text-center align-middle">
+                            <div class="w-full h-16 bg-gray-100 rounded-lg overflow-hidden border border-gray-200 flex items-center justify-center">
+                                @if($banner->image)
+                                    <img src="{{ Str::startsWith($banner->image, 'http') ? $banner->image : asset('storage/' . $banner->image) }}" alt="Banner" class="max-w-full max-h-full object-contain">
+                                @else
+                                    <i class="bi bi-image text-gray-400 text-2xl"></i>
+                                @endif
+                            </div>
+                        </td>
+                        <td class="px-5 py-3 align-middle">
+                            <div class="font-semibold text-gray-800 text-sm mb-1">{{ $banner->title ?: '(Không có tiêu đề)' }}</div>
+                            @if($banner->link)
+                                <a href="{{ $banner->link }}" target="_blank" class="text-xs text-blue-500 hover:underline flex items-center gap-1">
+                                    <i class="bi bi-link-45deg"></i> Xem liên kết
+                                </a>
+                            @else
+                                <span class="text-xs text-gray-400 italic">Không có link</span>
+                            @endif
+                        </td>
+                        <td class="px-4 py-3 align-middle text-center">
+                            <div x-data="{
+                                isOn: {{ $banner->is_active ? 'true' : 'false' }},
+                                loading: false,
+                                toggle() {
+                                    if(this.loading) return;
+                                    this.loading = true;
+                                    axios.post('{{ route('admin.banners.toggle-active', $banner->id) }}')
+                                    .then(res => {
+                                        if(res.data.success) {
+                                            this.isOn = res.data.is_active;
+                                        }
+                                    })
+                                    .catch(err => { alert('Lỗi chuyển trạng thái!'); })
+                                    .finally(() => { this.loading = false; });
+                                }
+                            }">
+                                <button type="button" @click="toggle()" :class="isOn ? 'bg-emerald-500' : 'bg-gray-200'" class="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer !rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2">
+                                    <span class="sr-only">Toggle</span>
+                                    <span :class="isOn ? 'translate-x-5' : 'translate-x-0'" class="pointer-events-none inline-block h-5 w-5 transform !rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"></span>
+                                </button>
+                            </div>
+                        </td>
+                        <td class="px-5 py-3 align-middle text-right">
+                            <div class="flex items-center justify-end gap-2">
+                                <button type="button" @click="openModal('edit', {{ $banner->toJson() }})" class="p-2 text-blue-600 bg-blue-50 hover:bg-blue-100 !rounded-lg transition-colors" title="Sửa">
+                                    <i class="bi bi-pencil-square"></i>
+                                </button>
+                                <form action="{{ route('admin.banners.destroy', $banner->id) }}" method="POST" onsubmit="return confirm('Bạn có chắc chắn muốn xoá Banner này? Ảnh sẽ bị xoá vĩnh viễn.');" class="inline-block m-0">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="p-2 text-red-600 bg-red-50 hover:bg-red-100 !rounded-lg transition-colors" title="Xóa">
+                                        <i class="bi bi-trash3"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    @empty
+                    <tr>
+                        <td colspan="5" class="px-5 py-8 text-center text-gray-500">
+                            Chưa có banner cuộc thi nào. Hãy bấm "Thêm Banner".
+                        </td>
+                    </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Modal Form -->
+    <div x-show="showModal" style="display: none;" class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+        <div class="flex min-h-screen items-center justify-center p-4 text-center sm:p-0">
+            <!-- Background overlay -->
+            <div x-show="showModal" x-transition.opacity class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" @click="closeModal()"></div>
+
+            <!-- Modal panel -->
+            <div x-show="showModal" 
+                 x-transition:enter="ease-out duration-300" 
+                 x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" 
+                 x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100" 
+                 x-transition:leave="ease-in duration-200" 
+                 x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100" 
+                 x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" 
+                 class="relative transform overflow-visible rounded-2xl bg-white text-left shadow-xl transition-all sm:my-8 w-full sm:max-w-lg">
+                
+                <div class="absolute top-4 right-4">
+                    <button type="button" @click="closeModal()" class="text-gray-400 hover:text-gray-500 focus:outline-none">
+                        <i class="bi bi-x-lg text-xl"></i>
+                    </button>
+                </div>
+
+                <form :action="formAction" method="POST" enctype="multipart/form-data" @paste.window="handlePaste">
+                    @csrf
+                    <template x-if="mode === 'edit'">
+                        <input type="hidden" name="_method" value="PUT">
+                    </template>
+                    
+                    <div class="bg-white px-6 py-6 border-b border-gray-100">
+                        <div class="flex items-center gap-3 mb-5">
+                            <div class="flex-shrink-0 flex items-center justify-center h-10 w-10 rounded-full bg-emerald-100">
+                                <i class="bi bi-image text-emerald-600 text-lg"></i>
+                            </div>
+                            <h3 class="text-xl leading-6 font-bold text-gray-900" id="modal-title" x-text="mode === 'add' ? 'Thêm Banner Cuộc thi mới' : 'Cập nhật Banner'"></h3>
+                        </div>
+                        
+                        <div class="space-y-4">
+                            
+                            <!-- Tiêu đề -->
+                            <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Tiêu đề (Không bắt buộc)</label>
+                                        <input type="text" name="title" x-model="formData.title" class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:bg-white focus:ring-2 focus:ring-emerald-100 focus:border-emerald-400 outline-none" placeholder="Ví dụ: Cuộc thi viết về Môi trường">
+                                    </div>
+                                    
+                                    <!-- Ảnh Banner -->
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">Hình ảnh Banner <span class="text-gray-400 text-xs font-normal ml-1">(Tải ảnh, Ctr+V dán, hoặc dùng Link)</span></label>
+                                        
+                                        <!-- Khu vực upload & preview -->
+                                        <div class="flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-xl overflow-hidden relative bg-gray-50 hover:bg-gray-100 transition-colors"
+                                            :class="{ 'border-emerald-500 bg-emerald-50/50': previewUrl }">
+                                            
+                                            <div class="space-y-1 text-center" x-show="!previewUrl">
+                                                <i class="bi bi-cloud-arrow-up text-3xl text-gray-400"></i>
+                                                <div class="flex text-sm text-gray-600 justify-center gap-1">
+                                                    <label for="image_upload" class="relative cursor-pointer bg-white rounded-md font-medium text-emerald-600 hover:text-emerald-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-emerald-500 px-1 shadow-sm border border-gray-200">
+                                                        <span>Chọn file ảnh</span>
+                                                        <input id="image_upload" name="image" type="file" accept="image/*" class="sr-only" @change="handleFileChange">
+                                                    </label>
+                                                </div>
+                                                <p class="text-xs text-gray-500 pt-2"><i class="bi bi-keyboard"></i> Mẹo: Ấn <kbd class="bg-gray-200 px-1.5 py-0.5 rounded text-gray-700 font-mono">Ctrl</kbd> + <kbd class="bg-gray-200 px-1.5 py-0.5 rounded text-gray-700 font-mono">V</kbd> để dán ảnh trực tiếp.</p>
+                                            </div>
+
+                                            <div x-show="previewUrl" class="relative w-full flex flex-col items-center" style="display: none;">
+                                                <img :src="previewUrl" class="max-h-32 object-contain rounded border border-gray-200 shadow-sm" alt="Preview">
+                                                <button type="button" @click="clearFile()" class="mt-3 px-3 py-1.5 bg-white border border-gray-300 !rounded-lg text-xs font-medium text-red-600 hover:bg-red-50 transition-colors shadow-sm">
+                                                    <i class="bi bi-trash"></i> Bỏ chọn ảnh
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        <!-- Phân cách -->
+                                        <div class="mt-4 relative flex items-center">
+                                            <div class="flex-grow border-t border-gray-200"></div>
+                                            <span class="flex-shrink-0 mx-4 text-[10px] text-gray-400 uppercase tracking-widest font-semibold">Hoặc dùng Link Ảnh</span>
+                                            <div class="flex-grow border-t border-gray-200"></div>
+                                        </div>
+
+                                        <!-- Input URL -->
+                                        <div class="mt-4">
+                                            <input type="url" name="image_url" x-model="formData.image_url" class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:bg-white focus:ring-2 focus:ring-emerald-100 focus:border-emerald-400 outline-none transition-all placeholder:text-gray-400" placeholder="... dán link ảnh từ Google Drive hoặc Web khác">
+                                        </div>
+                                    </div>
+
+                                <!-- Link liên kết -->
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Link liên kết cuộc thi (Khi nhấp vào Ảnh)</label>
+                                    <input type="url" name="link" x-model="formData.link" class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:bg-white focus:ring-2 focus:ring-emerald-100 focus:border-emerald-400 outline-none" placeholder="https://...">
+                                </div>
+                                
+                                <!-- Bật Hiển thị -->
+                                <div class="flex items-center mt-2">
+                                    <input type="checkbox" id="is_active_cb" name="is_active" value="1" x-model="formData.is_active" class="h-4 w-4 text-emerald-600 focus:ring-emerald-500 border-gray-300 rounded">
+                                    <label for="is_active_cb" class="ml-2 block text-sm text-gray-900 font-medium">Cho phép hiển thị ngay lên trang chủ</label>
+                                </div>
+
+                        </div>
+                    </div>
+                    
+                    <div class="bg-gray-50 px-4 py-4 sm:px-6 sm:flex sm:flex-row-reverse rounded-b-2xl border-t border-gray-100">
+                        <button type="submit" class="w-full inline-flex justify-center items-center !rounded-xl border border-transparent shadow-sm !px-5 !py-2.5 bg-emerald-600 text-base font-bold text-white hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 sm:ml-3 sm:w-auto sm:text-sm transition-all">
+                            <span x-text="mode === 'add' ? 'Lưu & Thêm mới' : 'Lưu Thay đổi'"></span>
+                        </button>
+                        <button type="button" @click="closeModal()" class="mt-3 w-full inline-flex justify-center items-center !rounded-xl border border-gray-300 shadow-sm !px-5 !py-2.5 bg-white text-base font-semibold text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm transition-all">
+                            Hủy bỏ
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 </div>
+
+<!-- Thư viện SortableJS để kéo thả -->
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
 
 <script>
-function openEdit(id, title, link, order, isActive) {
-  document.getElementById('editTitle').value = title;
-  document.getElementById('editLink').value = link || '';
-  document.getElementById('editOrder').value = order;
-  document.getElementById('editActive').checked = isActive === 1;
-  document.getElementById('editForm').action = '/admin/banners/' + id;
-  document.getElementById('editModal').classList.remove('hidden');
-}
-function closeEdit() {
-  document.getElementById('editModal').classList.add('hidden');
-}
+    document.addEventListener('alpine:init', () => {
+        Alpine.data('bannerManager', () => ({
+            showModal: false,
+            mode: 'add',
+            formAction: '{{ route('admin.banners.store') }}',
+            formData: {
+                id: null,
+                title: '',
+                link: '',
+                image_url: '',
+                is_active: true
+            },
+            previewUrl: null,
+            
+            init() {
+                // Khởi tạo Sortable
+                this.$nextTick(() => {
+                    let el = document.getElementById('sortable-banners');
+                    if(el) {
+                        Sortable.create(el, {
+                            handle: '.drag-handle',
+                            animation: 150,
+                            ghostClass: 'bg-emerald-50',
+                            onEnd: function () {
+                                let orderIds = [];
+                                el.querySelectorAll('tr[data-id]').forEach(row => {
+                                    orderIds.push(row.getAttribute('data-id'));
+                                });
+                                axios.post('{{ route('admin.banners.update-order') }}', { order: orderIds })
+                                    .then(res => { /* success handle silently */ })
+                                    .catch(err => { alert('Lỗi lưu thứ tự mới!'); });
+                            }
+                        });
+                    }
+                });
+            },
+
+            openModal(mode, banner = null) {
+                this.mode = mode;
+                this.previewUrl = null;
+                document.getElementById('image_upload').value = '';
+
+                if(mode === 'edit' && banner) {
+                    this.formAction = '{{ url('admin/banners') }}/' + banner.id;
+                    this.formData.id = banner.id;
+                    this.formData.title = banner.title || '';
+                    this.formData.link = banner.link || '';
+                    this.formData.image_url = ''; 
+                    this.formData.is_active = banner.is_active ? true : false;
+                    
+                    // Show current image as preview if local
+                    if (banner.image) {
+                        this.previewUrl = banner.image.startsWith('http') ? banner.image : '{{ asset('storage') }}/' + banner.image;
+                    }
+                } else {
+                    this.formAction = '{{ route('admin.banners.store') }}';
+                    this.formData = { id: null, title: '', link: '', image_url: '', is_active: true };
+                }
+                this.showModal = true;
+            },
+            
+            closeModal() {
+                this.showModal = false;
+            },
+
+            handleFileChange(e) {
+                const file = e.target.files[0];
+                if (file && file.type.startsWith('image/')) {
+                    this.previewUrl = URL.createObjectURL(file);
+                }
+            },
+
+            clearFile() {
+                document.getElementById('image_upload').value = '';
+                this.previewUrl = null;
+                if (this.mode === 'edit') {
+                    // Cố tình xóa ảnh cũ để force họ update (thực tế backend sẽ ignore nếu rỗng, trừ khi nhập link)
+                }
+            },
+
+            handlePaste(e) {
+                if (!this.showModal) return;
+                const items = (e.clipboardData || e.originalEvent.clipboardData).items;
+                for (let index in items) {
+                    const item = items[index];
+                    if (item.kind === 'file' && item.type.startsWith('image/')) {
+                        const blob = item.getAsFile();
+                        const dataTransfer = new DataTransfer();
+                        dataTransfer.items.add(blob);
+                        document.getElementById('image_upload').files = dataTransfer.files;
+                        this.previewUrl = URL.createObjectURL(blob);
+                        break;
+                    }
+                }
+            }
+        }));
+    });
 </script>
 @endsection
