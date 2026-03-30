@@ -229,7 +229,7 @@ class PostController extends Controller
             'user_id' => $userId,
             'file_name' => $fileName,
             'file_path' => $filePath,
-            'file_type' => $type,
+            'file_type' => $file->getMimeType(),
             'file_size' => $file->getSize(),
             'is_shared' => false,
         ]);
