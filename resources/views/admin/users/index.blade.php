@@ -4,7 +4,7 @@
 <div class="p-6 max-w-7xl mx-auto" x-data="{ showBulkConfirm: false, selectedActionText: '', showDeleteConfirm: false, deleteUrl: '' }">
     <!-- Header -->
     <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
-        <h3 class="text-2xl font-bold text-gray-800 tracking-tight">Quản lý người dùng</h3>
+        <h3 class="text-2xl font-bold text-white drop-shadow-md tracking-tight">Quản lý người dùng</h3>
         <a href="{{ route('admin.users.create') }}" class="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white rounded-xl text-sm font-semibold shadow-sm transition-all hover:shadow-emerald-500/20">
             <i class="bi bi-person-plus-fill text-lg"></i> Thêm người dùng
         </a>

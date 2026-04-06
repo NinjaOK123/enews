@@ -192,27 +192,80 @@ class Post extends Model
 
     public function getThumbnailUrlAttribute(): string
     {
-        if (!$this->thumbnail) {
+        $thumb = $this->thumbnail;
+
+        // Xoá chuỗi 'assets/' dư thừa nếu trường thumbnail trong DB bị dính
+        if (!empty($thumb)) {
+            $thumb = str_replace(['images/assets/', '/images/assets/'], 'images/', $thumb);
+        }
+
+        // Nếu DB không có ảnh đại diện tĩnh, đào ảnh đầu tiên trong ruột bài báo ra làm hình đại diện
+        if (empty($thumb) && !empty($this->content)) {
+            preg_match('/<img[^>]+src=["\']([^"\']+)["\']/i', $this->content, $matches);
+            if (!empty($matches[1])) {
+                $thumb = $matches[1];
+                
+                // Vì cái lấy trong content ra có thể là "images/..." hoặc "/images/..." hoặc url
+                if (!str_starts_with($thumb, 'http') && !str_starts_with($thumb, '/')) {
+                    $thumb = '/' . $thumb; 
+                }
+                
+                return asset(ltrim($thumb, '/')); // Ép thành link tuyệt đối asset
+            }
+        }
+
+        // Đào mãi không ra gì thì mới đưa cái hình Fake eNews màu xanh lá rỗng
+        if (empty($thumb)) {
             return 'https://placehold.co/400x250/e8f5e2/2a7a27?text=eNews+AGU';
         }
 
         // Đã là URL đầy đủ (http/https) — dùng luôn
-        if (str_starts_with($this->thumbnail, 'http')) {
-            return $this->thumbnail;
+        if (str_starts_with($thumb, 'http')) {
+            return $thumb;
         }
 
-        // Path Joomla cũ (images/...) → ghép domain enews.agu.edu.vn
-        if (str_starts_with($this->thumbnail, 'images/') || str_starts_with($this->thumbnail, '/images/')) {
-            return 'https://enews.agu.edu.vn/' . ltrim($this->thumbnail, '/');
+        // Ưu tiên đường dẫn cũ (images/...) load thẳng bằng asset() ở máy local
+        // Vì toàn bộ 17GB ảnh đã được nhét vào thư mục public/images
+        if (str_starts_with($thumb, 'images/') || str_starts_with($thumb, '/images/')) {
+            return asset(ltrim($thumb, '/'));
         }
 
-        // Ảnh mới upload lên Laravel storage
-        return asset('storage/' . $this->thumbnail);
+        // Ảnh mới định dạng upload vào Laravel storage (storage/app/public/...)
+        return asset('storage/' . $thumb);
+    }
+
+    /**
+     * Tự động sửa lại những đường dẫn ảnh gốc bị lỗi bên trong Nội dung bài báo cũ.
+     * Biến thẻ <img src="images/..." thành <img src="/images/..."
+     */
+    public function getContentAttribute($value)
+    {
+        if (empty($value)) return $value;
+
+        // Bước 1: Chuẩn hóa mọi dạng link Joomla cũ (có hoặc không có http)
+        $value = str_replace(
+            ['http://enews.agu.edu.vn/images/assets/', 'https://enews.agu.edu.vn/images/assets/', 'http://enews.agu.edu.vn/images/', 'https://enews.agu.edu.vn/images/'], 
+            'images/', 
+            $value
+        );
+        
+        // Fix đặc thù Joomla 1: xoá chữ 'assets/' dư thừa nếu vẫn còn
+        $value = str_replace(['images/assets/', '/images/assets/'], 'images/', $value);
+
+        // Fix đặc thù Joomla 2: map ảnh upload vào đúng kho 1.4GB joomla-images
+        $value = str_replace(['images/upload/imgposts/', '/images/upload/imgposts/'], 'storage/joomla-images/', $value);
+
+        // Bước 2: Bọc toàn bộ các thẻ img src="images..." hoặc src="storage..." qua hàm asset() của Laravel
+        // Điều này đảm bảo ảnh luôn đúng đường dẫn bất kể chạy trên localhost (subfolder) hay hosting thật
+        return preg_replace_callback('/src=["\']\/?((?:images|storage)\/[^"\']+)["\']/i', function($matches) {
+            return 'src="' . asset($matches[1]) . '"';
+        }, $value);
     }
 
     public function getExcerptShortAttribute(): string
     {
-        $raw   = $this->excerpt ?: $this->content ?? '';
+        // Lấy raw value (không qua Accessor) để tránh vòng lặp regex
+        $raw   = $this->excerpt ?: ($this->getRawOriginal('content') ?? '');
         $text  = strip_tags($raw);
         $text  = html_entity_decode($text, ENT_QUOTES | ENT_HTML5, 'UTF-8');
         // Xóa các entity HTML không hoàn chỉnh (thiếu dấu ;) còn sót sau decode

@@ -75,6 +75,9 @@ class LoginController extends Controller
             // 7. Login thành công -> Regenerate session để an toàn
             $request->session()->regenerate();
 
+            // Ghi nhớ tên đăng nhập để điền sẵn vào lần sau (30 ngày)
+            cookie()->queue(cookie('last_login_username', $login, 60 * 24 * 30));
+
             // 8. Redirect theo role
             return $this->redirectBasedOnRole($user);
         }

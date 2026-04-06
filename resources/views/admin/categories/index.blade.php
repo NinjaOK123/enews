@@ -10,17 +10,9 @@
                     <a href="{{ route('admin.categories.index') }}" class="w-9 h-9 flex items-center justify-center rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 transition-colors shadow-sm" title="Quay lại danh mục chính">
                         <i class="bi bi-arrow-left text-lg"></i>
                     </a>
-                    <h3 class="text-2xl font-bold text-gray-800 tracking-tight">Chi nhánh con: {{ $parentCat->name }}</h3>
+                    <h3 class="text-2xl font-bold text-white drop-shadow-md tracking-tight">Chi nhánh con: <span class="text-emerald-100">{{ $parentCat->name }}</span></h3>
                 </div>
             @else
-                <h3 class="text-2xl font-bold text-gray-800 tracking-tight"><i class="bi bi-folder-fill text-emerald-500 me-2"></i>Quản lý chuyên mục</h3>
-            @endif
-            <p class="text-sm text-gray-500 mt-1">Quản lý và sắp xếp các chuyên mục bài viết</p>
-        </div>
-        <a href="{{ route('admin.categories.create') }}" class="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white rounded-xl text-sm font-semibold shadow-sm transition-all hover:shadow-emerald-500/20">
-            <i class="bi bi-plus-circle text-lg"></i> Thêm chuyên mục
-        </a>
-    </div>
 
     @if(session('success'))
         <div class="mb-6 px-4 py-3 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl flex items-center gap-3 animate-fade-in-up">

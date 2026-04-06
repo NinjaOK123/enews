@@ -26,7 +26,7 @@
     .goog-te-banner-frame.skiptranslate,
     iframe.goog-te-banner-frame { display: none !important; }
     .VIpgJd-ZVi9od-ORHb-OEVmcd { display: none !important; }
-    body { top: 0 !important; position: static !important; font-family: 'Inter', sans-serif; }
+    body { top: 0 !important; position: static !important; font-family: 'Be Vietnam Pro', 'Inter', sans-serif; }
     html { margin-top: 0 !important; height: auto !important; }
     #goog-gt-tt, .goog-te-balloon-frame { display: none !important; }
     .goog-text-highlight { background: transparent !important; box-shadow: none !important; }
@@ -72,7 +72,7 @@
 
   {{-- ═══ TOP UTILITY BAR ═══ --}}
   <div class="bg-[#1b5e20] text-white text-xs">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-3 py-1.5">
+    <div class="w-full px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-3 py-1.5">
 
       {{-- Tên trường --}}
       <div class="hidden sm:flex items-center gap-1.5 text-white/80 truncate">
@@ -122,9 +122,9 @@
   </div>
 
   {{-- ═══ MAIN HEADER (logo + nav + user) ═══ --}}
-  <header class="relative z-50 bg-white shadow-md border-b-2 border-[#2a7a27]/20">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="flex items-center justify-between gap-4 py-4">
+  <header class="sticky top-0 z-50 bg-white/75 backdrop-blur-xl border-b border-[#2a7a27]/10 shadow-[0_4px_25px_rgba(0,0,0,0.05)] transition-all duration-300">
+    <div class="w-full px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between flex-wrap gap-4 py-4">
 
         {{-- Logo + Brand --}}
         <a href="{{ route('home') }}" class="flex items-center gap-3 flex-shrink-0 group">
@@ -150,13 +150,13 @@
           @endphp
           @foreach($navLinks as $nav)
           <a href="{{ route($nav['route']) }}"
-             class="relative flex items-center gap-1.5 px-3 py-2.5 text-sm font-semibold transition-all duration-200 group
-                    {{ request()->routeIs($nav['route']) ? 'text-[#2a7a27]' : 'text-gray-600 hover:text-[#2a7a27]' }}">
+             class="relative flex items-center gap-1.5 px-3 py-2.5 text-sm font-semibold transition-all duration-200 group rounded-xl border border-transparent hover:border-white/50 hover:bg-[#2a7a27]/5 hover:shadow-sm
+                    {{ request()->routeIs($nav['route']) ? 'text-[#2a7a27] bg-[#2a7a27]/5 border-white/50 shadow-sm' : 'text-gray-600 hover:text-[#2a7a27]' }}">
             <i class="bi {{ $nav['icon'] }} text-base"></i>
             <span>{{ $nav['label'] }}</span>
             {{-- Underline slide-in khi hover/active --}}
-            <span class="absolute bottom-0 left-0 right-0 h-0.5 bg-[#FF6600] rounded-full transition-transform duration-200 origin-left
-                         {{ request()->routeIs($nav['route']) ? 'scale-x-100' : 'scale-x-0 group-hover:scale-x-100' }}"></span>
+            <span class="absolute -bottom-1.5 left-4 right-4 h-[3px] bg-gradient-to-r from-[#2a7a27] to-[#FF6600] rounded-t-lg transition-transform duration-300 origin-bottom
+                         {{ request()->routeIs($nav['route']) ? 'scale-y-100 opacity-100' : 'scale-y-0 opacity-0 group-hover:scale-y-100 group-hover:opacity-100' }}"></span>
           </a>
           @endforeach
         </nav>
@@ -182,24 +182,24 @@
 
             {{-- Dropdown --}}
             <div x-show="open" x-transition:enter="transition ease-out duration-150"
-                 x-transition:enter-start="opacity-0 scale-95 translate-y-1" x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+                 x-transition:enter-start="opacity-0 scale-95 translate-y-2" x-transition:enter-end="opacity-100 scale-100 translate-y-0"
                  x-transition:leave="transition ease-in duration-100"
                  x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95"
-                 class="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-xl py-1 z-50 overflow-hidden border border-gray-100"
+                 class="absolute right-0 mt-3 w-56 bg-white rounded-[16px] shadow-xl py-2 z-50 overflow-hidden border border-gray-100"
                  style="display:none;">
 
               {{-- Trang chủ --}}
               <a href="{{ route('home') }}"
-                 class="flex items-center gap-3 px-4 py-3 text-[15px] font-medium text-gray-700 hover:bg-gray-50 hover:text-[#2a7a27] transition-colors no-underline">
-                <i class="bi bi-house text-lg text-[#2a7a27]"></i>
+                 class="flex items-center gap-3 px-4 py-3 text-[14px] font-medium hover:bg-gray-50 transition-colors no-underline" style="color: #333;">
+                <i class="bi bi-house text-[18px]" style="color: #666;"></i>
                 <span>Trang chủ</span>
               </a>
 
-              {{-- Thông tin cá nhân --}}
+              {{-- Cài đặt tài khoản --}}
               <a href="{{ route('profile') }}"
-                 class="flex items-center gap-3 px-4 py-3 text-[15px] font-medium text-gray-700 hover:bg-gray-50 hover:text-[#2a7a27] transition-colors no-underline">
-                <i class="bi bi-person-circle text-lg text-[#2a7a27]"></i>
-                <span>Thông tin cá nhân</span>
+                 class="flex items-center gap-3 px-4 py-3 text-[14px] font-medium hover:bg-gray-50 transition-colors no-underline" style="color: #333;">
+                <i class="bi bi-person-fill text-[18px]" style="color: #666;"></i>
+                <span>Cài đặt tài khoản</span>
               </a>
 
               @if(auth()->user()->role !== 'reader')
@@ -212,21 +212,21 @@
                   };
                 @endphp
                 <a href="{{ $dashUrl }}"
-                   class="flex items-center gap-3 px-4 py-3 text-[15px] font-medium text-gray-700 hover:bg-gray-50 hover:text-[#2a7a27] transition-colors no-underline">
-                  <i class="bi bi-speedometer2 text-lg text-[#2a7a27]"></i>
+                   class="flex items-center gap-3 px-4 py-3 text-[14px] font-medium hover:bg-gray-50 transition-colors no-underline" style="color: #333;">
+                  <i class="bi bi-speedometer2 text-[18px]" style="color: #666;"></i>
                   <span>Dashboard</span>
                 </a>
               @endif
 
               {{-- Divider --}}
-              <div class="border-t border-gray-100 my-1"></div>
+              <div class="my-1" style="border-top: 1px solid #eaeaea;"></div>
 
               {{-- Đăng xuất --}}
-              <form method="POST" action="{{ route('logout') }}" class="m-0 p-0">
+              <form method="POST" action="{{ route('logout') }}" class="m-0 p-0 block w-full">
                 @csrf
                 <button type="button" @click="open = false; showLogout = true"
-                        class="w-full flex items-center gap-3 px-4 py-3 text-[15px] font-medium text-red-500 hover:bg-red-50 transition-colors">
-                  <i class="bi bi-box-arrow-right text-lg"></i>
+                        class="w-full flex items-center gap-3 px-4 py-3 text-[14px] font-bold hover:bg-gray-50 transition-colors text-left" style="color: #e11d48;">
+                  <i class="bi bi-power text-[18px]"></i>
                   <span>Đăng xuất</span>
                 </button>
               </form>
@@ -301,10 +301,10 @@
 
             {{-- Notification panel --}}
             <div x-show="open" x-transition:enter="transition ease-out duration-150"
-                 x-transition:enter-start="opacity-0 -translate-y-1" x-transition:enter-end="opacity-100 translate-y-0"
+                 x-transition:enter-start="opacity-0 scale-95 translate-y-2" x-transition:enter-end="opacity-100 scale-100 translate-y-0"
                  x-transition:leave="transition ease-in duration-100"
-                 x-transition:leave-start="opacity-100 translate-y-0" x-transition:leave-end="opacity-0 -translate-y-1"
-                 class="absolute right-0 mt-2 w-80 sm:w-[340px] bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden z-50"
+                 x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95"
+                 class="absolute right-0 mt-3 w-80 sm:w-[360px] bg-white/95 backdrop-blur-2xl rounded-3xl shadow-2xl overflow-hidden z-50 border border-white ring-1 ring-black/5"
                  style="display:none;">
               {{-- Header --}}
               <div class="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-[#1a5c38] to-[#2d9e60]">

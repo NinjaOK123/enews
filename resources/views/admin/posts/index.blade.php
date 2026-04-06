@@ -4,7 +4,7 @@
 <div class="mt-4 p-6 md:p-8 max-w-7xl mx-auto">
     <!-- Header -->
     <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
-        <h3 class="text-2xl font-bold text-gray-800 tracking-tight">Quản lý bài viết</h3>
+        <h3 class="text-2xl font-bold text-white drop-shadow-md tracking-tight">Quản lý bài viết</h3>
         <div class="flex items-center gap-3">
 
             <!-- Admin can create posts by redirecting to contributor create -->

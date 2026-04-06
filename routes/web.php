@@ -100,11 +100,6 @@ Route::prefix('admin')
          // Slider Bài Viết
          Route::post('posts/{post}/toggle-slider', [\App\Http\Controllers\Admin\PostController::class, 'toggleSlider'])->name('posts.toggle-slider');
 
-         // Banners Cuộc thi
-         Route::post('banners/update-order', [\App\Http\Controllers\Admin\BannerController::class, 'updateOrder'])->name('banners.update-order');
-         Route::post('banners/{banner}/toggle-active', [\App\Http\Controllers\Admin\BannerController::class, 'toggleActive'])->name('banners.toggle-active');
-         Route::resource('banners', \App\Http\Controllers\Admin\BannerController::class)->except(['show']);
-
          // Quản lý Media (Thư viện)
          Route::group(['prefix' => 'media', 'as' => 'media.'], function () {
              Route::get('/', [App\Http\Controllers\Admin\MediaController::class, 'index'])->name('index');
@@ -154,13 +149,9 @@ Route::prefix('admin')
          });
 
           // ADMIN: Quản lý Banner Cuộc thi
-          Route::group(['prefix' => 'banners', 'as' => 'banners.'], function () {
-              Route::get('/',                 [\App\Http\Controllers\Admin\BannerController::class, 'index'])->name('index');
-              Route::post('/',                [\App\Http\Controllers\Admin\BannerController::class, 'store'])->name('store');
-              Route::put('/{banner}',         [\App\Http\Controllers\Admin\BannerController::class, 'update'])->name('update');
-              Route::delete('/{banner}',      [\App\Http\Controllers\Admin\BannerController::class, 'destroy'])->name('destroy');
-              Route::post('/{banner}/toggle', [\App\Http\Controllers\Admin\BannerController::class, 'toggleActive'])->name('toggle');
-          });
+          Route::post('banners/update-order', [\App\Http\Controllers\Admin\BannerController::class, 'updateOrder'])->name('banners.update-order');
+          Route::post('banners/{banner}/toggle-active', [\App\Http\Controllers\Admin\BannerController::class, 'toggleActive'])->name('banners.toggle-active');
+          Route::resource('banners', \App\Http\Controllers\Admin\BannerController::class)->except(['show']);
 
           // ADMIN: Cộng tác viên
           Route::group(['prefix' => 'cong-tac-vien', 'as' => 'contributor.'], function () {

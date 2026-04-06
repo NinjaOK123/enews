@@ -1,0 +1,57 @@
+
+=== BÁO CÁO TỔNG KIỂM TRA LẦN CUỐI ===
+Tổng ảnh được tìm thấy: 52560
+✅ Hiện thị THÀNH CÔNG : 36963
+❌ Vẫn bị LỖI (Missing): 15597
+
+DANH SÁCH 50 ẢNH BỊ THIẾU TIÊU BIỂU:
+Bài [340] | Thiếu file gốc: storage/joomla-images/u20_t1099994171_hqF5z.11.jpg
+Bài [426] | Thiếu file gốc: storage/joomla-images/u20_t1104223634_RA4Jw.jpg
+Bài [427] | Thiếu file gốc: storage/joomla-images/u20_t1104225643_ZLmMG.jpg
+Bài [432] | Thiếu file gốc: storage/joomla-images/u20_t1104466020_t1UZq.jpg
+Bài [1134] | Thiếu file gốc: storage/joomla-images/u20_t1133856557_20ON.jpg
+Bài [1143] | Thiếu file gốc: storage/joomla-images/u20_t1134095998_2jt0.jpg
+Bài [1146] | Thiếu file gốc: storage/joomla-images/u20_t1134358500_QWPA.jpg
+Bài [1150] | Thiếu file gốc: storage/joomla-images/u20_t1134545763_XxMB.jpg
+Bài [1151] | Thiếu file gốc: storage/joomla-images/u20_t1134547487_8Xbp.jpg
+Bài [1154] | Thiếu file gốc: storage/joomla-images/u20_t1134552011_bOoq.jpg
+Bài [1172] | Thiếu file gốc: storage/joomla-images/u20_t1135562106_vrka.jpg
+Bài [1174] | Thiếu file gốc: storage/joomla-images/u20_t1135585370_fhTs.jpg
+Bài [1175] | Thiếu file gốc: storage/joomla-images/u20_t1135586424_q6zJ.jpg
+Bài [1176] | Thiếu file gốc: storage/joomla-images/u20_t1135656626_XRBe.pluat.jpg
+Bài [1177] | Thiếu file gốc: storage/joomla-images/u20_t1135673387_fDv3.hoc2005.jpg
+Bài [1178] | Thiếu file gốc: storage/joomla-images/u20_t1135828389_Istt.jpg
+Bài [1179] | Thiếu file gốc: storage/joomla-images/u20_t1135828848_5H1u.jpg
+Bài [1181] | Thiếu file gốc: storage/joomla-images/u20_t1135843402_rlFq.tgkl.jpg
+Bài [1185] | Thiếu file gốc: storage/joomla-images/u20_t1135846388_oOcq.jpg
+Bài [1186] | Thiếu file gốc: storage/joomla-images/u20_t1135846858_zKUc.jpg
+Bài [1191] | Thiếu file gốc: storage/joomla-images/u20_t1136337386_wxfJ.jpg
+Bài [1196] | Thiếu file gốc: storage/joomla-images/u20_t1136262534_t3Ul.1.jpg
+Bài [1197] | Thiếu file gốc: storage/joomla-images/u20_t1136281252_x5GN.jpg
+Bài [1198] | Thiếu file gốc: storage/joomla-images/u20_t1136276814_seM3.ocbuou.gif
+Bài [1199] | Thiếu file gốc: storage/joomla-images/u20_t1136279818_wsyT.jpg
+Bài [1201] | Thiếu file gốc: storage/joomla-images/u20_t1136358709_8OfT.1.jpg
+Bài [1202] | Thiếu file gốc: storage/joomla-images/u20_t1136360193_dcJf.1.jpg
+Bài [1204] | Thiếu file gốc: storage/joomla-images/u20_t1136363907_39zr.jpg
+Bài [1205] | Thiếu file gốc: storage/joomla-images/u20_t1136363558_JUpw.jpg
+Bài [1206] | Thiếu file gốc: storage/joomla-images/u20_t1136368871_NJxW.1.jpg
+Bài [1207] | Thiếu file gốc: storage/joomla-images/u20_t1136370151_gbQ8.jpg
+Bài [1211] | Thiếu file gốc: storage/joomla-images/u20_t1136545159_xxO4.jpg
+Bài [1212] | Thiếu file gốc: storage/joomla-images/u20_t1136770617_lIWj.1.jpg
+Bài [1213] | Thiếu file gốc: storage/joomla-images/u20_t1136771351_J6oD.1.jpg
+Bài [1215] | Thiếu file gốc: storage/joomla-images/u20_t1136772335_Cg0C.1.jpg
+Bài [1217] | Thiếu file gốc: storage/joomla-images/u20_t1136778282_4wo3.1.jpg
+Bài [1218] | Thiếu file gốc: storage/joomla-images/u20_t1136779892_tfwk.1.jpg
+Bài [1219] | Thiếu file gốc: storage/joomla-images/u20_t1136884365_MTPX.jpg
+Bài [1220] | Thiếu file gốc: storage/joomla-images/u20_t1136878863_zKUC.1.jpg
+Bài [1222] | Thiếu file gốc: storage/joomla-images/u20_t1136945678_WXGj.11.1.jpg
+Bài [1223] | Thiếu file gốc: storage/joomla-images/u20_t1136946513_tNGv.but.hs.jpg
+Bài [1224] | Thiếu file gốc: storage/joomla-images/u20_t1136948165_RcKB.jpg
+Bài [1225] | Thiếu file gốc: storage/joomla-images/u20_t1136948969_mqi0.jpg
+Bài [1228] | Thiếu file gốc: storage/joomla-images/u20_t1137036737_ECZw.1.jpg
+Bài [1233] | Thiếu file gốc: storage/joomla-images/u20_t1137123670_hDNx.1.jpg
+Bài [1235] | Thiếu file gốc: storage/joomla-images/u20_t1137124918_y3k9.1.jpg
+Bài [1237] | Thiếu file gốc: storage/joomla-images/u10836_t1299117489_u1lCq.jpg
+Bài [1238] | Thiếu file gốc: storage/joomla-images/u20_t1137400442_FCS6.jpg
+Bài [1242] | Thiếu file gốc: storage/joomla-images/u20_t1137557032_NTvV.jpg
+Bài [1244] | Thiếu file gốc: storage/joomla-images/u20_t1137656796_UxrK.jpg

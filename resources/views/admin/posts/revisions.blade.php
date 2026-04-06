@@ -9,8 +9,8 @@
             <i class="bi bi-arrow-left text-lg leading-none"></i>
         </a>
         <div>
-            <h3 class="text-2xl font-bold text-gray-800 tracking-tight">Lịch sử chỉnh sửa</h3>
-            <p class="text-sm text-gray-500 mt-1">Bài viết: <span class="font-medium text-gray-700">{{ $post->title }}</span></p>
+            <h3 class="text-2xl font-bold text-white drop-shadow-md tracking-tight">Lịch sử chỉnh sửa</h3>
+            <p class="text-sm text-emerald-50/90 font-medium mt-1">Bài viết: <span class="font-bold text-white">{{ $post->title }}</span></p>
         </div>
     </div>
 

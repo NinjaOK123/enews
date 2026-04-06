@@ -50,12 +50,16 @@
     z-index: 1;
 }
 .stat-card .stat-num {
-    font-size: 2rem;
+    font-size: clamp(1.1rem, 2vw, 1.8rem);
     font-weight: 900;
     line-height: 1;
     position: relative;
     z-index: 1;
     letter-spacing: -0.02em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 100%;
 }
 .stat-card .stat-label {
     font-size: 0.7rem;
@@ -65,6 +69,10 @@
     font-weight: 700;
     position: relative;
     z-index: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 100%;
 }
 
 /* ── Quick Access Card ── */
@@ -133,15 +141,15 @@
 {{-- ── Welcome Header ── --}}
 <div class="flex items-center justify-between mb-7">
     <div class="flex items-center gap-3">
-        <div class="w-1.5 h-10 bg-gradient-to-b from-green-500 to-green-700 rounded-full"></div>
+        <div class="w-1.5 h-10 bg-gradient-to-b from-white/80 to-white/30 rounded-full shadow-inner"></div>
         <div>
-            <h2 class="text-2xl font-black text-gray-900 leading-tight tracking-tight">
+            <h2 class="text-2xl font-black text-white leading-tight tracking-tight drop-shadow-md">
                 Tin tức AGU — Cổng Quản Trị
             </h2>
-            <p class="text-sm text-gray-400 mt-0.5">
-                Xin chào, <span class="font-semibold text-gray-600">{{ $user->name ?? 'Admin' }}</span>
+            <p class="text-[13px] text-white/80 mt-1 font-medium tracking-wide">
+                Xin chào, <span class="font-bold text-white">{{ $user->name ?? 'Admin' }}</span>
                 &nbsp;·&nbsp;
-                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-green-800">
+                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold bg-white/20 text-white backdrop-blur-md border border-white/30">
                     {{ $user?->roleLabel() ?? 'Quản trị viên' }}
                 </span>
                 &nbsp;·&nbsp;
@@ -190,7 +198,7 @@
     {{-- Tổng lượt xem --}}
     <div class="stat-card card-3d" style="background: linear-gradient(135deg,#ef4444,#dc2626);">
         <div class="stat-icon"><i class="bi bi-eye-fill"></i></div>
-        <div class="stat-num mt-2 text-lg">{{ number_format($s_views) }}</div>
+        <div class="stat-num mt-2">{{ number_format($s_views) }}</div>
         <div class="stat-label mt-1">Tổng lượt xem</div>
     </div>
 

@@ -1,195 +1,220 @@
-<!DOCTYPE html>
-<html lang="vi">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Đăng nhập — E-News AGU</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { 
-      font-family: 'Inter', sans-serif; 
-      min-height: 100vh; 
-      display: flex; 
-      justify-content: center;
-      align-items: center;
-      background: url('{{ asset("images/campus-bg.png") }}') center center / cover no-repeat fixed;
+@extends('layouts.guest')
+@section('title', 'Đăng nhập — E-News Đại học An Giang')
+
+@section('content')
+<style>
+.glass-card {
+  width: 100%;
+  max-width: 420px;
+  padding: 40px;
+  border-radius: 20px;
+  backdrop-filter: blur(15px);
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+  animation: fadeIn 1s ease-in-out;
+  margin: 0 auto;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: scale(.9);
     }
+    to{
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.glass-card h2 {
+    text-align: center;
+    font-size: 26px;
+    color: #fff;
+    margin-bottom: 25px;
+    letter-spacing: 1px;
+    font-weight: 700;
+}
+
+/* Phần brand info E-news được custom theo form nhưng giữ tông màu gốc */
+.brand-subtitle-1 {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #34d399; /* Text color green */
+    text-align: center;
+    margin-bottom: 2px;
+    text-transform: uppercase;
+}
+
+.brand-subtitle-2 {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #fff;
+    text-align: center;
+    margin-bottom: 25px;
+    text-transform: uppercase;
+}
+
+/* Auth Google Button được làm theo style btn của user nhưng nền trắng */
+.btn-google {
+    width: 100%;
+    padding: 14px;
+    border: none;
+    border-radius: 30px;
+    background: #ffffff;
+    color: #333;
+    font-weight: 600;
+    font-size: 15px;
+    cursor: pointer;
+    letter-spacing: 1px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 25px;
+    text-decoration: none;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.btn-google:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(255, 255, 255, 0.3);
+}
+
+.divider {
+    text-align: center;
+    color: #ddd;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 25px;
+}
+
+.input-box {
+    position: relative;
+    margin-bottom: 25px;
+}
+
+.input-box input {
+    width: 100%;
+    padding: 14px 45px;
+    border: none; 
+    border-radius: 30px;
+    background: rgba(255,255,255, 0.15);
+    color: #fff;
+    font-size: 16px;
+    outline: none;
+    transition: background .3s ease;
+}
+.input-box input::placeholder {
+    color: #ddd;
+}
+
+.input-box input:focus {
+    background: rgba(255, 255,255, 0.25);
+}
+
+.input-box i {
+    position: absolute;
+    top: 50%;
+    left: 17px;
+    transform: translateY(-50%);
+    color: #ddd;
+    font-size: 17px;
+}
+
+.btn-login {
+    width: 100%;
+    padding: 14px;
+    border: none;
+    border-radius: 30px;
+    background: linear-gradient(135deg, #3b82f6, #9333ea);
+    color: #fff;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    letter-spacing: 1px;
+    margin-top: 10px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.btn-login:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(147, 51, 234, 0.4);
+}
+
+.bottom-text {
+    margin-top: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: #ddd;
+    font-size: 14px;
+    padding: 0 5px;
+}
+
+.bottom-text a {
+    color: #fff;
+    text-decoration: underline;
+}
+
+.error-msg {
+    background: rgba(239, 68, 68, 0.2);
+    border: 1px solid rgba(239, 68, 68, 0.5);
+    color: #fff;
+    padding: 12px 16px;
+    border-radius: 15px;
+    margin-bottom: 25px;
+    font-size: 14px;
+}
+</style>
+
+<div class="glass-card">
     
-    .login-container {
-      width: 100%;
-      max-width: 420px;
-      background: rgba(255, 255, 255, 0.95);
-      border-radius: 12px;
-      padding: 35px 30px;
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
-      backdrop-filter: blur(4px);
-      margin: 20px;
-    }
-
-    .brand-title {
-      font-size: 2.2rem;
-      font-weight: 900;
-      color: #0b5ed7;
-      text-align: center;
-      margin-bottom: 2px;
-      letter-spacing: 1px;
-    }
-    
-    .brand-subtitle-1 {
-      font-size: 0.85rem;
-      font-weight: 600;
-      color: #dc3545;
-      text-align: center;
-      margin-bottom: 2px;
-      text-transform: uppercase;
-    }
-
-    .brand-subtitle-2 {
-      font-size: 1.05rem;
-      font-weight: 800;
-      color: #dc3545;
-      text-align: center;
-      margin-bottom: 24px;
-      text-transform: uppercase;
-    }
-
-    .section-label {
-      font-size: 0.9rem;
-      font-weight: 700;
-      color: #212529;
-      margin-bottom: 8px;
-    }
-
-    .btn-google {
-      background-color: #0b5ed7;
-      color: #fff;
-      border: none;
-      width: 100%;
-      padding: 10px;
-      border-radius: 4px;
-      font-weight: 600;
-      font-size: 0.95rem;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 8px;
-      transition: background-color 0.2s;
-      text-decoration: none;
-      margin-bottom: 20px;
-    }
-    .btn-google:hover {
-      background-color: #0a58ca;
-      color: #fff;
-    }
-
-    .form-control {
-      border-radius: 4px;
-      padding: 10px 14px;
-      font-size: 0.9rem;
-      border: 1px solid #ced4da;
-      margin-bottom: 12px;
-    }
-    .form-control:focus {
-      border-color: #0b5ed7;
-      box-shadow: 0 0 0 0.25rem rgba(11, 94, 215, 0.25);
-    }
-    
-    .btn-login {
-      background-color: transparent;
-      color: #0b5ed7;
-      border: 1px solid #0b5ed7;
-      width: 100%;
-      padding: 10px;
-      border-radius: 4px;
-      font-weight: 600;
-      font-size: 0.95rem;
-      transition: all 0.2s;
-      margin-bottom: 12px;
-    }
-    .btn-login:hover {
-      background-color: #0b5ed7;
-      color: #fff;
-    }
-
-    .forgot-pwd {
-      font-size: 0.85rem;
-      color: #0b5ed7;
-      text-decoration: none;
-    }
-    .forgot-pwd:hover {
-      text-decoration: underline;
-    }
-
-    .alert-danger-custom {
-      background: #f8d7da;
-      border: 1px solid #f5c2c7;
-      color: #842029;
-      border-radius: 4px;
-      padding: 10px 12px;
-      font-size: 0.85rem;
-      margin-bottom: 15px;
-    }
-  </style>
-</head>
-<body>
-
-  <div class="login-container">
-    {{-- Branding --}}
-    <div class="brand-title">E-NEWS</div>
+    <h2>E-NEWS</h2>
     <div class="brand-subtitle-1">Hệ thống quản lý tin tức</div>
     <div class="brand-subtitle-2">Trường Đại học An Giang</div>
 
-    {{-- Flash messages --}}
     @if(session('error'))
-    <div class="alert-danger-custom">
-      <i class="bi bi-exclamation-triangle-fill me-1"></i> {{ session('error') }}
+    <div class="error-msg">
+        {{ session('error') }}
     </div>
     @endif
     @if($errors->any())
-    <div class="alert-danger-custom">
-      <i class="bi bi-exclamation-circle-fill me-1"></i> Lỗi đăng nhập, vui lòng kiểm tra lại.
+    <div class="error-msg">
+        Lỗi đăng nhập, vui lòng kiểm tra lại.
     </div>
     @endif
 
-    {{-- Google Login Section --}}
-    <div class="section-label">Đăng nhập qua:</div>
+    {{-- Nút Đăng nhập Google --}}
     <a href="{{ route('auth.google') }}" class="btn-google">
-      <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="G" style="width: 18px; margin-right: 5px;"> Gmail AGU
+        <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google" style="width: 18px; margin-right: 8px;">
+        Đăng nhập với Gmail AGU
     </a>
 
-    {{-- Credentials Form Section --}}
-    <div class="section-label" style="text-transform: uppercase; font-size: 0.85rem; margin-top: 24px;">HOẶC tài khoản:</div>
-    <form method="POST" action="{{ route('login') }}" novalidate>
-      @csrf
+    <div class="divider">Hoặc bằng tài khoản</div>
 
-      <input type="text"
-             name="login"
-             class="form-control"
-             placeholder="Tên tài khoản:"
-             value="{{ old('login') }}"
-             autocomplete="username"
-             required
-             autofocus>
+    {{-- Form --}}
+    <form method="POST" action="{{ route('login') }}">
+        @csrf
+        
+        <div class="input-box">
+            <i class="bi bi-envelope-fill"></i>
+            <input type="text" name="login" required autocomplete="username" placeholder="Tên tài khoản" value="{{ old('login', request()->cookie('last_login_username')) }}" autofocus>
+        </div>
 
-      <input type="password"
-             name="password"
-             class="form-control"
-             placeholder="Mật khẩu"
-             autocomplete="current-password"
-             required>
+        <div class="input-box">
+            <i class="bi bi-shield-lock-fill"></i>
+            <input type="password" name="password" required autocomplete="current-password" placeholder="Mật khẩu">
+        </div>
 
-      <button type="submit" class="btn-login mt-2">
-        Đăng nhập
-      </button>
-
-      <div class="text-start mt-2">
-        <a href="{{ route('password.request') }}" class="forgot-pwd">Quên mật khẩu?</a>
-      </div>
+        <button type="submit" class="btn-login">Đăng nhập</button>
+        
+        <div class="bottom-text">
+            <label style="display:flex; align-items:center; cursor:pointer;">
+                <input type="checkbox" name="remember" checked style="margin-right:8px; width:15px; height:15px; accent-color:#9333ea; cursor:pointer;">
+                Ghi nhớ
+            </label>
+            <a href="{{ route('password.request') }}">Quên mật khẩu?</a>
+        </div>
     </form>
-  </div>
-
-</body>
-</html>
+</div>
+@endsection

@@ -3,15 +3,15 @@
 @section('title', 'Báo Cáo Nhuận Bút')
 
 @section('content')
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8" x-data="royaltyReport()">
+<div class="max-w-7xl mx-auto w-full flex flex-col gap-6" x-data="royaltyReport()">
     {{-- Header --}}
-    <div class="card bg-white shadow-sm border border-gray-100 rounded-2xl mb-6">
-        <div class="card-body p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+    <div class="bg-emerald-700 shadow-sm border border-emerald-800 rounded-2xl">
+        <div class="p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
             <div>
-                <h2 class="text-2xl font-bold font-heading text-emerald-800 flex items-center gap-2">
-                    <i class="bi bi-wallet2 text-3xl"></i> Báo Cáo Nhuận Bút
+                <h2 class="text-2xl font-bold font-heading text-white flex items-center gap-2">
+                    <i class="bi bi-wallet2 text-3xl text-emerald-300"></i> Báo Cáo Nhuận Bút
                 </h2>
-                <p class="text-gray-500 mt-1">Xuất bảng kê thanh toán nhuận bút hàng tháng theo Quyết định chuẩn.</p>
+                <p class="text-emerald-50/90 mt-1">Xuất bảng kê thanh toán nhuận bút hàng tháng theo Quyết định chuẩn.</p>
             </div>
             <div class="flex items-center gap-3">
                 <a href="{{ route('admin.reports.royalty.export', request()->all()) }}"
@@ -23,8 +23,8 @@
     </div>
 
     {{-- Filters --}}
-    <div class="card bg-white shadow-sm border border-gray-100 rounded-2xl mb-8">
-        <div class="card-body p-6">
+    <div class="bg-white shadow-sm border border-gray-100 rounded-2xl">
+        <div class="p-6">
             <form method="GET" action="{{ route('admin.reports.royalty.index') }}" class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
                 <div>
                     <label class="block text-sm font-semibold text-gray-700 mb-2">Tháng</label>
@@ -61,7 +61,7 @@
     </div>
 
     {{-- Stats Cards --}}
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div class="bg-gradient-to-br from-emerald-50 to-green-100 rounded-2xl border border-emerald-200 p-6 flex flex-col items-center justify-center text-center shadow-sm">
             <span class="text-sm font-bold text-emerald-700 uppercase tracking-wider mb-2">Bài viết Tính Nhuận Bút</span>
             <h3 class="text-4xl font-extrabold text-emerald-900">{{ $posts->count() }} <span class="text-lg font-medium text-emerald-700">bài</span></h3>
@@ -75,8 +75,8 @@
     </div>
 
     {{-- Data Table Preview --}}
-    <div class="card bg-white shadow-sm border border-gray-100 rounded-2xl overflow-hidden">
-        <div class="card-header bg-gray-50 border-b border-gray-100 px-6 py-4">
+    <div class="bg-white shadow-sm border border-gray-100 rounded-2xl overflow-hidden">
+        <div class="bg-gray-50 border-b border-gray-100 px-6 py-4">
             <h3 class="text-lg font-bold text-gray-800">Bản xem trước Danh sách</h3>
         </div>
         <div class="overflow-x-auto">

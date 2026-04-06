@@ -27,3 +27,9 @@ Thumbs.db
 enews.sql
 *.xlsx
 temp_repo/
+/assets
+/public/assets
+/public/images/*
+!/public/images/logo.png
+!/public/images/campus-bg.png
+!/public/images/ui-avatar-fallback.png
