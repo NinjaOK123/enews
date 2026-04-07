@@ -56,7 +56,7 @@
     <!-- Header -->
     <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
         <div>
-            <h3 class="text-2xl font-bold text-white drop-shadow-md tracking-tight"><i class="bi bi-images text-emerald-300 me-2"></i>Thư viện Media</h3>
+            <h3 class="text-2xl font-bold text-slate-800 tracking-tight"><i class="bi bi-images text-emerald-500 me-2"></i>Thư viện Media</h3>
             <p class="text-sm text-emerald-50/90 font-medium mt-1">Tổng cộng: <strong class="text-white">{{ number_format($totalMedia) }}</strong> tập tin</p>
         </div>
         <button type="button" @click="openUpload = !openUpload" class="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white rounded-xl text-sm font-semibold shadow-sm transition-all hover:shadow-emerald-500/20">

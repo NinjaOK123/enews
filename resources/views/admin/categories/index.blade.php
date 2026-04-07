@@ -10,10 +10,20 @@
                     <a href="{{ route('admin.categories.index') }}" class="w-9 h-9 flex items-center justify-center rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 transition-colors shadow-sm" title="Quay lại danh mục chính">
                         <i class="bi bi-arrow-left text-lg"></i>
                     </a>
-                    <h3 class="text-2xl font-bold text-white drop-shadow-md tracking-tight">Chi nhánh con: <span class="text-emerald-100">{{ $parentCat->name }}</span></h3>
+                    <h3 class="text-2xl font-bold text-slate-800 tracking-tight">Chi nhánh con: <span class="text-emerald-600">{{ $parentCat->name }}</span></h3>
                 </div>
             @else
-
+                <h2 class="text-2xl font-bold text-slate-800 tracking-tight">Quản lý chuyên mục</h2>
+                <p class="text-sm text-slate-500 mt-1">Sắp xếp, thêm mới và quản lý cấu trúc website</p>
+            @endif
+        </div>
+        <div>
+            <a href="{{ route('admin.categories.create') }}{{ request('parent_id') ? '?parent_id='.request('parent_id') : '' }}" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-xl shadow-sm transition-all flex items-center gap-2">
+                <i class="bi bi-plus-lg text-lg"></i>
+                Thêm chuyên mục
+            </a>
+        </div>
+    </div>
     @if(session('success'))
         <div class="mb-6 px-4 py-3 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl flex items-center gap-3 animate-fade-in-up">
             <i class="bi bi-check-circle-fill text-xl text-emerald-500 shrink-0"></i> 

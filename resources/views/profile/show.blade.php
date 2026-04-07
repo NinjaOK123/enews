@@ -1192,15 +1192,77 @@ function createCollection(name, isPublic, onSuccess) {
                            class="w-full border border-gray-300 rounded-xl px-4 py-3 text-base outline-none focus:border-[#f59e0b] focus:ring-2 focus:ring-[#f59e0b]/20 transition">
                 </div>
                 {{-- Ngân hàng --}}
-                <div>
+                <div x-data="{
+                        openBank: false,
+                        searchQuery: '',
+                        selectedBank: '',
+                        banks: [
+                            @foreach(\App\Models\ContributorRequest::banks() as $bank)
+                            '{{ addslashes($bank) }}',
+                            @endforeach
+                        ],
+                        get filteredBanks() {
+                            if (this.searchQuery === '') return this.banks;
+                            return this.banks.filter(i => i.toLowerCase().includes(this.searchQuery.toLowerCase()));
+                        }
+                    }"
+                    class="relative">
                     <label class="block text-sm font-bold text-gray-700 mb-2">Ngân hàng <span class="text-red-500">*</span></label>
-                    <select name="bank_name" required
-                            class="w-full border border-gray-300 rounded-xl px-4 py-3 text-base outline-none focus:border-[#f59e0b] focus:ring-2 focus:ring-[#f59e0b]/20 transition bg-white">
-                        <option value="">-- Chọn ngân hàng --</option>
-                        @foreach(\App\Models\ContributorRequest::banks() as $bank)
-                        <option value="{{ $bank }}">{{ $bank }}</option>
-                        @endforeach
-                    </select>
+                    
+                    {{-- Input ẩn chứa giá trị gửi form --}}
+                    <input type="hidden" name="bank_name" :value="selectedBank" required>
+
+                    {{-- Nút Dropdown --}}
+                    <button type="button" @click="openBank = !openBank" @click.outside="openBank = false"
+                            class="w-full flex items-center justify-between border border-gray-300 rounded-xl px-4 py-3 text-base bg-white outline-none focus:border-[#f59e0b] focus:ring-2 focus:ring-[#f59e0b]/20 transition text-left shadow-sm"
+                            :class="!selectedBank ? 'text-gray-400' : 'text-gray-900'">
+                        <div class="flex items-center gap-3 truncate">
+                            <i class="bi bi-bank2 text-amber-500" x-show="selectedBank"></i>
+                            <i class="bi bi-bank text-gray-300" x-show="!selectedBank"></i>
+                            <span class="truncate font-medium transition-colors" x-text="selectedBank ? selectedBank : '-- Chọn ngân hàng --'"></span>
+                        </div>
+                        <i class="bi bi-chevron-down text-gray-400 transition-transform" :class="openBank ? 'rotate-180' : ''"></i>
+                    </button>
+
+                    {{-- Menu --}}
+                    <div x-show="openBank" x-cloak
+                         x-transition:enter="transition ease-out duration-150"
+                         x-transition:enter-start="opacity-0 scale-95 -translate-y-2"
+                         x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+                         x-transition:leave="transition ease-in duration-100"
+                         x-transition:leave-start="opacity-100 scale-100 translate-y-0"
+                         x-transition:leave-end="opacity-0 scale-95 -translate-y-2"
+                         class="absolute z-50 w-full mt-2 left-0 bg-white border border-gray-200 rounded-2xl shadow-xl overflow-hidden"
+                         style="display:none;">
+                        
+                        {{-- Ô Search --}}
+                        <div class="p-3 border-b border-gray-100 bg-gray-50/80 backdrop-blur-sm sticky top-0">
+                            <div class="relative">
+                                <i class="bi bi-search absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                                <input type="text" x-model="searchQuery" placeholder="Tìm kiếm ngân hàng..."
+                                       @keydown.escape="openBank = false"
+                                       class="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm text-gray-700 outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20 transition shadow-sm">
+                            </div>
+                        </div>
+
+                        {{-- DSS Ngân hàng --}}
+                        <ul class="max-h-64 overflow-y-auto w-full py-1 overscroll-contain">
+                            <template x-for="bank in filteredBanks" :key="bank">
+                                <li @click="selectedBank = bank; openBank = false; searchQuery = ''"
+                                    class="px-4 py-3 hover:bg-amber-50 cursor-pointer flex items-center gap-3 transition">
+                                    <div class="w-8 h-8 rounded-[10px] bg-gradient-to-br from-amber-50 to-amber-100 border border-amber-200/50 flex items-center justify-center shrink-0 shadow-sm">
+                                        <i class="bi bi-bank2 text-amber-600/90 text-sm"></i>
+                                    </div>
+                                    <span x-text="bank" class="text-[15px] text-gray-700 font-medium"></span>
+                                    <i class="bi bi-check-circle-fill text-amber-500 ml-auto text-lg" x-show="selectedBank === bank"></i>
+                                </li>
+                            </template>
+                            <li x-show="filteredBanks.length === 0" class="px-4 py-8 text-center text-gray-500 flex flex-col items-center gap-3">
+                                <i class="bi bi-search text-gray-300 text-3xl"></i>
+                                <span class="text-sm font-medium">Không tìm thấy ngân hàng nào</span>
+                            </li>
+                        </ul>
+                    </div>
                 </div>
                 {{-- Số tài khoản --}}
                 <div>

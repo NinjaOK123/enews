@@ -9,145 +9,145 @@
 <style>
     .ck-editor__editable_inline {
         min-height: 250px;
-        border-radius: 0 0 8px 8px !important;
+        border-radius: 0 0 12px 12px !important;
+        border-color: #f3f4f6 !important;
     }
-    .recipient-card {
-        border: 2px solid #e9ecef;
-        border-radius: 10px;
-        padding: 10px 16px;
-        cursor: pointer;
-        transition: all 0.2s;
-        user-select: none;
+    .ck-toolbar {
+        border-radius: 12px 12px 0 0 !important;
+        border-color: #f3f4f6 !important;
+        background: #f9fafb !important;
     }
-    .recipient-card:has(input:checked) {
-        border-color: #198754;
-        background-color: rgba(25, 135, 84, 0.07);
+    .choices__inner {
+        background-color: #f9fafb;
+        border: 1px solid #e5e7eb;
+        border-radius: 0.75rem;
+        padding: 0.35rem 0.75rem;
+    }
+    .choices[data-type*="select-multiple"] .choices__button, .choices[data-type*="text"] .choices__button {
+        border-left: 1px solid rgba(255,255,255,0.3);
+    }
+    .choices__list--multiple .choices__item {
+        background-color: #10b981;
+        border: 1px solid #059669;
+        border-radius: 0.5rem;
     }
 </style>
 @endsection
 
 @section('content')
-<div class="container-fluid p-0" style="max-width: 860px;">
+<div class="p-6 max-w-4xl mx-auto">
 
-    {{-- Breadcrumb --}}
-    <nav aria-label="breadcrumb" class="mb-4">
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{{ route('admin.notifications.index') }}">Thông báo</a></li>
-            <li class="breadcrumb-item active">Tạo mới</li>
-        </ol>
-    </nav>
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-6">
+        <div>
+            <h3 class="text-2xl font-bold text-gray-900 tracking-tight">Tạo thông báo mới</h3>
+            <p class="text-sm text-gray-500 mt-1">Soạn thảo và chọn nhóm đối tượng nhận thông báo</p>
+        </div>
+        <a href="{{ route('admin.notifications.index') }}" class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-all shadow-sm">
+            <i class="bi bi-arrow-left"></i> Trở về
+        </a>
+    </div>
 
-    <div class="card border-0 shadow-sm" style="border-radius: 16px;">
-        <div class="card-body p-4 p-md-5">
-            <h4 class="fw-bold mb-4"><i class="bi bi-bell-plus text-success me-2"></i>Tạo thông báo mới</h4>
-
-            @if($errors->any())
-                <div class="alert alert-danger mb-4">
-                    <ul class="mb-0">
+    <!-- Form Card -->
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        
+        @if($errors->any())
+            <div class="mx-6 mt-6 px-4 py-3 bg-red-50 border border-red-200 text-red-800 rounded-xl animate-fade-in-up">
+                <div class="flex gap-2">
+                    <i class="bi bi-exclamation-octagon-fill text-lg shrink-0 mt-0.5"></i>
+                    <ul class="text-sm font-medium list-disc list-inside">
                         @foreach($errors->all() as $error)
                             <li>{{ $error }}</li>
                         @endforeach
                     </ul>
                 </div>
-            @endif
+            </div>
+        @endif
 
-            <form action="{{ route('admin.notifications.store') }}" method="POST">
-                @csrf
-
-                {{-- Tiêu đề --}}
-                <div class="mb-4">
-                    <label for="title" class="form-label fw-semibold">Tiêu đề <span class="text-danger">*</span></label>
-                    <input type="text" name="title" id="title"
-                           class="form-control form-control-lg @error('title') is-invalid @enderror"
-                           value="{{ old('title') }}"
-                           placeholder="Nhập tiêu đề thông báo..."
-                           required>
+        <form action="{{ route('admin.notifications.store') }}" method="POST">
+            @csrf
+            
+            <div class="p-6 md:p-8 space-y-8">
+                <!-- Tiêu đề -->
+                <div>
+                    <label for="title" class="block text-sm font-bold text-gray-700 mb-1.5">Tiêu đề thông báo <span class="text-red-500">*</span></label>
+                    <input type="text" name="title" id="title" value="{{ old('title') }}" placeholder="Nhập tiêu đề thông báo..." required
+                           class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-base focus:bg-white focus:ring-2 focus:ring-emerald-100 focus:border-emerald-400 outline-none transition-all placeholder:text-gray-400 @error('title') border-red-300 ring-4 ring-red-100 focus:border-red-400 focus:ring-red-100 @enderror">
                     @error('title')
-                        <div class="invalid-feedback">{{ $message }}</div>
+                        <p class="mt-1.5 text-sm text-red-500 flex items-center gap-1"><i class="bi bi-exclamation-circle"></i> {{ $message }}</p>
                     @enderror
                 </div>
 
-                {{-- Nội dung (CKEditor 5) --}}
-                <div class="mb-4">
-                    <label class="form-label fw-semibold">Nội dung <span class="text-danger">*</span></label>
-                    <textarea name="content" id="notifContent" class="@error('content') is-invalid @enderror">{{ old('content') }}</textarea>
+                <!-- Nội dung (CKEditor 5) -->
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-1.5">Nội dung chi tiết <span class="text-red-500">*</span></label>
+                    <div class="rounded-xl overflow-hidden border border-gray-200 @error('content') border-red-300 ring-4 ring-red-100 @enderror">
+                        <textarea name="content" id="notifContent">{{ old('content') }}</textarea>
+                    </div>
                     @error('content')
-                        <div class="text-danger small mt-1">{{ $message }}</div>
+                        <p class="mt-1.5 text-sm text-red-500 flex items-center gap-1"><i class="bi bi-exclamation-circle"></i> {{ $message }}</p>
                     @enderror
                 </div>
 
-                {{-- Đối tượng nhận --}}
-                <div class="mb-5">
-                    <label class="form-label fw-semibold d-block">Đối tượng nhận <span class="text-danger">*</span></label>
-                    <p class="text-muted small mb-3">Chọn một hoặc nhiều nhóm đối tượng sẽ nhận thông báo này.</p>
-
-                    @if($errors->has('recipients'))
-                        <div class="text-danger small mb-2"><i class="bi bi-exclamation-circle me-1"></i>{{ $errors->first('recipients') }}</div>
-                    @endif
-
-                    <div class="row g-2">
-                        {{-- All --}}
-                        <div class="col-6 col-md-4">
-                            <label class="recipient-card d-flex align-items-center gap-2">
-                                <input type="checkbox" name="recipients[]" value="all" class="form-check-input mt-0"
-                                       {{ in_array('all', old('recipients', [])) ? 'checked' : '' }}>
-                                <div>
-                                    <div class="fw-semibold"><i class="bi bi-people-fill text-success me-1"></i>Tất cả</div>
-                                    <small class="text-muted">Mọi người dùng</small>
-                                </div>
-                            </label>
-                        </div>
-                        {{-- Editor --}}
-                        <div class="col-6 col-md-4">
-                            <label class="recipient-card d-flex align-items-center gap-2">
-                                <input type="checkbox" name="recipients[]" value="editor" class="form-check-input mt-0"
-                                       {{ in_array('editor', old('recipients', [])) ? 'checked' : '' }}>
-                                <div>
-                                    <div class="fw-semibold"><i class="bi bi-pencil-square text-primary me-1"></i>Biên tập</div>
-                                    <small class="text-muted">Nhóm Editor</small>
-                                </div>
-                            </label>
-                        </div>
-                        {{-- Contributor --}}
-                        <div class="col-6 col-md-4">
-                            <label class="recipient-card d-flex align-items-center gap-2">
-                                <input type="checkbox" name="recipients[]" value="contributor" class="form-check-input mt-0"
-                                       {{ in_array('contributor', old('recipients', [])) ? 'checked' : '' }}>
-                                <div>
-                                    <div class="fw-semibold"><i class="bi bi-pen text-secondary me-1"></i>Cộng tác viên</div>
-                                    <small class="text-muted">Nhóm Contributor</small>
-                                </div>
-                            </label>
-                        </div>
-                        {{-- Reader --}}
-                        <div class="col-6 col-md-4">
-                            <label class="recipient-card d-flex align-items-center gap-2">
-                                <input type="checkbox" name="recipients[]" value="reader" class="form-check-input mt-0"
-                                       {{ in_array('reader', old('recipients', [])) ? 'checked' : '' }}>
-                                <div>
-                                    <div class="fw-semibold"><i class="bi bi-person text-info me-1"></i>Độc giả</div>
-                                    <small class="text-muted">Nhóm Reader</small>
-                                </div>
-                            </label>
-                        </div>
-                        {{-- Admin --}}
-                        <div class="col-6 col-md-4">
-                            <label class="recipient-card d-flex align-items-center gap-2">
-                                <input type="checkbox" name="recipients[]" value="admin" class="form-check-input mt-0"
-                                       {{ in_array('admin', old('recipients', [])) ? 'checked' : '' }}>
-                                <div>
-                                    <div class="fw-semibold"><i class="bi bi-shield-fill text-danger me-1"></i>Admin</div>
-                                    <small class="text-muted">Nhóm Admin</small>
-                                </div>
-                            </label>
-                        </div>
+                <!-- Đối tượng nhận -->
+                <div>
+                    <div class="mb-4">
+                        <label class="block text-sm font-bold text-gray-700 mb-1">Đối tượng nhận <span class="text-red-500">*</span></label>
+                        <p class="text-sm text-gray-500">Chọn một hoặc nhiều nhóm tài khoản sẽ nhận được thông báo này trên hệ thống.</p>
+                        @if($errors->has('recipients'))
+                            <p class="mt-1.5 text-sm text-red-500 flex items-center gap-1"><i class="bi bi-exclamation-circle"></i> {{ $errors->first('recipients') }}</p>
+                        @endif
                     </div>
 
-                    {{-- Chọn người dùng cụ thể --}}
-                    <div class="mt-4">
-                        <label class="form-label fw-semibold d-block">Gửi đích danh (Tuỳ chọn)</label>
-                        <p class="text-muted small mb-2">Bạn có thể gõ tên hoặc email để tìm và chọn thêm từng cá nhân nhận thông báo.</p>
-                        <select name="recipients[]" id="specificUsers" class="form-select" multiple>
+                    <!-- Grid Nhóm người dùng -->
+                    <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+                        <!-- All -->
+                        <label class="relative flex items-center gap-3 p-3 border-2 border-gray-100 rounded-xl cursor-pointer transition-all hover:bg-gray-50 has-[:checked]:border-emerald-500 has-[:checked]:bg-emerald-50/50 group">
+                            <input type="checkbox" name="recipients[]" value="all" class="peer w-4 h-4 text-emerald-600 bg-gray-100 border-gray-300 rounded focus:ring-emerald-500 pointer-events-none" {{ in_array('all', old('recipients', [])) ? 'checked' : '' }}>
+                            <div>
+                                <div class="font-bold text-sm text-gray-900 group-has-[:checked]:text-emerald-700"><i class="bi bi-people-fill text-emerald-500 me-1.5"></i>Tất cả</div>
+                                <div class="text-[11px] text-gray-500">Mọi người dùng</div>
+                            </div>
+                        </label>
+                        <!-- Editor -->
+                        <label class="relative flex items-center gap-3 p-3 border-2 border-gray-100 rounded-xl cursor-pointer transition-all hover:bg-gray-50 has-[:checked]:border-emerald-500 has-[:checked]:bg-emerald-50/50 group">
+                            <input type="checkbox" name="recipients[]" value="editor" class="peer w-4 h-4 text-emerald-600 bg-gray-100 border-gray-300 rounded focus:ring-emerald-500 pointer-events-none" {{ in_array('editor', old('recipients', [])) ? 'checked' : '' }}>
+                            <div>
+                                <div class="font-bold text-sm text-gray-900 group-has-[:checked]:text-emerald-700"><i class="bi bi-pencil-square text-blue-500 me-1.5"></i>Biên tập</div>
+                                <div class="text-[11px] text-gray-500">Nhóm Editor</div>
+                            </div>
+                        </label>
+                        <!-- Contributor -->
+                        <label class="relative flex items-center gap-3 p-3 border-2 border-gray-100 rounded-xl cursor-pointer transition-all hover:bg-gray-50 has-[:checked]:border-emerald-500 has-[:checked]:bg-emerald-50/50 group">
+                            <input type="checkbox" name="recipients[]" value="contributor" class="peer w-4 h-4 text-emerald-600 bg-gray-100 border-gray-300 rounded focus:ring-emerald-500 pointer-events-none" {{ in_array('contributor', old('recipients', [])) ? 'checked' : '' }}>
+                            <div>
+                                <div class="font-bold text-sm text-gray-900 group-has-[:checked]:text-emerald-700"><i class="bi bi-pen text-indigo-500 me-1.5"></i>Cộng tác viên</div>
+                                <div class="text-[11px] text-gray-500">Nhóm Contributor</div>
+                            </div>
+                        </label>
+                        <!-- Reader -->
+                        <label class="relative flex items-center gap-3 p-3 border-2 border-gray-100 rounded-xl cursor-pointer transition-all hover:bg-gray-50 has-[:checked]:border-emerald-500 has-[:checked]:bg-emerald-50/50 group">
+                            <input type="checkbox" name="recipients[]" value="reader" class="peer w-4 h-4 text-emerald-600 bg-gray-100 border-gray-300 rounded focus:ring-emerald-500 pointer-events-none" {{ in_array('reader', old('recipients', [])) ? 'checked' : '' }}>
+                            <div>
+                                <div class="font-bold text-sm text-gray-900 group-has-[:checked]:text-emerald-700"><i class="bi bi-person text-amber-500 me-1.5"></i>Độc giả</div>
+                                <div class="text-[11px] text-gray-500">Nhóm Reader</div>
+                            </div>
+                        </label>
+                        <!-- Admin -->
+                        <label class="relative flex items-center gap-3 p-3 border-2 border-gray-100 rounded-xl cursor-pointer transition-all hover:bg-gray-50 has-[:checked]:border-emerald-500 has-[:checked]:bg-emerald-50/50 group">
+                            <input type="checkbox" name="recipients[]" value="admin" class="peer w-4 h-4 text-emerald-600 bg-gray-100 border-gray-300 rounded focus:ring-emerald-500 pointer-events-none" {{ in_array('admin', old('recipients', [])) ? 'checked' : '' }}>
+                            <div>
+                                <div class="font-bold text-sm text-gray-900 group-has-[:checked]:text-emerald-700"><i class="bi bi-shield-lock-fill text-red-500 me-1.5"></i>Quản trị viên</div>
+                                <div class="text-[11px] text-gray-500">Nhóm Admin</div>
+                            </div>
+                        </label>
+                    </div>
+
+                    <!-- Gửi đích danh -->
+                    <div class="mt-6">
+                        <label class="block text-sm font-bold text-gray-700 mb-1">Gửi đích danh (Tuỳ chọn)</label>
+                        <p class="text-sm text-gray-500 mb-3">Bạn có thể gõ tên hoặc email để tìm và chọn thêm từng cá nhân nhận thông báo.</p>
+                        <select name="recipients[]" id="specificUsers" multiple>
                             @foreach($groupedUsers as $role => $users)
                                 <optgroup label="Nhóm {{ ucfirst($role) }}">
                                     @foreach($users as $user)
@@ -160,19 +160,21 @@
                         </select>
                     </div>
                 </div>
+            </div>
 
-                {{-- Actions --}}
-                <div class="d-flex gap-2">
-                    <button type="button" onclick="window.confirmSubmit(event, this, 'send', 'Bạn có chắc chắn muốn TẠO & GỬI NGAY thông báo này? Hệ thống sẽ phát hành thông báo và bắn Hàng loạt Email đến người nhận (việc này có thể mất vài giây).')" class="btn btn-primary px-4 fw-semibold text-white">
-                        <i class="bi bi-send-fill me-1"></i> Gửi ngay
-                    </button>
-                    <button type="button" onclick="window.confirmSubmit(event, this, 'draft', 'Bạn có muốn LƯU NHÁP bản thông báo này để xem lại sau không?')" class="btn btn-success px-4 fw-semibold">
-                        <i class="bi bi-save me-1"></i> Lưu nháp
-                    </button>
-                    <a href="{{ route('admin.notifications.index') }}" class="btn btn-light border px-4">Huỷ</a>
-                </div>
-            </form>
-        </div>
+            <!-- Footer Actions -->
+            <div class="px-6 py-4 bg-gray-50/50 border-t border-gray-100 flex flex-wrap items-center justify-end gap-3 rounded-b-2xl">
+                <a href="{{ route('admin.notifications.index') }}" class="px-5 py-2.5 text-sm font-semibold text-gray-600 bg-white border border-gray-200 hover:bg-gray-50 hover:text-gray-900 rounded-xl transition-colors shadow-sm order-3 md:order-1">
+                    Hủy bỏ
+                </a>
+                <button type="button" onclick="window.confirmSubmit(event, this, 'draft', 'Bạn có muốn LƯU NHÁP bản thông báo này để xem lại sau không?')" class="flex items-center gap-2 px-5 py-2.5 bg-white border-2 border-emerald-500 text-emerald-600 hover:bg-emerald-50 font-bold rounded-xl shadow-sm transition-all focus:ring-2 focus:ring-emerald-200 focus:outline-none order-2">
+                    <i class="bi bi-save"></i> Lưu nháp
+                </button>
+                <button type="button" onclick="window.confirmSubmit(event, this, 'send', 'Bạn có chắc chắn muốn TẠO & GỬI NGAY thông báo này? Hệ thống sẽ phát hành thông báo và bắn Hàng loạt Email đến người nhận (việc này có thể mất vài giây).')" class="flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white font-bold rounded-xl shadow-sm transition-all shadow-emerald-200 focus:ring-2 focus:ring-emerald-200 focus:outline-none order-1 md:order-3">
+                    <i class="bi bi-send-fill text-sm"></i> Phát hành ngay
+                </button>
+            </div>
+        </form>
     </div>
 </div>
 @endsection

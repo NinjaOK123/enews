@@ -4,7 +4,7 @@
 <div class="mt-4 p-6 md:p-8 max-w-7xl mx-auto">
     <!-- Header -->
     <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
-        <h3 class="text-2xl font-bold text-white drop-shadow-md tracking-tight">Quản lý bài viết</h3>
+        <h3 class="text-2xl font-bold text-slate-800 tracking-tight">Quản lý bài viết</h3>
         <div class="flex items-center gap-3">
 
             <!-- Admin can create posts by redirecting to contributor create -->
@@ -173,42 +173,42 @@
                             <i class="bi bi-clock me-1 text-gray-400"></i> {{ $post->created_at->format('d/m/Y') }}<br>
                             {{ $post->created_at->format('H:i') }}
                         </td>
-                        <td class="px-6 py-5 align-top text-right relative" x-data="{ actOpen: false }" @click.outside="actOpen = false">
-                            <div class="flex items-center justify-end">
+                        <td class="px-6 py-5 align-top text-right" x-data="{ actOpen: false }" @click.outside="actOpen = false">
+                            <div class="relative inline-flex items-center justify-end text-left">
                                 <button @click="actOpen = !actOpen" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gray-50 border border-gray-200 text-gray-700 text-sm font-semibold hover:bg-gray-100 transition shadow-sm">
                                     Thao tác <i class="bi bi-chevron-down text-xs transition-transform" :class="actOpen ? 'rotate-180' : ''"></i>
                                 </button>
-                            </div>
-                            
-                            <div x-show="actOpen" x-transition.opacity.duration.200ms x-cloak
-                                 class="absolute right-6 top-14 w-56 bg-white rounded-xl shadow-[0_8px_30px_rgba(0,0,0,0.12)] border border-gray-100 py-1.5 z-[60] text-left overflow-hidden" 
-                                 style="display:none;">
-                                 
-                                @if($post->status === 'published')
-                                    <a href="{{ route('post.show', $post->slug) }}" target="_blank" class="flex items-center gap-2.5 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition">
-                                        <i class="bi bi-eye text-blue-500"></i> Xem bài đã duyệt
-                                    </a>
-                                    <a href="{{ route('admin.posts.edit', $post) }}" class="flex items-center gap-2.5 px-4 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-700 transition">
-                                        <i class="bi bi-pencil-square text-orange-500"></i> Sửa bài đã duyệt
-                                    </a>
-                                @else
-                                    <a href="{{ route('admin.posts.edit', $post) }}" class="flex items-center gap-2.5 px-4 py-2 text-sm text-gray-700 hover:bg-indigo-50 hover:text-indigo-700 transition font-medium">
-                                        <i class="bi bi-pencil-square text-indigo-500"></i> Xem & Duyệt bài
-                                    </a>
-                                @endif
                                 
-                                <div class="border-t border-gray-50 my-1"></div>
-                                <a href="{{ route('admin.posts.revisions', $post) }}" class="flex items-center gap-2.5 px-4 py-2 text-sm text-gray-700 hover:bg-purple-50 hover:text-purple-700 transition">
-                                    <i class="bi bi-clock-history text-purple-500"></i> Lịch sử chỉnh sửa
-                                </a>
+                                <div x-show="actOpen" x-transition.opacity.duration.200ms x-cloak
+                                     class="absolute right-0 top-full mt-2 w-56 bg-white rounded-xl shadow-[0_8px_30px_rgba(0,0,0,0.12)] border border-gray-100 py-1.5 z-[60] overflow-hidden" 
+                                     style="display:none;">
+                                     
+                                    @if($post->status === 'published')
+                                        <a href="{{ route('post.show', $post->slug) }}" target="_blank" class="flex items-center gap-2.5 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition">
+                                            <i class="bi bi-eye text-blue-500"></i> Xem bài đã duyệt
+                                        </a>
+                                        <a href="{{ route('admin.posts.edit', $post) }}" class="flex items-center gap-2.5 px-4 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-700 transition">
+                                            <i class="bi bi-pencil-square text-orange-500"></i> Sửa bài đã duyệt
+                                        </a>
+                                    @else
+                                        <a href="{{ route('admin.posts.edit', $post) }}" class="flex items-center gap-2.5 px-4 py-2 text-sm text-gray-700 hover:bg-indigo-50 hover:text-indigo-700 transition font-medium">
+                                            <i class="bi bi-pencil-square text-indigo-500"></i> Xem & Duyệt bài
+                                        </a>
+                                    @endif
+                                    
+                                    <div class="border-t border-gray-50 my-1"></div>
+                                    <a href="{{ route('admin.posts.revisions', $post) }}" class="flex items-center gap-2.5 px-4 py-2 text-sm text-gray-700 hover:bg-purple-50 hover:text-purple-700 transition">
+                                        <i class="bi bi-clock-history text-purple-500"></i> Lịch sử chỉnh sửa
+                                    </a>
 
-                                <div class="border-t border-gray-50 my-1"></div>
-                                <form action="{{ route('admin.posts.destroy', $post) }}" method="POST" class="m-0" onsubmit="return confirm('Bạn có chắc chắn muốn xoá bài viết này không?');">
-                                    @csrf @method('DELETE')
-                                    <button type="submit" class="w-full flex items-center gap-2.5 px-4 py-2 text-sm text-red-600 hover:bg-red-50 hover:text-red-700 transition font-semibold text-left">
-                                        <i class="bi bi-trash3 text-red-500"></i> Xóa bài viết
-                                    </button>
-                                </form>
+                                    <div class="border-t border-gray-50 my-1"></div>
+                                    <form action="{{ route('admin.posts.destroy', $post) }}" method="POST" class="m-0" onsubmit="return confirm('Bạn có chắc chắn muốn xoá bài viết này không?');">
+                                        @csrf @method('DELETE')
+                                        <button type="submit" class="w-full flex items-center gap-2.5 px-4 py-2 text-sm text-red-600 hover:bg-red-50 hover:text-red-700 transition font-semibold text-left">
+                                            <i class="bi bi-trash3 text-red-500"></i> Xóa bài viết
+                                        </button>
+                                    </form>
+                                </div>
                             </div>
                         </td>
                     </tr>

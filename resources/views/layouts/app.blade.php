@@ -224,57 +224,13 @@
               {{-- Đăng xuất --}}
               <form method="POST" action="{{ route('logout') }}" class="m-0 p-0 block w-full">
                 @csrf
-                <button type="button" @click="open = false; showLogout = true"
+                <button type="button" @click="open = false; $dispatch('open-logout')"
                         class="w-full flex items-center gap-3 px-4 py-3 text-[14px] font-bold hover:bg-gray-50 transition-colors text-left" style="color: #e11d48;">
                   <i class="bi bi-power text-[18px]"></i>
                   <span>Đăng xuất</span>
                 </button>
               </form>
 
-            </div>
-
-            {{-- Modal xác nhận đăng xuất kiểu TikTok --}}
-            <div x-show="showLogout"
-                 x-transition:enter="transition ease-out duration-200"
-                 x-transition:enter-start="opacity-0"
-                 x-transition:enter-end="opacity-100"
-                 x-transition:leave="transition ease-in duration-150"
-                 x-transition:leave-start="opacity-100"
-                 x-transition:leave-end="opacity-0"
-                 class="fixed inset-0 z-[9999] flex items-center justify-center p-4"
-                 style="display:none;">
-              {{-- Backdrop --}}
-              <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" @click="showLogout = false"></div>
-              {{-- Panel --}}
-              <div class="relative w-full max-w-sm bg-white rounded-3xl overflow-hidden shadow-2xl"
-                   x-transition:enter="transition ease-out duration-250"
-                   x-transition:enter-start="opacity-0 scale-90"
-                   x-transition:enter-end="opacity-100 scale-100"
-                   @click.stop>
-                {{-- Body --}}
-                <div class="px-8 pt-10 pb-8 text-center">
-                  {{-- Icon --}}
-                  <div class="mx-auto mb-4 w-16 h-16 rounded-full bg-red-50 flex items-center justify-center">
-                    <i class="bi bi-box-arrow-left text-3xl text-red-500"></i>
-                  </div>
-                  <h3 class="text-gray-900 text-xl font-bold mb-2">Đăng xuất</h3>
-                  <p class="text-gray-500 text-sm">Bạn có chắc chắn muốn đăng xuất khỏi tài khoản?</p>
-                </div>
-                {{-- Buttons --}}
-                <div class="flex gap-3 px-8 pb-8">
-                  <button @click="showLogout = false"
-                          class="flex-1 py-3 text-[15px] font-semibold text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-2xl transition-colors">
-                    Hủy
-                  </button>
-                  <form method="POST" action="{{ route('logout') }}" class="flex-1 m-0">
-                    @csrf
-                    <button type="submit"
-                            class="w-full py-3 text-[15px] font-bold text-white bg-red-500 hover:bg-red-600 rounded-2xl shadow-sm transition-colors">
-                      Đăng xuất
-                    </button>
-                  </form>
-                </div>
-              </div>
             </div>
 
           </div>{{-- end x-data --}}
@@ -854,6 +810,101 @@ document.addEventListener('DOMContentLoaded', () => { toggleAdvSearch(); });
   }, { passive: true });
 })();
 </script>
+
+<!-- Logout Modal -->
+<div
+    x-data="{ showLogoutModal: false }"
+    @open-logout.window="showLogoutModal = true"
+    @keydown.escape.window="showLogoutModal = false">
+
+    {{-- Toàn màn hình: overlay + center panel --}}
+    <div
+        x-show="showLogoutModal"
+        x-transition:enter="transition ease-out duration-300"
+        x-transition:enter-start="opacity-0"
+        x-transition:enter-end="opacity-100"
+        x-transition:leave="transition ease-in duration-200"
+        x-transition:leave-start="opacity-100"
+        x-transition:leave-end="opacity-0"
+        class="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-6"
+        style="background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(4px); display:none;"
+        x-cloak
+        @click.self="showLogoutModal = false">
+
+        {{-- Panel --}}
+        <div
+            x-show="showLogoutModal"
+            x-transition:enter="transition ease-out duration-300"
+            x-transition:enter-start="opacity-0 scale-95 translate-y-4 sm:translate-y-0"
+            x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+            x-transition:leave="transition ease-in duration-200"
+            x-transition:leave-start="opacity-100 scale-100"
+            x-transition:leave-end="opacity-0 scale-95 translate-y-2 sm:translate-y-0"
+            class="relative bg-white rounded-2xl w-full border border-gray-100 overflow-hidden shadow-2xl"
+            style="max-width:520px;"
+            @click.stop>
+
+            {{-- Nút X — góc phải trên --}}
+            <button
+                @click="showLogoutModal = false"
+                type="button"
+                class="absolute top-5 right-5 w-8 h-8 flex items-center justify-center rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors cursor-pointer focus:outline-none"
+                aria-label="Đóng">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
+
+            {{-- Body --}}
+            <div class="px-8 pt-12 pb-10 text-center flex flex-col items-center">
+                {{-- Icon centered (Sử dụng ring để tạo viền đôi giống hình 2) --}}
+                <div class="w-20 h-20 mb-5 rounded-full bg-red-50 flex items-center justify-center ring-4 ring-white border border-red-100 shadow-sm">
+                    <svg class="w-10 h-10 text-red-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                              d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75"/>
+                    </svg>
+                </div>
+                
+                {{-- Text --}}
+                <h3 class="text-2xl font-bold text-gray-900 tracking-tight mb-3">
+                    Đăng xuất hệ thống
+                </h3>
+                
+                <p class="text-base text-gray-500 leading-relaxed mx-auto mb-8" style="max-width: 320px;">
+                    Bạn có chắc chắn muốn đăng xuất khỏi tài khoản này không?
+                    Bạn sẽ cần đăng nhập lại để tiếp tục làm việc.
+                </p>
+
+                {{-- Footer Buttons -- Buộc dùng flex-row --}}
+                <div class="w-full flex flex-row items-center justify-center gap-3 flex-wrap sm:flex-nowrap">
+                    {{-- Hủy --}}
+                    <button
+                        @click="showLogoutModal = false"
+                        type="button"
+                        class="cursor-pointer flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-6 py-3 text-base font-semibold text-gray-600 bg-white border border-gray-300 rounded-xl hover:bg-gray-50 hover:text-gray-900 transition-all focus:outline-none">
+                        <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 15L3 9m0 0l6-6M3 9h12a6 6 0 010 12h-3" />
+                        </svg>
+                        Hủy thao tác
+                    </button>
+
+                    {{-- Đăng xuất --}}
+                    <form method="POST" action="{{ route('logout') }}" class="m-0 p-0 flex-1 sm:flex-none">
+                        @csrf
+                        <button
+                            type="submit"
+                            class="cursor-pointer w-full inline-flex items-center justify-center gap-2 px-6 py-3 text-base font-semibold text-white bg-red-500 rounded-xl shadow-lg shadow-red-500/40 border border-transparent hover:bg-red-600 transition-all focus:outline-none">
+                            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75"/>
+                            </svg>
+                            Xác nhận đăng xuất
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
 </body>
 </html>

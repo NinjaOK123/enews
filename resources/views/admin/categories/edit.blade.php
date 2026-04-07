@@ -6,8 +6,8 @@
     <!-- Header -->
     <div class="flex items-center justify-between mb-6">
         <div>
-            <h3 class="text-2xl font-bold text-white drop-shadow-md tracking-tight">Sửa chuyên mục</h3>
-            <p class="text-sm text-emerald-50/90 font-medium mt-1">Cập nhật thông tin chuyên mục: <strong class="text-emerald-300">{{ $category->name }}</strong></p>
+            <h3 class="text-2xl font-bold text-slate-800 tracking-tight">Sửa chuyên mục</h3>
+            <p class="text-sm text-slate-500 font-medium mt-1">Cập nhật thông tin chuyên mục: <strong class="text-emerald-600">{{ $category->name }}</strong></p>
         </div>
         <a href="{{ route('admin.categories.index') }}" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-sm font-semibold transition-colors">
             <i class="bi bi-arrow-left me-1"></i> Quay lại

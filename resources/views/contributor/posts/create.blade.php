@@ -183,10 +183,15 @@
             <div class="absolute -right-4 -bottom-4 text-indigo-200 opacity-20">
               <i class="bi bi-star-fill" style="font-size: 6rem;"></i>
             </div>
-            <label class="flex items-center gap-3 cursor-pointer relative z-10">
-              <input type="checkbox" name="is_featured" value="1"
-                     {{ old('is_featured', $post->is_featured ?? false) ? 'checked' : '' }}
-                     class="w-5 h-5 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500 transition">
+            <label class="flex items-center gap-3 cursor-pointer relative z-10 group">
+              <div class="relative flex items-center justify-center w-5 h-5 shrink-0">
+                  <input type="checkbox" name="is_featured" value="1"
+                         {{ old('is_featured', $post->is_featured ?? false) ? 'checked' : '' }}
+                         class="peer sr-only">
+                  <div class="w-5 h-5 bg-white border-2 border-indigo-200 rounded peer-checked:bg-indigo-600 peer-checked:border-indigo-600 transition-colors flex items-center justify-center shadow-sm group-hover:border-indigo-400">
+                      <i class="bi bi-check2 text-white text-base opacity-0 peer-checked:opacity-100 transition-opacity"></i>
+                  </div>
+              </div>
               <span class="text-sm font-bold text-indigo-800 tracking-wide uppercase"><i class="bi bi-star me-1"></i> Đặt làm Bài Tiêu biểu</span>
             </label>
             <p class="text-[11px] text-indigo-600 mt-2 relative z-10 font-medium">✨ Bài viết này sẽ được ưu tiên xuất hiện lướt nhẹ nhàng trên banner siêu to khổng lồ ở đầu Trang chủ.</p>
@@ -329,10 +334,15 @@
             <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
               <i class="bi bi-camera"></i> Người chụp ảnh
             </label>
-            <label class="flex items-center gap-2 mb-2.5 cursor-pointer select-none">
-              <input type="checkbox" x-model="sameAsAuthor"
-                     class="w-4 h-4 text-green-600 rounded border-gray-300 focus:ring-green-500 transition">
-              <span class="text-xs text-gray-600 font-medium">Cùng tác giả bài viết</span>
+            <label class="flex items-center gap-2 mb-2.5 cursor-pointer select-none group">
+              <div class="relative flex items-center justify-center w-4 h-4 shrink-0">
+                  <input type="checkbox" x-model="sameAsAuthor"
+                         class="peer sr-only">
+                  <div class="w-4 h-4 bg-white border border-gray-300 rounded-sm peer-checked:bg-green-600 peer-checked:border-green-600 transition-colors flex items-center justify-center shadow-sm group-hover:border-green-400">
+                      <i class="bi bi-check2 text-white text-xs opacity-0 peer-checked:opacity-100 transition-opacity"></i>
+                  </div>
+              </div>
+              <span class="text-xs text-gray-600 font-medium group-hover:text-gray-900 transition-colors">Cùng tác giả bài viết</span>
             </label>
             <input type="text" name="photographer" id="photographer"
                    x-model="photographerVal"
