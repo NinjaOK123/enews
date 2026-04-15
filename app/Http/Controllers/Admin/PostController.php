@@ -90,30 +90,32 @@ class PostController extends Controller
         return back()->with('success', 'Đã từ chối/gỡ bài viết thành công.');
     }
 
-    /**
-     * Bật / Tắt trạng thái hiển thị trên Slider của bài viết (tối đa 5 bài)
-     */
     public function toggleSlider(Post $post)
     {
-        // Nếu bài viết đang không hiện trên Slider và được yêu cầu bật
-        if (!$post->is_featured) {
-            $currentCount = Post::where('is_featured', true)->count();
-            if ($currentCount >= 5) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Bạn chỉ được phép bật tối đa 5 bài trên Slider. Vui lòng tắt một bài bất kỳ trước khi bật bài này!'
-                ], 400);
+        // Fix BUG-03: Race condition with DB::transaction and lockForUpdate
+        return \Illuminate\Support\Facades\DB::transaction(function () use ($post) {
+            // Lock the posts table for this read
+            $currentCount = Post::where('is_featured', true)->lockForUpdate()->count();
+            
+            // Nếu bài viết đang không hiện trên Slider và được yêu cầu bật
+            if (!$post->is_featured) {
+                if ($currentCount >= 5) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Bạn chỉ được phép bật tối đa 5 bài trên Slider. Vui lòng tắt một bài bất kỳ trước khi bật bài này!'
+                    ], 400);
+                }
             }
-        }
 
-        $post->is_featured = !$post->is_featured;
-        $post->save();
+            $post->is_featured = !$post->is_featured;
+            $post->save();
 
-        return response()->json([
-            'success' => true,
-            'is_featured' => $post->is_featured,
-            'message' => $post->is_featured ? 'Đã bật bài viết trên Slider.' : 'Đã tắt bài viết trên Slider.'
-        ]);
+            return response()->json([
+                'success' => true,
+                'is_featured' => $post->is_featured,
+                'message' => $post->is_featured ? 'Đã bật bài viết trên Slider.' : 'Đã tắt bài viết trên Slider.'
+            ]);
+        });
     }
 
     /**

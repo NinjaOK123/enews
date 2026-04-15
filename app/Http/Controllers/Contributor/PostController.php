@@ -21,7 +21,8 @@ class PostController extends Controller
 
     public function create()
     {
-        $categories = Category::all();
+        // Fix BUG-12: Only load active categories
+        $categories = Category::where('is_active', true)->orderBy('name')->get();
         return view('contributor.posts.create', compact('categories'));
     }
 
@@ -68,7 +69,8 @@ class PostController extends Controller
     public function edit(Post $post)
     {
         $this->authorize('update', $post);
-        $categories = Category::all();
+        // Fix BUG-12: Only load active categories
+        $categories = Category::where('is_active', true)->orderBy('name')->get();
         $royaltyRates = \App\Models\RoyaltyRate::orderBy('group_name')->orderBy('name')->get();
         return view('contributor.posts.create', compact('post', 'categories', 'royaltyRates'));
     }
@@ -87,6 +89,12 @@ class PostController extends Controller
         ]);
 
         $post->title = $validated['title'];
+
+        // Fix BUG-08: Update slug if post is still in draft/rejected state
+        if (in_array($post->status, ['draft', 'rejected'])) {
+            $post->slug = Str::slug($validated['title']) . '-' . uniqid();
+        }
+
         $post->category_id = $validated['category_id'];
         $post->content = clean($validated['content']);
         $post->excerpt = Str::limit(strip_tags($post->content), 150);
@@ -94,8 +102,8 @@ class PostController extends Controller
         $post->photographer = $request->input('photographer');
 
         if ($request->hasFile('thumbnail')) {
-            // Delete old thumbnail if needed
-            if ($post->thumbnail) {
+            // Delete old thumbnail if needed (and only if it is in the thumbnails folder)
+            if ($post->thumbnail && str_starts_with($post->thumbnail, 'thumbnails/')) {
                 Storage::disk('public')->delete($post->thumbnail);
             }
             $post->thumbnail = $this->processThumbnail($request->file('thumbnail'));
@@ -190,6 +198,17 @@ class PostController extends Controller
             'content' => $post->content,
             'revision_number' => $revNumber,
         ]);
+
+        // Fix BUG-11: Giới hạn revision tối đa 10
+        $oldRevisions = PostRevision::where('post_id', $post->id)
+            ->orderBy('revision_number', 'desc')
+            ->skip(10)
+            ->take(PHP_INT_MAX)
+            ->pluck('id');
+            
+        if ($oldRevisions->isNotEmpty()) {
+            PostRevision::whereIn('id', $oldRevisions)->delete();
+        }
     }
 
     private function processThumbnail($file)
@@ -293,8 +312,12 @@ class PostController extends Controller
         }
 
         // Vòng 2: Gen HTML bỏ qua Tiêu đề đã trích xuất
+        $maxHtmlLength = 200000; // Fix BUG-15: Limit HTML size to ~200KB characters
         foreach ($phpWord->getSections() as $section) {
             foreach ($section->getElements() as $element) {
+                if (strlen($html) > $maxHtmlLength) {
+                    break 2; // Prevent extremely large files from crashing
+                }
                 if ($titleElementHash && spl_object_hash($element) === $titleElementHash) {
                     continue; // Bỏ qua element tiêu đề để không bị trùng vào nội dung
                 }

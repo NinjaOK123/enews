@@ -22,28 +22,31 @@ class SaveController extends Controller
             ['is_public' => false]
         );
 
-        $exists = DB::table('post_saves')
-            ->where('user_id', $user->id)
-            ->where('post_id', $post->id)
-            ->where('collection_id', $collection->id)
-            ->exists();
-
-        if ($exists) {
-            DB::table('post_saves')
+        // Fix BUG-02: Race condition using transactions
+        $saved = DB::transaction(function () use ($user, $post, $collection) {
+            $exists = DB::table('post_saves')
                 ->where('user_id', $user->id)
                 ->where('post_id', $post->id)
                 ->where('collection_id', $collection->id)
-                ->delete();
-            $saved = false;
-        } else {
-            DB::table('post_saves')->insert([
-                'user_id'       => $user->id,
-                'post_id'       => $post->id,
-                'collection_id' => $collection->id,
-                'created_at'    => now(),
-            ]);
-            $saved = true;
-        }
+                ->exists();
+
+            if ($exists) {
+                DB::table('post_saves')
+                    ->where('user_id', $user->id)
+                    ->where('post_id', $post->id)
+                    ->where('collection_id', $collection->id)
+                    ->delete();
+                return false;
+            } else {
+                DB::table('post_saves')->insert([
+                    'user_id'       => $user->id,
+                    'post_id'       => $post->id,
+                    'collection_id' => $collection->id,
+                    'created_at'    => now(),
+                ]);
+                return true;
+            }
+        });
 
         return response()->json(['saved' => $saved]);
     }
@@ -60,20 +63,23 @@ class SaveController extends Controller
             ->where('user_id', $user->id)
             ->firstOrFail();
 
-        $exists = DB::table('post_saves')
-            ->where('user_id', $user->id)
-            ->where('post_id', $post->id)
-            ->where('collection_id', $collection->id)
-            ->exists();
+        // Fix BUG-02: Race condition using transactions
+        DB::transaction(function () use ($user, $post, $collection) {
+            $exists = DB::table('post_saves')
+                ->where('user_id', $user->id)
+                ->where('post_id', $post->id)
+                ->where('collection_id', $collection->id)
+                ->exists();
 
-        if (!$exists) {
-            DB::table('post_saves')->insert([
-                'user_id'       => $user->id,
-                'post_id'       => $post->id,
-                'collection_id' => $collection->id,
-                'created_at'    => now(),
-            ]);
-        }
+            if (!$exists) {
+                DB::table('post_saves')->insert([
+                    'user_id'       => $user->id,
+                    'post_id'       => $post->id,
+                    'collection_id' => $collection->id,
+                    'created_at'    => now(),
+                ]);
+            }
+        });
 
         return response()->json(['saved' => true, 'collection' => $collection->name]);
     }

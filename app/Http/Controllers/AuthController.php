@@ -137,6 +137,12 @@ class AuthController extends Controller
                 $user->save();
             }
 
+            // BUG-04: Prevent login if account is inactive/banned
+            if ($user->status !== 'active') {
+                return redirect()->route('login')
+                    ->with('error', 'Tai khoan cua ban da bi khoa.');
+            }
+
             Auth::login($user);
             $request->session()->regenerate();
             Session::forget('user');

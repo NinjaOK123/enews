@@ -37,6 +37,11 @@ class PostPolicy
      */
     public function update(User $user, Post $post): bool
     {
+        // Fix BUG-07: Allow admin and editor to update/approve
+        if (in_array($user->role, ['admin', 'editor'])) {
+            return true;
+        }
+
         return $post->author_id === $user->id && in_array($post->status, ['draft', 'rejected']);
     }
 
