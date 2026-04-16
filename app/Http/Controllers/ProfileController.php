@@ -16,6 +16,11 @@ class ProfileController extends Controller
      */
     public function show($id = null)
     {
+        // Nếu chưa đăng nhập và không có id, redirect login
+        if (!auth()->check()) {
+            return redirect()->route('login')->with('error', 'Vui lòng đăng nhập để xem trang cá nhân.');
+        }
+
         $user = $id ? User::findOrFail($id) : auth()->user();
 
         // Chỉ xem profile của chính mình hoặc Admin

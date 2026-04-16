@@ -143,7 +143,7 @@ class ContributorRequestController extends Controller
         Notification::create([
             'title'      => $title,
             'content'    => $content,
-            'recipients' => [$userId], // Gửi cho đúng user ID này
+            'recipients' => [$userId], // Cast 'array' trong model tự json_encode
             'sent_at'    => Carbon::now(),
         ]);
     }

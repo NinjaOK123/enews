@@ -20,7 +20,7 @@ class HomeController extends Controller
                 ->where('is_featured', true)
                 ->with(['category:id,name,slug', 'author:id,name'])
                 ->orderBy('featured_order', 'asc')
-                ->latest()
+                ->orderByDesc('published_at')
                 ->limit(5)
                 ->get();
 
