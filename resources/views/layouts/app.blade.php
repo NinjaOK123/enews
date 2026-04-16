@@ -42,7 +42,14 @@
       50% { transform: rotate(14deg); }
     }
     .bell-ringing { display:inline-block; animation: ring 2s ease infinite; transform-origin: top center; }
+    /* Tắt thanh Loading màu xanh mặc định của Livewire khi navigate để tạo cảm giác Load tức thì */
+    #nprogress { display: none !important; }
+    #nprogress .bar { display: none !important; }
+    #nprogress .spinner { display: none !important; }
   </style>
+
+  {{-- Kích hoạt View Transitions API API (Chuyển trang siêu mượt như App Native trên Chrome/Edge) --}}
+  <meta name="view-transition" content="same-origin">
 
   @stack('styles')
 
@@ -149,7 +156,7 @@
             ];
           @endphp
           @foreach($navLinks as $nav)
-          <a href="{{ route($nav['route']) }}"
+          <a href="{{ route($nav['route']) }}" wire:navigate.hover
              class="relative flex items-center gap-1.5 px-3 py-2.5 text-sm font-semibold transition-all duration-200 group rounded-xl border border-transparent hover:border-white/50 hover:bg-[#2a7a27]/5 hover:shadow-sm
                     {{ request()->routeIs($nav['route']) ? 'text-[#2a7a27] bg-[#2a7a27]/5 border-white/50 shadow-sm' : 'text-gray-600 hover:text-[#2a7a27]' }}">
             <i class="bi {{ $nav['icon'] }} text-base"></i>
@@ -382,19 +389,19 @@
                  class="absolute left-0 right-0 top-full bg-white shadow-lg border-t border-gray-100 z-40 lg:hidden"
                  style="display:none;">
               <nav class="max-w-7xl mx-auto px-4 py-3 flex flex-col gap-1">
-                <a href="{{ route('home') }}" class="flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-semibold {{ request()->routeIs('home') ? 'bg-[#e8f5e2] text-[#2a7a27]' : 'text-gray-700 hover:bg-gray-50' }}">
+                <a href="{{ route('home') }}" wire:navigate class="flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-semibold {{ request()->routeIs('home') ? 'bg-[#e8f5e2] text-[#2a7a27]' : 'text-gray-700 hover:bg-gray-50' }}">
                   <i class="bi bi-house"></i> Trang chủ
                 </a>
-                <a href="{{ route('about') }}" class="flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-semibold {{ request()->routeIs('about') ? 'bg-[#e8f5e2] text-[#2a7a27]' : 'text-gray-700 hover:bg-gray-50' }}">
+                <a href="{{ route('about') }}" wire:navigate class="flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-semibold {{ request()->routeIs('about') ? 'bg-[#e8f5e2] text-[#2a7a27]' : 'text-gray-700 hover:bg-gray-50' }}">
                   <i class="bi bi-info-circle"></i> Giới thiệu
                 </a>
-                <a href="{{ route('rules') }}" class="flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-semibold {{ request()->routeIs('rules') ? 'bg-[#e8f5e2] text-[#2a7a27]' : 'text-gray-700 hover:bg-gray-50' }}">
+                <a href="{{ route('rules') }}" wire:navigate class="flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-semibold {{ request()->routeIs('rules') ? 'bg-[#e8f5e2] text-[#2a7a27]' : 'text-gray-700 hover:bg-gray-50' }}">
                   <i class="bi bi-file-earmark-text"></i> Quy định
                 </a>
-                <a href="{{ route('contact') }}" class="flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-semibold {{ request()->routeIs('contact') ? 'bg-[#e8f5e2] text-[#2a7a27]' : 'text-gray-700 hover:bg-gray-50' }}">
+                <a href="{{ route('contact') }}" wire:navigate class="flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-semibold {{ request()->routeIs('contact') ? 'bg-[#e8f5e2] text-[#2a7a27]' : 'text-gray-700 hover:bg-gray-50' }}">
                   <i class="bi bi-envelope"></i> Liên hệ
                 </a>
-                <a href="{{ route('doc-suy-ngam') }}" class="flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-semibold {{ request()->routeIs('doc-suy-ngam') ? 'bg-[#e8f5e2] text-[#2a7a27]' : 'text-gray-700 hover:bg-gray-50' }}">
+                <a href="{{ route('doc-suy-ngam') }}" wire:navigate class="flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-semibold {{ request()->routeIs('doc-suy-ngam') ? 'bg-[#e8f5e2] text-[#2a7a27]' : 'text-gray-700 hover:bg-gray-50' }}">
                   <i class="bi bi-book"></i> Đọc &amp; Suy ngẫm
                 </a>
                 @auth
@@ -456,7 +463,7 @@
       {{-- Category links wrapper (hidden on mobile) --}}
       <div class="cat-nav-links hidden md:flex flex-1 overflow-hidden items-stretch min-w-0">
         @foreach($horizontalCats as $cat)
-        <a href="{{ route('category', $cat->slug) }}"
+        <a href="{{ route('category', $cat->slug) }}" wire:navigate.hover
            class="cat-nav-item flex-1 flex items-center justify-center text-center px-2.5 text-[.79rem] font-semibold text-white/92 no-underline border-r border-white/14 transition-colors duration-200 whitespace-nowrap
                   hover:bg-white/15 hover:text-white
                   {{ request()->is('chuyen-muc/'.$cat->slug.'*') ? 'bg-white !text-[#2a7a27]' : '' }}">
@@ -494,7 +501,7 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
       <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-1">
         @foreach($dropdownCats as $cat)
-        <a href="{{ route('category', $cat->slug) }}"
+        <a href="{{ route('category', $cat->slug) }}" wire:navigate
            onclick="closeCatMenu()"
            class="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-semibold text-gray-800 no-underline transition-colors duration-200
                   hover:bg-[#e8f5e2] hover:text-[#2a7a27]
