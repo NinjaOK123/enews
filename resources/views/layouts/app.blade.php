@@ -535,20 +535,24 @@
           {{-- Từ khóa --}}
           <div class="lg:col-span-2">
             <label class="block text-xs font-semibold text-gray-600 mb-1.5 pt-0">Từ khóa tìm kiếm</label>
-            <div class="relative">
-              <i class="bi bi-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+            <div class="flex items-center w-full bg-gray-50 border border-gray-300 rounded-lg focus-within:bg-white focus-within:border-[#2a7a27] focus-within:ring-1 focus-within:ring-[#2a7a27] transition overflow-hidden">
+              <div class="pl-3 pr-2 text-gray-400 flex items-center justify-center">
+                <i class="bi bi-search"></i>
+              </div>
               <input type="text" name="keyword" placeholder="Nhập tiêu đề hoặc nội dung cần tìm..." value="{{ request('keyword') }}"
-                     class="w-full bg-gray-50 border border-gray-300 rounded-lg pl-9 pr-3 py-2.5 text-sm text-gray-900 outline-none focus:bg-white focus:border-[#2a7a27] focus:ring-1 focus:ring-[#2a7a27] transition">
+                     class="flex-1 w-full bg-transparent border-0 py-2.5 pr-3 text-sm text-gray-900 outline-none focus:ring-0">
             </div>
           </div>
 
           {{-- Chuyên mục --}}
           <div class="lg:col-span-2">
             <label class="block text-xs font-semibold text-gray-600 mb-1.5 pt-0">Chuyên mục</label>
-            <div class="relative">
-              <i class="bi bi-collection absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+            <div class="flex items-center w-full bg-gray-50 border border-gray-300 rounded-lg focus-within:bg-white focus-within:border-[#2a7a27] focus-within:ring-1 focus-within:ring-[#2a7a27] transition overflow-hidden relative">
+              <div class="pl-3 pr-2 text-gray-400 flex items-center justify-center">
+                <i class="bi bi-collection"></i>
+              </div>
               <select name="category_id"
-                      class="w-full bg-gray-50 border border-gray-300 rounded-lg pl-9 pr-8 py-2.5 text-sm text-gray-900 outline-none focus:bg-white focus:border-[#2a7a27] focus:ring-1 focus:ring-[#2a7a27] appearance-none transition">
+                      class="flex-1 w-full bg-transparent border-0 py-2.5 pr-8 text-sm text-gray-900 outline-none focus:ring-0 appearance-none">
                 <option value="">-- Tất cả chuyên mục --</option>
                 @foreach($allNavCategories ?? [] as $cat)
                 <option value="{{ $cat->id }}" {{ request('category_id') == $cat->id ? 'selected' : '' }}>{{ $cat->name }}</option>
@@ -561,10 +565,12 @@
           {{-- Tác giả --}}
           <div>
             <label class="block text-xs font-semibold text-gray-600 mb-1.5 pt-0">Tác giả</label>
-            <div class="relative">
-              <i class="bi bi-person absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+            <div class="flex items-center w-full bg-gray-50 border border-gray-300 rounded-lg focus-within:bg-white focus-within:border-[#2a7a27] focus-within:ring-1 focus-within:ring-[#2a7a27] transition overflow-hidden">
+              <div class="pl-3 pr-2 text-gray-400 flex items-center justify-center">
+                <i class="bi bi-person"></i>
+              </div>
               <input type="text" name="author" placeholder="Tên tác giả..." value="{{ request('author') }}"
-                     class="w-full bg-gray-50 border border-gray-300 rounded-lg pl-9 pr-3 py-2 text-sm text-gray-900 outline-none focus:bg-white focus:border-[#2a7a27] focus:ring-1 focus:ring-[#2a7a27] transition">
+                     class="flex-1 w-full bg-transparent border-0 py-2 pr-3 text-sm text-gray-900 outline-none focus:ring-0">
             </div>
           </div>
 
