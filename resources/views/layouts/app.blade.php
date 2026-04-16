@@ -519,192 +519,80 @@
   <div id="catMenuBackdrop" onclick="closeCatMenu()" class="hidden fixed inset-0 z-[28]"></div>
   @endif
 
-  {{-- ═══ ADVANCED SEARCH PANEL (Premium Movie Style - Compact) ═══ --}}
-  <style>
-    .movie-search-wrapper {
-       background: radial-gradient(circle at 50% 100%, #174d1a 0%, #0d3b10 100%);
-       border-bottom: 2px solid #f5d400;
-       padding: 25px 0 35px 0;
-       position: relative;
-    }
-    .movie-search-input-group {
-       display: flex;
-       background: #fff;
-       border-radius: 100px;
-       padding: 6px 8px 6px 20px;
-       box-shadow: 0 10px 30px rgba(0,0,0,0.4);
-       align-items: center;
-       margin-bottom: 20px;
-       transition: transform 0.3s ease, box-shadow 0.3s ease;
-    }
-    .movie-search-input-group:focus-within {
-       transform: translateY(-1px);
-       box-shadow: 0 15px 40px rgba(0,0,0,0.5), 0 0 0 3px rgba(245, 212, 0, 0.4);
-    }
-    .movie-search-icon {
-       color: #2a7a27;
-       font-size: 1.3rem;
-       margin-right: 12px;
-       flex-shrink: 0;
-    }
-    .movie-search-input {
-       flex: 1;
-       border: none !important;
-       background: transparent !important;
-       font-size: 1.1rem;
-       font-weight: 500;
-       color: #111;
-       outline: none !important;
-       box-shadow: none !important;
-       padding: 8px 0;
-       min-width: 0;
-    }
-    .movie-search-input::placeholder { color: #aaa; font-weight: 400; }
-    .movie-search-btn {
-       background: #2a7a27;
-       color: #fff;
-       font-weight: bold;
-       font-size: 0.95rem;
-       padding: 10px 30px;
-       border-radius: 100px;
-       border: none;
-       cursor: pointer;
-       transition: 0.3s;
-       white-space: nowrap;
-       flex-shrink: 0;
-       display: flex;
-       align-items: center;
-       gap: 6px;
-    }
-    .movie-search-btn:hover { background: #1a4a18; }
-    .movie-filters-container {
-       background: rgba(255,255,255,0.06);
-       border-radius: 12px;
-       border: 1px solid rgba(255,255,255,0.1);
-       padding: 15px 20px;
-       backdrop-filter: blur(10px);
-    }
-    .movie-filter-row {
-       display: grid;
-       grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-       gap: 15px;
-    }
-    .movie-filter-col { display: flex; flex-direction: column; gap: 6px; }
-    .movie-filter-label { color: #f5d400; font-size: 0.75rem; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; }
-    .movie-filter-control {
-       display: flex;
-       align-items: center;
-       background: #fff;
-       border-radius: 6px;
-       padding: 0 12px;
-       height: 38px;
-       transition: box-shadow 0.2s;
-    }
-    .movie-filter-control:focus-within { box-shadow: 0 0 0 2px rgba(245, 212, 0, 0.4); }
-    .movie-filter-control i { color: #666; margin-right: 8px; font-size: 1rem; flex-shrink: 0; }
-    .movie-filter-control input,
-    .movie-filter-control select {
-       border: none !important;
-       background: transparent !important;
-       width: 100%;
-       height: 100%;
-       outline: none !important;
-       box-shadow: none !important;
-       font-size: 0.9rem;
-       color: #111;
-       font-weight: 500;
-    }
-    .movie-filter-action {
-      display: flex;
-      align-items: flex-end;
-      justify-content: flex-end;
-      padding-bottom: 8px;
-    }
-    .movie-clear-btn {
-      color: rgba(255,255,255,0.7);
-      font-size: 0.8rem;
-      font-weight: bold;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      text-decoration: none;
-      transition: all 0.2s;
-      padding: 6px 15px;
-      border: 1px solid rgba(255,255,255,0.2);
-      border-radius: 6px;
-    }
-    .movie-clear-btn:hover { color: #fff; background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.4); }
-    
-    @media (max-width: 768px) {
-      .movie-search-input-group { flex-direction: column; border-radius: 12px; padding: 12px; background: rgba(255,255,255,0.95); }
-      .movie-search-icon { display: none; }
-      .movie-search-input { font-size: 1rem; text-align: center; border-bottom: 1px solid #ddd !important; padding-bottom: 10px; margin-bottom: 10px; }
-      .movie-search-btn { width: 100%; justify-content: center; padding: 10px; }
-    }
-  </style>
-
-  <div id="advSearchPanel" class="hidden relative z-[27] movie-search-wrapper">
-    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+  {{-- ═══ ADVANCED SEARCH PANEL (Clean Web Style) ═══ --}}
+  <div id="advSearchPanel"
+       class="hidden relative z-[27] bg-white border-b border-gray-200 shadow-xl pb-6 pt-4">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
       <form action="{{ route('search') }}" method="GET">
         
-        {{-- Main Input Hero --}}
-        <div class="movie-search-input-group">
-          <i class="bi bi-search movie-search-icon"></i>
-          <input type="text" name="keyword" placeholder="Nhập tiêu đề hoặc nội dung cần tìm..." value="{{ request('keyword') }}" class="movie-search-input" autofocus>
-          <button type="submit" class="movie-search-btn">
-            <i class="bi bi-search" style="font-size: 1rem;"></i> Tìm Kiếm
-          </button>
+        <div class="flex items-center gap-2 mb-3 text-gray-800 font-bold uppercase tracking-wide text-sm">
+          <i class="bi bi-funnel-fill text-[#2a7a27]"></i> Bộ Lọc Tìm Kiếm
         </div>
+        <hr class="border-gray-200 mb-5">
 
-        {{-- Filters Grid --}}
-        <div class="movie-filters-container">
-          <div class="mb-4 text-[#f5d400] text-sm font-bold uppercase tracking-widest flex items-center gap-2 border-b border-white/10 pb-3">
-            <i class="bi bi-sliders"></i> Lọc kết quả chuyên sâu
-          </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
           
-          <div class="movie-filter-row">
-            
-            <div class="movie-filter-col">
-              <label class="movie-filter-label">Tác giả</label>
-              <div class="movie-filter-control">
-                <i class="bi bi-person"></i>
-                <input type="text" name="author" placeholder="Ví dụ: Lê Hiếu..." value="{{ request('author') }}">
-              </div>
+          {{-- Từ khóa --}}
+          <div class="lg:col-span-2">
+            <label class="block text-xs font-semibold text-gray-600 mb-1.5 pt-0">Từ khóa tìm kiếm</label>
+            <div class="relative">
+              <i class="bi bi-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+              <input type="text" name="keyword" placeholder="Nhập tiêu đề hoặc nội dung cần tìm..." value="{{ request('keyword') }}"
+                     class="w-full bg-gray-50 border border-gray-300 rounded-lg pl-9 pr-3 py-2.5 text-sm text-gray-900 outline-none focus:bg-white focus:border-[#2a7a27] focus:ring-1 focus:ring-[#2a7a27] transition">
             </div>
-
-            <div class="movie-filter-col">
-              <label class="movie-filter-label">Chuyên mục</label>
-              <div class="movie-filter-control">
-                <i class="bi bi-collection"></i>
-                <select name="category_id">
-                  <option value="">-- Thuộc mọi chuyên mục --</option>
-                  @foreach($allNavCategories ?? [] as $cat)
-                  <option value="{{ $cat->id }}" {{ request('category_id') == $cat->id ? 'selected' : '' }}>{{ $cat->name }}</option>
-                  @endforeach
-                </select>
-              </div>
-            </div>
-
-            <div class="movie-filter-col">
-              <label class="movie-filter-label">Từ ngày</label>
-              <div class="movie-filter-control">
-                <input type="date" name="date_from" value="{{ request('date_from') }}">
-              </div>
-            </div>
-
-            <div class="movie-filter-col">
-              <label class="movie-filter-label">Đến ngày</label>
-              <div class="movie-filter-control">
-                <input type="date" name="date_to" value="{{ request('date_to') }}">
-              </div>
-            </div>
-
-            <div class="movie-filter-action">
-              <a href="{{ route('search') }}" class="movie-clear-btn pb-2">Xóa bộ lọc</a>
-            </div>
-
           </div>
-        </div>
 
+          {{-- Chuyên mục --}}
+          <div class="lg:col-span-2">
+            <label class="block text-xs font-semibold text-gray-600 mb-1.5 pt-0">Chuyên mục</label>
+            <div class="relative">
+              <i class="bi bi-collection absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+              <select name="category_id"
+                      class="w-full bg-gray-50 border border-gray-300 rounded-lg pl-9 pr-8 py-2.5 text-sm text-gray-900 outline-none focus:bg-white focus:border-[#2a7a27] focus:ring-1 focus:ring-[#2a7a27] appearance-none transition">
+                <option value="">-- Tất cả chuyên mục --</option>
+                @foreach($allNavCategories ?? [] as $cat)
+                <option value="{{ $cat->id }}" {{ request('category_id') == $cat->id ? 'selected' : '' }}>{{ $cat->name }}</option>
+                @endforeach
+              </select>
+              <i class="bi bi-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 text-xs pointer-events-none"></i>
+            </div>
+          </div>
+
+          {{-- Tác giả --}}
+          <div>
+            <label class="block text-xs font-semibold text-gray-600 mb-1.5 pt-0">Tác giả</label>
+            <div class="relative">
+              <i class="bi bi-person absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+              <input type="text" name="author" placeholder="Tên tác giả..." value="{{ request('author') }}"
+                     class="w-full bg-gray-50 border border-gray-300 rounded-lg pl-9 pr-3 py-2 text-sm text-gray-900 outline-none focus:bg-white focus:border-[#2a7a27] focus:ring-1 focus:ring-[#2a7a27] transition">
+            </div>
+          </div>
+
+          {{-- Từ ngày --}}
+          <div>
+            <label class="block text-xs font-semibold text-gray-600 mb-1.5 pt-0">Từ ngày</label>
+            <input type="date" name="date_from" value="{{ request('date_from') }}"
+                   class="w-full bg-gray-50 border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 outline-none focus:bg-white focus:border-[#2a7a27] focus:ring-1 focus:ring-[#2a7a27] transition">
+          </div>
+
+          {{-- Đến ngày --}}
+          <div>
+            <label class="block text-xs font-semibold text-gray-600 mb-1.5 pt-0">Đến ngày</label>
+            <input type="date" name="date_to" value="{{ request('date_to') }}"
+                   class="w-full bg-gray-50 border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 outline-none focus:bg-white focus:border-[#2a7a27] focus:ring-1 focus:ring-[#2a7a27] transition">
+          </div>
+
+          {{-- Buttons --}}
+          <div class="flex items-end gap-3 justify-end lg:col-span-1 pt-1">
+            <a href="{{ route('search') }}" class="px-4 py-2 text-sm font-semibold text-gray-600 bg-gray-100 hover:bg-gray-200 border border-gray-200 hover:border-gray-300 rounded-lg transition-colors whitespace-nowrap">
+              Xóa Lọc 
+            </a>
+            <button type="submit" class="flex items-center justify-center w-full sm:w-auto gap-2 px-5 py-2 bg-[#2a7a27] hover:bg-[#1a4a18] text-white text-sm font-bold rounded-lg transition-colors shadow-sm active:scale-95 whitespace-nowrap">
+              <i class="bi bi-search"></i> Tìm Kiếm
+            </button>
+          </div>
+
+        </div>
       </form>
     </div>
   </div>
