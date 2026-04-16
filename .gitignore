@@ -27,6 +27,8 @@ Thumbs.db
 enews.sql
 *.xlsx
 temp_repo/
+err*.txt
+build.log
 /assets
 /public/assets
 /public/images/*
