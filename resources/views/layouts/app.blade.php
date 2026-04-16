@@ -48,6 +48,9 @@
     #nprogress .spinner { display: none !important; }
   </style>
 
+  {{-- Nạp hiệu ứng hoạt ảnh cực mượt AOS --}}
+  <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+
   {{-- Kích hoạt View Transitions API API (Chuyển trang siêu mượt như App Native trên Chrome/Edge) --}}
   <meta name="view-transition" content="same-origin">
 
@@ -516,57 +519,74 @@
   <div id="catMenuBackdrop" onclick="closeCatMenu()" class="hidden fixed inset-0 z-[28]"></div>
   @endif
 
-  {{-- ═══ ADVANCED SEARCH PANEL ═══ --}}
+  {{-- ═══ ADVANCED SEARCH PANEL (Movie web style) ═══ --}}
   <div id="advSearchPanel"
-       class="hidden relative z-[27] bg-white border-b-4 border-[#2a7a27] shadow-lg">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-      <form action="{{ route('search') }}" method="GET">
-        <div class="flex flex-wrap gap-3 items-end">
-
-          <div class="flex-[2] min-w-[180px]">
-            <label class="block text-xs font-bold text-gray-500 mb-1">Từ khóa</label>
-            <input type="text" name="keyword" placeholder="Nội dung, tiêu đề..." value="{{ request('keyword') }}"
-                   class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#2a7a27] focus:ring-1 focus:ring-[#2a7a27] transition">
+       class="hidden relative z-[27] bg-[#124215] overflow-hidden pb-10 pt-8" style="background-image: radial-gradient(circle at 80% 20%, #2a7a27 0%, transparent 40%), radial-gradient(circle at 20% 80%, rgba(245, 212, 0, 0.15) 0%, transparent 40%);">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+      <form action="{{ route('search') }}" method="GET" class="space-y-4">
+        
+        {{-- Main Input (To bự, nổi bật) --}}
+        <div class="relative group">
+          <div class="absolute inset-y-0 left-0 flex items-center pl-6 pointer-events-none">
+            <i class="bi bi-search text-gray-400 group-focus-within:text-[#2a7a27] text-2xl transition-colors"></i>
           </div>
-
-          <div class="flex-1 min-w-[140px]">
-            <label class="block text-xs font-bold text-gray-500 mb-1">Tác giả</label>
-            <input type="text" name="author" placeholder="Tên tác giả..." value="{{ request('author') }}"
-                   class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#2a7a27] focus:ring-1 focus:ring-[#2a7a27] transition">
-          </div>
-
-          <div class="flex-[1.2] min-w-[140px]">
-            <label class="block text-xs font-bold text-gray-500 mb-1">Chuyên mục</label>
-            <select name="category_id"
-                    class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#2a7a27] bg-white transition">
-              <option value="">-- Tất cả --</option>
-              @foreach($allNavCategories ?? [] as $cat)
-              <option value="{{ $cat->id }}" {{ request('category_id') == $cat->id ? 'selected' : '' }}>{{ $cat->name }}</option>
-              @endforeach
-            </select>
-          </div>
-
-          <div class="flex-1 min-w-[130px]">
-            <label class="block text-xs font-bold text-gray-500 mb-1">Từ ngày</label>
-            <input type="date" name="date_from" value="{{ request('date_from') }}"
-                   class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#2a7a27] transition">
-          </div>
-
-          <div class="flex-1 min-w-[130px]">
-            <label class="block text-xs font-bold text-gray-500 mb-1">Đến ngày</label>
-            <input type="date" name="date_to" value="{{ request('date_to') }}"
-                   class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#2a7a27] transition">
-          </div>
-
-          <div class="flex items-center gap-2">
-            <button type="submit"
-                    class="flex items-center gap-1.5 px-5 py-2 bg-[#2a7a27] hover:bg-[#1b5e20] text-white text-sm font-bold rounded-lg transition-colors">
-              <i class="bi bi-search"></i> Tìm
-            </button>
-            <a href="{{ route('search') }}" class="text-xs text-gray-400 hover:text-gray-600 transition-colors">Xóa lọc</a>
-          </div>
-
+          <input type="text" name="keyword" placeholder="Nhập tiêu đề hoặc nội dung cần tìm..." value="{{ request('keyword') }}"
+                 class="block w-full pl-16 pr-32 py-5 bg-white rounded-2xl text-lg font-medium text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-4 focus:ring-[#f5d400]/50 shadow-2xl transition-all">
+          <button type="submit" class="absolute inset-y-2 right-2 px-6 sm:px-8 bg-[#2a7a27] hover:bg-[#1a4a18] text-white font-bold rounded-xl transition-all shadow-md active:scale-95 flex items-center gap-2">
+            Tìm <span class="hidden sm:inline">Kiếm</span>
+          </button>
         </div>
+
+        {{-- Filters (Pill style) --}}
+        <div class="bg-white/10 backdrop-blur-md rounded-2xl px-5 py-4 border border-white/10 shadow-inner mt-2">
+          <div class="flex items-center gap-2 mb-3 text-[#f5d400] text-xs font-bold uppercase tracking-widest">
+            <i class="bi bi-sliders"></i> Lọc nâng cao
+          </div>
+          <div class="flex flex-wrap gap-4 items-end">
+            <div class="flex-1 min-w-[140px]">
+              <label class="block text-xs font-semibold text-white/80 mb-1.5">Tác giả</label>
+              <div class="relative">
+                <i class="bi bi-person absolute left-3 top-1/2 -translate-y-1/2 text-gray-800"></i>
+                <input type="text" name="author" placeholder="Tên tác giả..." value="{{ request('author') }}"
+                       class="w-full bg-white/90 border-0 rounded-lg pl-9 pr-3 py-2 text-sm text-gray-900 outline-none focus:ring-2 focus:ring-[#f5d400] transition">
+              </div>
+            </div>
+
+            <div class="flex-[1.2] min-w-[140px]">
+              <label class="block text-xs font-semibold text-white/80 mb-1.5">Chuyên mục</label>
+              <div class="relative">
+                <i class="bi bi-collection absolute left-3 top-1/2 -translate-y-1/2 text-gray-800"></i>
+                <select name="category_id"
+                        class="w-full bg-white/90 border-0 rounded-lg pl-9 pr-8 py-2 text-sm text-gray-900 outline-none focus:ring-2 focus:ring-[#f5d400] appearance-none transition">
+                  <option value="">Tất cả chuyên mục</option>
+                  @foreach($allNavCategories ?? [] as $cat)
+                  <option value="{{ $cat->id }}" {{ request('category_id') == $cat->id ? 'selected' : '' }}>{{ $cat->name }}</option>
+                  @endforeach
+                </select>
+                <i class="bi bi-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 text-xs pointer-events-none"></i>
+              </div>
+            </div>
+
+            <div class="flex-1 min-w-[120px]">
+              <label class="block text-xs font-semibold text-white/80 mb-1.5">Từ ngày</label>
+              <input type="date" name="date_from" value="{{ request('date_from') }}"
+                     class="w-full bg-white/90 border-0 rounded-lg px-3 py-2 text-sm text-gray-900 outline-none focus:ring-2 focus:ring-[#f5d400] transition">
+            </div>
+
+            <div class="flex-1 min-w-[120px]">
+              <label class="block text-xs font-semibold text-white/80 mb-1.5">Đến ngày</label>
+              <input type="date" name="date_to" value="{{ request('date_to') }}"
+                     class="w-full bg-white/90 border-0 rounded-lg px-3 py-2 text-sm text-gray-900 outline-none focus:ring-2 focus:ring-[#f5d400] transition">
+            </div>
+
+            <div class="flex items-center pb-0.5">
+              <a href="{{ route('search') }}" class="text-xs font-semibold text-white/60 hover:text-white underline decoration-white/30 hover:decoration-white transition-all px-2">
+                Xóa lọc
+              </a>
+            </div>
+          </div>
+        </div>
+
       </form>
     </div>
   </div>
@@ -911,7 +931,23 @@ document.addEventListener('DOMContentLoaded', () => { toggleAdvSearch(); });
             </div>
         </div>
     </div>
-</div>
-
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+  <script>
+    // Initial AOS load
+    document.addEventListener('DOMContentLoaded', function() {
+        if(typeof AOS !== 'undefined') {
+            AOS.init({ once: true, offset: 50, duration: 600, easing: 'ease-out-cubic' });
+        }
+    });
+    // Livewire SPA nav integration
+    document.addEventListener('livewire:navigated', () => { 
+        if(typeof AOS !== 'undefined') {
+            // Need to remove classes to retrigger animation if desired, or just init again
+            setTimeout(() => { AOS.refreshHard(); }, 50);
+        }
+    });
+  </script>
+  
+  @livewireScripts
 </body>
 </html>
