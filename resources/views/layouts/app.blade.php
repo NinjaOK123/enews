@@ -519,53 +519,53 @@
   <div id="catMenuBackdrop" onclick="closeCatMenu()" class="hidden fixed inset-0 z-[28]"></div>
   @endif
 
-  {{-- ═══ ADVANCED SEARCH PANEL (Premium Movie Style) ═══ --}}
+  {{-- ═══ ADVANCED SEARCH PANEL (Premium Movie Style - Compact) ═══ --}}
   <style>
     .movie-search-wrapper {
        background: radial-gradient(circle at 50% 100%, #174d1a 0%, #0d3b10 100%);
-       border-bottom: 3px solid #f5d400;
-       padding: 50px 0 60px 0;
+       border-bottom: 2px solid #f5d400;
+       padding: 25px 0 35px 0;
        position: relative;
     }
     .movie-search-input-group {
        display: flex;
        background: #fff;
        border-radius: 100px;
-       padding: 8px 12px 8px 30px;
-       box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+       padding: 6px 8px 6px 20px;
+       box-shadow: 0 10px 30px rgba(0,0,0,0.4);
        align-items: center;
-       margin-bottom: 30px;
+       margin-bottom: 20px;
        transition: transform 0.3s ease, box-shadow 0.3s ease;
     }
     .movie-search-input-group:focus-within {
-       transform: translateY(-2px);
-       box-shadow: 0 25px 60px rgba(0,0,0,0.6), 0 0 0 4px rgba(245, 212, 0, 0.4);
+       transform: translateY(-1px);
+       box-shadow: 0 15px 40px rgba(0,0,0,0.5), 0 0 0 3px rgba(245, 212, 0, 0.4);
     }
     .movie-search-icon {
        color: #2a7a27;
-       font-size: 1.8rem;
-       margin-right: 18px;
+       font-size: 1.3rem;
+       margin-right: 12px;
        flex-shrink: 0;
     }
     .movie-search-input {
        flex: 1;
        border: none !important;
        background: transparent !important;
-       font-size: 1.4rem;
-       font-weight: 600;
+       font-size: 1.1rem;
+       font-weight: 500;
        color: #111;
        outline: none !important;
        box-shadow: none !important;
-       padding: 10px 0;
+       padding: 8px 0;
        min-width: 0;
     }
-    .movie-search-input::placeholder { color: #aaa; font-weight: 500; }
+    .movie-search-input::placeholder { color: #aaa; font-weight: 400; }
     .movie-search-btn {
        background: #2a7a27;
        color: #fff;
        font-weight: bold;
-       font-size: 1.1rem;
-       padding: 14px 45px;
+       font-size: 0.95rem;
+       padding: 10px 30px;
        border-radius: 100px;
        border: none;
        cursor: pointer;
@@ -574,34 +574,34 @@
        flex-shrink: 0;
        display: flex;
        align-items: center;
-       gap: 8px;
+       gap: 6px;
     }
     .movie-search-btn:hover { background: #1a4a18; }
     .movie-filters-container {
        background: rgba(255,255,255,0.06);
-       border-radius: 16px;
+       border-radius: 12px;
        border: 1px solid rgba(255,255,255,0.1);
-       padding: 20px 25px;
+       padding: 15px 20px;
        backdrop-filter: blur(10px);
     }
     .movie-filter-row {
        display: grid;
-       grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-       gap: 20px;
+       grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+       gap: 15px;
     }
-    .movie-filter-col { display: flex; flex-direction: column; gap: 8px; }
-    .movie-filter-label { color: #f5d400; font-size: 0.8rem; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; }
+    .movie-filter-col { display: flex; flex-direction: column; gap: 6px; }
+    .movie-filter-label { color: #f5d400; font-size: 0.75rem; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; }
     .movie-filter-control {
        display: flex;
        align-items: center;
        background: #fff;
-       border-radius: 8px;
-       padding: 0 15px;
-       height: 46px;
+       border-radius: 6px;
+       padding: 0 12px;
+       height: 38px;
        transition: box-shadow 0.2s;
     }
-    .movie-filter-control:focus-within { box-shadow: 0 0 0 3px rgba(245, 212, 0, 0.4); }
-    .movie-filter-control i { color: #666; margin-right: 12px; font-size: 1.15rem; flex-shrink: 0; }
+    .movie-filter-control:focus-within { box-shadow: 0 0 0 2px rgba(245, 212, 0, 0.4); }
+    .movie-filter-control i { color: #666; margin-right: 8px; font-size: 1rem; flex-shrink: 0; }
     .movie-filter-control input,
     .movie-filter-control select {
        border: none !important;
@@ -610,7 +610,7 @@
        height: 100%;
        outline: none !important;
        box-shadow: none !important;
-       font-size: 0.95rem;
+       font-size: 0.9rem;
        color: #111;
        font-weight: 500;
     }
@@ -618,23 +618,27 @@
       display: flex;
       align-items: flex-end;
       justify-content: flex-end;
+      padding-bottom: 8px;
     }
     .movie-clear-btn {
-      color: rgba(255,255,255,0.6);
-      font-size: 0.85rem;
+      color: rgba(255,255,255,0.7);
+      font-size: 0.8rem;
       font-weight: bold;
       text-transform: uppercase;
-      letter-spacing: 1px;
-      text-decoration: underline;
-      text-decoration-color: rgba(255,255,255,0.2);
+      letter-spacing: 0.5px;
+      text-decoration: none;
+      transition: all 0.2s;
+      padding: 6px 15px;
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 6px;
     }
-    .movie-clear-btn:hover { color: #fff; text-decoration-color: #fff; }
+    .movie-clear-btn:hover { color: #fff; background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.4); }
     
     @media (max-width: 768px) {
-      .movie-search-input-group { flex-direction: column; border-radius: 16px; padding: 15px; background: rgba(255,255,255,0.95); }
+      .movie-search-input-group { flex-direction: column; border-radius: 12px; padding: 12px; background: rgba(255,255,255,0.95); }
       .movie-search-icon { display: none; }
-      .movie-search-input { font-size: 1.2rem; text-align: center; border-bottom: 2px solid #ddd !important; padding-bottom: 15px; margin-bottom: 15px; }
-      .movie-search-btn { width: 100%; justify-content: center; }
+      .movie-search-input { font-size: 1rem; text-align: center; border-bottom: 1px solid #ddd !important; padding-bottom: 10px; margin-bottom: 10px; }
+      .movie-search-btn { width: 100%; justify-content: center; padding: 10px; }
     }
   </style>
 
