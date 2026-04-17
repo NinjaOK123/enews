@@ -8,9 +8,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Cache;
+use Laravel\Scout\Searchable;
+use Laravel\Scout\Attributes\SearchUsingFullText;
 
 class Post extends Model
 {
+    use Searchable;
+
     protected $fillable = [
         'title', 'slug', 'excerpt', 'content', 'thumbnail',
         'author_id', 'category_id', 'status', 'published_at', 'view_count',
@@ -141,23 +145,30 @@ class Post extends Model
         return $query->where('is_featured', true);
     }
 
-    // ─── Advanced Search ─────────────────────────────────────────────────────
+    // ─── Advanced Search / Filter ─────────────────────────────────────────────
 
     /**
-     * Scope for advanced search: keyword, author name, date range, category
+     * Get the indexable data array for the model.
+     *
+     * @return array<string, mixed>
      */
-    public function scopeSearch(Builder $query, array $filters): Builder
+    #[SearchUsingFullText(['title', 'excerpt', 'content'])]
+    public function toSearchableArray()
     {
-        // Keyword: title or content or excerpt
-        if (!empty($filters['keyword'])) {
-            $kw = $filters['keyword'];
-            $query->where(function ($q) use ($kw) {
-                $q->where('title', 'like', "%{$kw}%")
-                  ->orWhere('excerpt', 'like', "%{$kw}%")
-                  ->orWhere('content', 'like', "%{$kw}%");
-            });
-        }
+        return [
+            'id'      => $this->id,
+            'title'   => $this->title,
+            'excerpt' => $this->excerpt,
+            'content' => $this->content,
+        ];
+    }
 
+    /**
+     * Scope for advanced filters: author name, date range, category.
+     * Note: Keyword searching is now handled natively by Laravel Scout via Model::search($keyword).
+     */
+    public function scopeFilterAdvanced(Builder $query, array $filters): Builder
+    {
         // Filter by category
         if (!empty($filters['category_id'])) {
             $query->where('category_id', $filters['category_id']);
