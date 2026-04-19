@@ -18,9 +18,24 @@ class ReportController extends Controller
     public function index(Request $request)
     {
         // Handling Date Filter (Từ ngày - Đến ngày)
+        $period = $request->input('period');
         $startDate = $request->input('start_date');
         $endDate = $request->input('end_date');
         $dateRange = null;
+
+        if ($period) {
+            $now = Carbon::now();
+            if ($period === 'week') {
+                $startDate = $now->copy()->startOfWeek()->format('Y-m-d');
+                $endDate = $now->copy()->endOfWeek()->format('Y-m-d');
+            } elseif ($period === 'month') {
+                $startDate = $now->copy()->startOfMonth()->format('Y-m-d');
+                $endDate = $now->copy()->endOfMonth()->format('Y-m-d');
+            } elseif ($period === 'year') {
+                $startDate = $now->copy()->startOfYear()->format('Y-m-d');
+                $endDate = $now->copy()->endOfYear()->format('Y-m-d');
+            }
+        }
 
         if ($startDate && $endDate) {
             $dateRange = [Carbon::parse($startDate)->startOfDay(), Carbon::parse($endDate)->endOfDay()];
@@ -54,8 +69,6 @@ class ReportController extends Controller
         $usersByRole = $usersByRole->selectRaw('role, count(*) as count')->groupBy('role')->pluck('count', 'role');
 
         // 3. Views Stats
-        // Currently view_count is a total aggregate. If dateRange exists we just count it for posts created in that period as a simple mockup, 
-        // ideally view_count should be tracked in a separate `post_views` table with timestamps.
         $totalViews = $applyDateFilter(Post::query())->sum('view_count');
 
         // 4. Comment & Category Stats
@@ -70,6 +83,67 @@ class ReportController extends Controller
             $totalCategories = $totalCategories->whereBetween('created_at', $dateRange);
         }
         $categoriesCount = $totalCategories->count();
+
+        // --- HỘI ĐỒNG: BỔ SUNG NGỮ CẢNH SO SÁNH (COMPARE PREVIOUS PERIOD) ---
+        $currentStart = $dateRange ? $dateRange[0] : Carbon::now()->subDays(30)->startOfDay();
+        $currentEnd   = $dateRange ? $dateRange[1] : Carbon::now()->endOfDay();
+        
+        $diffDays = (int) round($currentStart->diffInDays($currentEnd)) ?: 1;
+        
+        $prevStart = clone $currentStart;
+        $prevStart->subDays($diffDays + 1);
+        $prevEnd = clone $currentEnd;
+        $prevEnd->subDays($diffDays + 1);
+
+        $pulseLabel = $dateRange ? "so với " . ($diffDays) . " ngày trước" : "so với 30 ngày trước";
+
+        $getPulse = function($baseQuery) use ($currentStart, $currentEnd, $prevStart, $prevEnd) {
+            $cur = (clone $baseQuery)->whereBetween('created_at', [$currentStart, $currentEnd]);
+            $prev = (clone $baseQuery)->whereBetween('created_at', [$prevStart, $prevEnd]);
+            return ['cur' => $cur, 'prev' => $prev];
+        };
+
+        // Growths
+        $postP = $getPulse(Post::query());
+        $curPosts = $postP['cur']->count(); $prevPosts = $postP['prev']->count();
+        $growthPosts = $prevPosts > 0 ? round((($curPosts - $prevPosts) / $prevPosts) * 100, 1) : ($curPosts > 0 ? 100 : 0);
+
+        $userP = $getPulse(User::query());
+        $curUsers = $userP['cur']->count(); $prevUsers = $userP['prev']->count();
+        $growthUsers = $prevUsers > 0 ? round((($curUsers - $prevUsers) / $prevUsers) * 100, 1) : ($curUsers > 0 ? 100 : 0);
+
+        $viewP = $getPulse(Post::query());
+        $curViews = $viewP['cur']->sum('view_count'); $prevViews = $viewP['prev']->sum('view_count');
+        $growthViews = $prevViews > 0 ? round((($curViews - $prevViews) / $prevViews) * 100, 1) : ($curViews > 0 ? 100 : 0);
+
+        $commentP = $getPulse(Comment::query());
+        $curComments = $commentP['cur']->count(); $prevComments = $commentP['prev']->count();
+        $growthComments = $prevComments > 0 ? round((($curComments - $prevComments) / $prevComments) * 100, 1) : ($curComments > 0 ? 100 : 0);
+
+        $growths = [
+            'label' => $pulseLabel,
+            'posts' => $growthPosts,
+            'users' => $growthUsers,
+            'views' => $growthViews,
+            'comments' => $growthComments,
+            'curPosts' => $curPosts, // To show context "Co them +X bai"
+            'curViews' => $curViews,
+        ];
+
+        // --- HỘI ĐỒNG: BỔ SUNG ACTIONABLE INSIGHTS (THIẾU HÀNH ĐỘNG / DRILL DOWN) ---
+        // Top 5 bài viết có lượt xem cao nhất (có thể lọc theo date_range nếu có)
+        $topPosts = $applyDateFilter(Post::with('category'))->orderBy('view_count', 'desc')->take(5)->get();
+        
+        // Quá hạn: Bài viết pending > 3 ngày
+        $stalePendingPosts = Post::where('status', 'pending')
+            ->where('created_at', '<', Carbon::now()->subDays(3))
+            ->count();
+            
+        // Top Chuyên mục: Danh sách category có lượng View tổng cao nhất trong chu kỳ
+        $topCategories = Category::withCount(['posts' => function($q) use ($applyDateFilter) {
+            $applyDateFilter($q);
+        }])->orderBy('posts_count', 'desc')->take(5)->get();
+
 
         // Chart Data: Posts per month (for the current year)
         $chartData = Post::selectRaw('MONTH(created_at) as month, COUNT(*) as count')
@@ -91,7 +165,8 @@ class ReportController extends Controller
         return view('admin.reports.index', compact(
             'totalPosts', 'publishedPosts', 'pendingPosts', 'draftPosts',
             'usersCount', 'usersByRole', 'totalViews', 'commentsCount', 'categoriesCount',
-            'chartLabels', 'chartValues', 'startDate', 'endDate'
+            'chartLabels', 'chartValues', 'startDate', 'endDate',
+            'growths', 'topPosts', 'stalePendingPosts', 'topCategories'
         ));
     }
 

@@ -1,25 +1,25 @@
 @extends('layouts.admin')
 
 @section('content')
-<div class="min-h-screen bg-gray-50/50 py-6">
+<div class="min-h-screen bg-gray-50/50 dark:bg-zinc-950 py-6 transition-colors">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
     {{-- Header Bar --}}
     <div class="flex items-center justify-between mb-6">
       <div>
-        <h1 class="text-2xl font-bold text-gray-900">
+        <h1 class="text-2xl font-bold text-gray-900 dark:text-zinc-100">
           {{ isset($post) ? '✏️ Chỉnh sửa bài viết' : '📝 Viết bài mới' }}
         </h1>
-        <p class="text-sm text-gray-500 mt-0.5">Điền đầy đủ thông tin và nội dung bài viết</p>
+        <p class="text-sm text-gray-500 dark:text-zinc-400 mt-0.5">Điền đầy đủ thông tin và nội dung bài viết</p>
       </div>
       <div class="flex items-center gap-2">
-        <span id="autoSaveStatus" class="text-xs text-gray-400 hidden">
-          <span class="inline-flex items-center gap-1 bg-green-50 text-green-600 px-3 py-1.5 rounded-full border border-green-200">
+        <span id="autoSaveStatus" class="text-xs text-gray-400 dark:text-zinc-500 hidden">
+          <span class="inline-flex items-center gap-1 bg-green-50 dark:bg-green-500/10 text-green-600 dark:text-green-400 px-3 py-1.5 rounded-full border border-green-200 dark:border-green-500/20">
             <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
             <span id="autoSaveText">Đã lưu tự động</span>
           </span>
         </span>
-        <a href="{{ url()->previous() }}" class="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition shadow-sm">
+        <a href="{{ url()->previous() }}" class="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-gray-600 dark:text-zinc-300 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl hover:bg-gray-50 dark:hover:bg-zinc-800 transition shadow-sm">
           ← Quay lại
         </a>
       </div>
@@ -51,57 +51,57 @@
         <div class="flex-1 min-w-0 space-y-5">
 
           {{-- Tiêu đề --}}
-          <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
-            <label for="title" class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+          <div class="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-100 dark:border-zinc-800 shadow-sm p-5 overflow-hidden transition-colors relative group focus-within:border-emerald-500/50 dark:focus-within:border-emerald-500/50">
+            <label for="title" class="block text-xs font-semibold text-gray-500 dark:text-zinc-400 uppercase tracking-wider mb-2">
               Tiêu đề bài viết <span class="text-red-500">*</span>
             </label>
             <input type="text" id="title" name="title" required
                    value="{{ old('title', $post->title ?? '') }}"
                    placeholder="Nhập tiêu đề hấp dẫn, rõ ràng..."
-                   class="w-full text-xl font-semibold text-gray-900 border-0 outline-none placeholder:text-gray-300 bg-transparent">
+                   class="w-full text-xl font-semibold text-gray-900 dark:text-zinc-100 border-0 outline-none placeholder:text-gray-300 dark:placeholder:text-zinc-600 bg-transparent ring-0 focus:ring-0 p-0 m-0">
             @error('title')<p class="mt-1 text-xs text-red-500">{{ $message }}</p>@enderror
           </div>
 
           {{-- AI Prompt (ẩn mặc định) --}}
           <div id="aiPromptTarget" class="hidden">
-            <div class="bg-gradient-to-r from-indigo-50 to-purple-50 border border-indigo-200 rounded-2xl p-4">
-              <p class="text-sm font-semibold text-indigo-700 mb-2">🤖 AI Tự động viết</p>
+            <div class="bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-950/40 dark:to-purple-900/20 border border-indigo-200 dark:border-indigo-500/20 rounded-2xl p-4 overflow-hidden transition-colors">
+              <p class="text-sm font-semibold text-indigo-700 dark:text-indigo-400 mb-2">🤖 AI Tự động viết</p>
               <div class="flex gap-2">
                 <input type="text" id="aiPromptInput"
                        placeholder="Nhập chủ đề, AI sẽ tạo nháp bài viết cho bạn..."
-                       class="flex-1 border border-indigo-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-indigo-400 bg-white">
+                       class="flex-1 border border-indigo-200 dark:border-indigo-500/30 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-indigo-400 dark:focus:border-indigo-500/50 bg-white dark:bg-zinc-950/50 dark:text-zinc-200 transition-colors">
                 <button type="button" id="btnExecuteAI"
-                        class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-xl transition">
+                        class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 text-white text-sm font-semibold rounded-xl transition">
                   Tạo nội dung
                 </button>
               </div>
-              <p class="text-xs text-indigo-400 mt-1.5">AI sẽ tạo bản nháp, bạn chỉnh lại trước khi đăng.</p>
+              <p class="text-xs text-indigo-400 dark:text-indigo-500/80 mt-1.5">AI sẽ tạo bản nháp, bạn chỉnh lại trước khi đăng.</p>
             </div>
           </div>
 
           {{-- Editor --}}
-          <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-            <div class="flex items-center justify-between px-5 py-3 border-b border-gray-100 bg-gray-50/60">
-              <span class="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+          <div class="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-100 dark:border-zinc-800 shadow-sm overflow-hidden transition-colors">
+            <div class="flex items-center justify-between px-5 py-3 border-b border-gray-100 dark:border-zinc-800 bg-gray-50/60 dark:bg-zinc-950/50">
+              <span class="text-xs font-semibold text-gray-500 dark:text-zinc-400 uppercase tracking-wider">
                 Nội dung bài viết <span class="text-red-500">*</span>
               </span>
               <div class="flex items-center gap-2">
                 <button type="button" id="btnImportWord"
-                        class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg border border-blue-200 transition">
-                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                        class="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-500/10 hover:bg-blue-100 dark:hover:bg-blue-500/20 rounded-xl border border-blue-200 dark:border-blue-500/20 shadow-sm transition">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                   Import Word
                 </button>
                 <input type="file" id="wordFileInput" accept=".docx,.doc" class="hidden">
 
                 <button type="button" id="btnAIGenerate" onclick="document.getElementById('aiPromptTarget').classList.toggle('hidden'); setTimeout(() => document.getElementById('aiPromptInput').focus(), 100);"
-                        class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-purple-600 bg-purple-50 hover:bg-purple-100 rounded-lg border border-purple-200 transition">
-                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+                        class="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-500/10 hover:bg-purple-100 dark:hover:bg-purple-500/20 rounded-xl border border-purple-200 dark:border-purple-500/20 shadow-sm transition">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
                   AI viết
                 </button>
 
                 <button type="button" onclick="document.getElementById('mediaModal').classList.remove('hidden')"
-                        class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg border border-gray-200 transition">
-                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                        class="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-gray-700 dark:text-zinc-300 bg-white dark:bg-zinc-800 hover:bg-gray-100 dark:hover:bg-zinc-700 rounded-xl border border-gray-200 dark:border-zinc-700 shadow-sm transition">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
                   Media
                 </button>
               </div>
@@ -113,42 +113,42 @@
           </div>
 
           {{-- Action Buttons --}}
-          <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 mt-5">
+          <div class="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-100 dark:border-zinc-800 shadow-sm p-4 mt-5 transition-colors">
             <div class="flex flex-wrap items-center gap-3">
               <button type="submit" name="action" value="draft" id="btnSaveDraft"
-                      class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 text-sm font-bold text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-xl border border-gray-200 transition">
+                      class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 text-sm font-bold text-gray-700 dark:text-zinc-300 bg-gray-100 dark:bg-zinc-800 hover:bg-gray-200 dark:hover:bg-zinc-700 rounded-xl border border-gray-200 dark:border-zinc-700 transition">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/></svg>
                 {{ isset($post) && $post->status === 'published' ? 'Lưu cập nhật' : 'Lưu nháp' }}
               </button>
 
               @if(in_array(auth()->user()->role ?? '', ['admin', 'editor']))
-              <button type="button" id="btnApprovePost" onclick="if(confirm('Bạn có chắc muốn {{ isset($post) && $post->status==='published' ? 'CẬP NHẬT' : 'DUYỆT XUẤT BẢN' }} bài viết này?')) { let a = document.getElementById('hiddenActionInput'); if(!a) { a = document.createElement('input'); a.type='hidden'; a.name='action'; a.id='hiddenActionInput'; document.getElementById('postForm').appendChild(a); } a.value='approve'; document.getElementById('postForm').submit(); }"
-                      class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-3 text-sm font-bold text-white bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 rounded-xl shadow-lg shadow-blue-200 transition">
+              <button type="button" id="btnApprovePost" onclick="window.confirmCustomAction('Bạn có chắc muốn {{ isset($post) && $post->status==='published' ? 'CẬP NHẬT' : 'DUYỆT XUẤT BẢN' }} bài viết này?', () => { let a = document.getElementById('hiddenActionInput'); if(!a) { a = document.createElement('input'); a.type='hidden'; a.name='action'; a.id='hiddenActionInput'; document.getElementById('postForm').appendChild(a); } a.value='approve'; document.getElementById('postForm').submit(); })"
+                      class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-3 text-sm font-bold text-white bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 rounded-xl shadow-lg shadow-blue-200 dark:shadow-none transition">
                 <i class="bi bi-check-all text-lg"></i> {{ isset($post) && $post->status==='published' ? 'Lưu & Đăng' : 'Duyệt bài' }}
               </button>
               
-              <button type="button" id="btnRejectPost" onclick="if(confirm('Bạn có chắc muốn TỪ CHỐI bài viết này?')) { let a = document.getElementById('hiddenActionInput'); if(!a) { a = document.createElement('input'); a.type='hidden'; a.name='action'; a.id='hiddenActionInput'; document.getElementById('postForm').appendChild(a); } a.value='reject'; document.getElementById('postForm').submit(); }"
-                      class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 text-sm font-bold text-white bg-gradient-to-r from-rose-500 to-red-600 hover:from-rose-600 hover:to-red-700 rounded-xl shadow-lg shadow-rose-200 transition">
+              <button type="button" id="btnRejectPost" onclick="window.confirmCustomAction('Bạn có chắc muốn TỪ CHỐI bài viết này?', () => { let a = document.getElementById('hiddenActionInput'); if(!a) { a = document.createElement('input'); a.type='hidden'; a.name='action'; a.id='hiddenActionInput'; document.getElementById('postForm').appendChild(a); } a.value='reject'; document.getElementById('postForm').submit(); })"
+                      class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 text-sm font-bold text-white bg-gradient-to-r from-rose-500 to-red-600 hover:from-rose-600 hover:to-red-700 rounded-xl shadow-lg shadow-rose-200 dark:shadow-none transition">
                 <i class="bi bi-x-circle text-lg"></i> Từ chối
               </button>
 
-              <div class="h-8 w-px bg-gray-200 hidden xl:block mx-1"></div>
+              <div class="h-8 w-px bg-gray-200 dark:bg-zinc-700 hidden xl:block mx-1"></div>
 
               <button type="button" onclick="openPlagiarismModal()"
-                 class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-3 text-sm font-bold text-gray-700 bg-white hover:bg-gray-50 rounded-xl border border-gray-200 shadow-sm transition">
+                 class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-3 text-sm font-bold text-gray-700 dark:text-zinc-300 bg-white dark:bg-zinc-800 hover:bg-gray-50 dark:hover:bg-zinc-700 rounded-xl border border-gray-200 dark:border-zinc-700 shadow-sm transition">
                 <i class="bi bi-shield-check text-indigo-500 text-lg"></i> Check Đạo Văn (Nội bộ)
               </button>
               @else
               @if(!isset($post) || !in_array($post->status, ['pending', 'published']))
               <button type="submit" name="action" value="pending" id="btnSubmitReview"
-                      class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-3 text-sm font-bold text-white bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 rounded-xl shadow-lg shadow-green-200 transition">
+                      class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-3 text-sm font-bold text-white bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 rounded-xl shadow-lg shadow-green-200 dark:shadow-none transition">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                 Gửi bài chờ duyệt
               </button>
               @endif
               @endif
 
-              <p class="text-xs text-gray-400 sm:ml-auto">
+              <p class="text-xs text-gray-400 dark:text-zinc-500 sm:ml-auto">
                 <svg class="w-3.5 h-3.5 inline mr-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                 Tự động lưu mỗi 30 giây
               </p>
@@ -160,91 +160,98 @@
         <div class="w-80 shrink-0 space-y-5">
 
           {{-- Chuyên mục --}}
-          <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
-            <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
+          <div class="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-100 dark:border-zinc-800 shadow-sm p-5 overflow-hidden transition-colors">
+            <label class="block text-xs font-semibold text-gray-500 dark:text-zinc-400 uppercase tracking-wider mb-3">
               Chuyên mục <span class="text-red-500">*</span>
             </label>
-            <select name="category_id" id="category_id" required
-                    class="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-green-400 focus:ring-2 focus:ring-green-100 bg-white transition">
-              <option value="">-- Chọn chuyên mục --</option>
-              @foreach($categories as $cat)
-              <option value="{{ $cat->id }}"
-                {{ old('category_id', $post->category_id ?? '') == $cat->id ? 'selected' : '' }}>
-                {{ $cat->name ?? 'Category ' . $cat->id }}
-              </option>
-              @endforeach
-            </select>
+            <div class="relative">
+              <select name="category_id" id="category_id" required
+                      class="w-full border border-gray-200 dark:border-zinc-800 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 dark:focus:ring-emerald-500/20 bg-white dark:bg-zinc-950/50 dark:text-zinc-100 transition appearance-none cursor-pointer">
+                <option value="">-- Chọn chuyên mục --</option>
+                @foreach($categories as $cat)
+                <option value="{{ $cat->id }}"
+                  {{ old('category_id', $post->category_id ?? '') == $cat->id ? 'selected' : '' }}>
+                  {{ $cat->name ?? 'Category ' . $cat->id }}
+                </option>
+                @endforeach
+              </select>
+              <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-gray-500 dark:text-zinc-400">
+                <i class="bi bi-chevron-down text-xs"></i>
+              </div>
+            </div>
             @error('category_id')<p class="mt-1 text-xs text-red-500">{{ $message }}</p>@enderror
           </div>
 
           {{-- Đặt làm Tiêu Điểm / Nổi bật (Chỉ dành cho Ban Biên tập) --}}
           @if(in_array(auth()->user()->role ?? '', ['admin', 'editor']))
-          <div class="bg-gradient-to-br from-indigo-50 to-blue-50 rounded-2xl border border-indigo-100 shadow-sm p-5 relative overflow-hidden">
-            <div class="absolute -right-4 -bottom-4 text-indigo-200 opacity-20">
+          <div class="bg-gradient-to-br from-indigo-50 to-blue-50 dark:from-indigo-950/40 dark:to-blue-900/20 rounded-2xl border border-indigo-100 dark:border-indigo-500/20 shadow-sm p-5 relative overflow-hidden transition-colors">
+            <div class="absolute -right-4 -bottom-4 text-indigo-200 dark:text-indigo-500/10 opacity-20 dark:opacity-100 pointer-events-none">
               <i class="bi bi-star-fill" style="font-size: 6rem;"></i>
             </div>
             <label class="flex items-center gap-3 cursor-pointer relative z-10 group">
               <div class="relative flex items-center justify-center w-5 h-5 shrink-0">
                   <input type="checkbox" name="is_featured" value="1"
                          {{ old('is_featured', $post->is_featured ?? false) ? 'checked' : '' }}
-                         class="peer sr-only">
-                  <div class="w-5 h-5 bg-white border-2 border-indigo-200 rounded peer-checked:bg-indigo-600 peer-checked:border-indigo-600 transition-colors flex items-center justify-center shadow-sm group-hover:border-indigo-400">
-                      <i class="bi bi-check2 text-white text-base opacity-0 peer-checked:opacity-100 transition-opacity"></i>
-                  </div>
+                         class="w-5 h-5 rounded-md border-2 border-indigo-200 dark:border-indigo-500/50 text-indigo-600 focus:ring-indigo-500 bg-white dark:bg-zinc-950 transition shadow-sm cursor-pointer">
               </div>
-              <span class="text-sm font-bold text-indigo-800 tracking-wide uppercase"><i class="bi bi-star me-1"></i> Đặt làm Bài Tiêu biểu</span>
+              <span class="text-sm font-bold text-indigo-800 dark:text-indigo-300 tracking-wide uppercase"><i class="bi bi-star me-1"></i> Đặt làm Bài Tiêu biểu</span>
             </label>
-            <p class="text-[11px] text-indigo-600 mt-2 relative z-10 font-medium">✨ Bài viết này sẽ được ưu tiên xuất hiện lướt nhẹ nhàng trên banner siêu to khổng lồ ở đầu Trang chủ.</p>
+            <p class="text-[11px] text-indigo-600 dark:text-indigo-400 mt-2 relative z-10 font-medium">✨ Bài viết này sẽ được ưu tiên xuất hiện nhẹ nhàng trên banner khổng lồ ở Trang chủ.</p>
           </div>
           @endif
 
           {{-- Nhuận bút (Chỉ dành cho Ban Biên tập) --}}
           @if(in_array(auth()->user()->role ?? '', ['admin', 'editor']) && isset($royaltyRates))
-          <div class="bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl border border-green-100 shadow-sm p-5 relative overflow-hidden">
-            <div class="absolute -right-4 -top-4 text-green-200 opacity-30">
+          <div class="bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-950/30 dark:to-teal-900/20 rounded-2xl border border-emerald-100 dark:border-emerald-500/20 shadow-sm p-5 relative overflow-hidden transition-colors">
+            <div class="absolute -right-4 -top-4 text-emerald-200 dark:text-emerald-500/10 opacity-30 dark:opacity-100 pointer-events-none">
               <i class="bi bi-wallet2" style="font-size: 5rem;"></i>
             </div>
-            <label class="block text-xs font-bold text-green-700 uppercase tracking-wider mb-3 relative z-10">
+            <label class="block text-xs font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider mb-3 relative z-10">
               <i class="bi bi-cash-coin me-1"></i> Định mức Nhuận bút
             </label>
             
             <div class="space-y-3 relative z-10">
               <div>
-                <label class="block text-xs text-gray-600 mb-1">Thể loại bài viết</label>
-                <select name="royalty_rate_id" id="royalty_rate_id"
-                        class="w-full border border-green-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-green-500 focus:ring-2 focus:ring-green-200 bg-white transition">
-                  <option value="">-- Bỏ qua (Không tính) --</option>
-                  @php $currentGroup = ''; @endphp
-                  @foreach($royaltyRates as $rate)
-                    @if($currentGroup != $rate->group_name)
-                      @if($currentGroup != '') </optgroup> @endif
-                      <optgroup label="{{ $rate->group_name }}">
-                      @php $currentGroup = $rate->group_name; @endphp
-                    @endif
-                    <option value="{{ $rate->id }}" data-amount="{{ $rate->amount }}"
-                      {{ old('royalty_rate_id', $post->royalty_rate_id ?? '') == $rate->id ? 'selected' : '' }}>
-                      {{ $rate->name }} ({{ number_format($rate->amount) }}đ)
-                    </option>
-                  @endforeach
-                  @if($currentGroup != '') </optgroup> @endif
-                </select>
+                <label class="block text-xs text-gray-600 dark:text-zinc-400 mb-1">Thể loại bài viết</label>
+                <div class="relative">
+                  <select name="royalty_rate_id" id="royalty_rate_id"
+                          class="w-full border border-emerald-200 dark:border-emerald-500/30 rounded-xl px-3 py-2 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 dark:focus:ring-emerald-500/20 bg-white dark:bg-zinc-950/50 dark:text-zinc-200 transition appearance-none cursor-pointer">
+                    <option value="">-- Bỏ qua (Không tính) --</option>
+                    @php $currentGroup = ''; @endphp
+                    @foreach($royaltyRates as $rate)
+                      @if($currentGroup != $rate->group_name)
+                        @if($currentGroup != '') </optgroup> @endif
+                        <optgroup label="{{ $rate->group_name }}">
+                        @php $currentGroup = $rate->group_name; @endphp
+                      @endif
+                      <option value="{{ $rate->id }}" data-amount="{{ $rate->amount }}"
+                        {{ old('royalty_rate_id', $post->royalty_rate_id ?? '') == $rate->id ? 'selected' : '' }}>
+                        {{ $rate->name }} ({{ number_format($rate->amount) }}đ)
+                      </option>
+                    @endforeach
+                    @if($currentGroup != '') </optgroup> @endif
+                  </select>
+                  <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-emerald-500 dark:text-emerald-400">
+                    <i class="bi bi-chevron-down text-xs"></i>
+                  </div>
+                </div>
               </div>
               
               <div>
-                <label class="block text-xs text-gray-600 mb-1">Số lượng Ảnh (Chiết tính)</label>
+                <label class="block text-xs text-gray-600 dark:text-zinc-400 mb-1">Số lượng Ảnh (Chiết tính)</label>
                 <div class="flex items-center gap-2">
                   <input type="number" name="image_count" id="image_count" min="0" value="{{ old('image_count', $post->image_count ?? 0) }}"
-                         class="w-20 border border-green-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-green-500 bg-white transition text-center">
-                  <span class="text-xs text-gray-500 cursor-pointer hover:text-green-600" onclick="document.getElementById('image_count').value = (document.getElementById('editor').value.match(/<img/g) || []).length">
+                         class="w-20 border border-emerald-200 dark:border-emerald-500/30 rounded-xl px-3 py-2 text-sm outline-none focus:border-emerald-500 bg-white dark:bg-zinc-950/50 dark:text-zinc-200 transition text-center">
+                  <span class="text-xs text-gray-500 dark:text-zinc-400 cursor-pointer hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors" onclick="document.getElementById('image_count').value = (document.getElementById('editor').value.match(/<img/g) || []).length">
                     <i class="bi bi-arrow-repeat"></i> Đếm tự động
                   </span>
                 </div>
-                <p class="text-[10px] text-green-600 mt-1">* 10.000đ / ảnh</p>
+                <p class="text-[10px] text-emerald-600 dark:text-emerald-500 mt-1">* 10.000đ / ảnh</p>
               </div>
               
-              <div class="pt-2 mt-2 border-t border-green-200 flex justify-between items-center bg-white/50 px-3 py-2 rounded-lg">
-                <span class="text-xs font-semibold text-gray-600">Thành tiền:</span>
-                <span class="text-sm font-bold text-green-700" id="royaltyTotalPreview">0 đ</span>
+              <div class="pt-2 mt-2 border-t border-emerald-200 dark:border-emerald-500/20 flex justify-between items-center bg-white/50 dark:bg-black/20 px-3 py-2 rounded-lg">
+                <span class="text-xs font-semibold text-gray-600 dark:text-zinc-400">Thành tiền:</span>
+                <span class="text-sm font-bold text-emerald-700 dark:text-emerald-400" id="royaltyTotalPreview">0 đ</span>
               </div>
             </div>
           </div>
@@ -274,8 +281,8 @@
           @endif
 
           {{-- Thumbnail --}}
-          <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
-            <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
+          <div class="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-100 dark:border-zinc-800 shadow-sm p-5 overflow-hidden transition-colors">
+            <label class="block text-xs font-semibold text-gray-500 dark:text-zinc-400 uppercase tracking-wider mb-3">
               Ảnh đại diện (Thumbnail)
             </label>
 
@@ -283,35 +290,35 @@
             <div id="thumbPreviewWrap" class="{{ (isset($post) && $post->thumbnail) ? '' : 'hidden' }} mb-3 relative group">
               <img id="thumbPreview"
                    src="{{ (isset($post) && $post->thumbnail) ? asset('storage/' . $post->thumbnail) : '' }}"
-                   class="w-full h-44 object-cover rounded-xl border border-gray-200 block">
+                   class="w-full h-44 object-cover rounded-xl border border-gray-200 dark:border-zinc-700 block">
               <button type="button" id="btnRemoveThumb"
-                      class="absolute top-2 right-2 bg-white/90 hover:bg-red-50 text-red-500 rounded-full w-7 h-7 flex items-center justify-center shadow text-xs border border-red-100 opacity-0 group-hover:opacity-100 transition">✕</button>
+                      class="absolute top-2 right-2 bg-white/90 dark:bg-zinc-800/90 hover:bg-red-50 dark:hover:bg-red-500/20 text-red-500 rounded-full w-7 h-7 flex items-center justify-center shadow text-xs border border-red-100 dark:border-red-500/30 opacity-0 group-hover:opacity-100 transition">✕</button>
             </div>
 
             {{-- Drop zone --}}
             <label for="thumbnail" id="thumbDropzone"
-                   class="{{ (isset($post) && $post->thumbnail) ? 'hidden' : '' }} flex flex-col items-center justify-center gap-2 h-36 border-2 border-dashed border-gray-200 rounded-xl cursor-pointer hover:border-green-400 hover:bg-green-50/30 transition">
-              <svg class="w-8 h-8 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-              <span class="text-xs text-gray-400 text-center">Click, kéo thả, hoặc ấn Ctrl+V (Paste)<br><span class="text-gray-300">để dán ảnh bìa vào đây</span></span>
+                   class="{{ (isset($post) && $post->thumbnail) ? 'hidden' : '' }} flex flex-col items-center justify-center gap-2 h-36 border-2 border-dashed border-gray-200 dark:border-zinc-700 rounded-xl cursor-pointer hover:border-emerald-400 dark:hover:border-emerald-500/50 hover:bg-emerald-50/30 dark:hover:bg-emerald-500/5 transition">
+              <svg class="w-8 h-8 text-gray-300 dark:text-zinc-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+              <span class="text-xs text-gray-400 dark:text-zinc-500 text-center">Click, kéo thả, hoặc ấn Ctrl+V (Paste)<br><span class="text-gray-300 dark:text-zinc-600">để dán ảnh bìa vào đây</span></span>
             </label>
             <input type="file" id="thumbnail" name="thumbnail" accept="image/*" class="hidden">
             @error('thumbnail')<p class="mt-1 text-xs text-red-500">{{ $message }}</p>@enderror
           </div>
 
           {{-- Tên tác giả / Nguồn --}}
-          <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
-            <label for="source_author" class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
+          <div class="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-100 dark:border-zinc-800 shadow-sm p-5 overflow-hidden transition-colors">
+            <label for="source_author" class="block text-xs font-semibold text-gray-500 dark:text-zinc-400 uppercase tracking-wider mb-3">
               Tác giả / Nguồn
             </label>
             <input type="text" name="source_author" id="source_author"
                    value="{{ old('source_author', $post->source_author ?? '') }}"
                    placeholder="VD: Cẩm Thiều - TV"
-                   class="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-green-400 focus:ring-2 focus:ring-green-100 transition">
-            <p class="text-xs text-gray-400 mt-1.5">Hiển thị in đậm cuối bài viết</p>
+                   class="w-full border border-gray-200 dark:border-zinc-800 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 dark:focus:ring-emerald-500/20 bg-white dark:bg-zinc-950/50 dark:text-zinc-100 transition">
+            <p class="text-xs text-gray-400 dark:text-zinc-500 mt-1.5">Hiển thị in đậm cuối bài viết</p>
           </div>
 
           {{-- Người chụp ảnh --}}
-          <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5" x-data="{
+          <div class="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-100 dark:border-zinc-800 shadow-sm p-5 overflow-hidden transition-colors" x-data="{
               sameAsAuthor: {{ old('photographer_same', (!isset($post) || (isset($post) && $post->photographer === $post->source_author)) ? 'true' : 'false') }},
               photographerVal: '{{ old('photographer', $post->photographer ?? '') }}',
               authorVal: '{{ old('source_author', $post->source_author ?? '') }}',
@@ -331,32 +338,29 @@
                   });
               }
           }">
-            <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
+            <label class="block text-xs font-semibold text-gray-500 dark:text-zinc-400 uppercase tracking-wider mb-3">
               <i class="bi bi-camera"></i> Người chụp ảnh
             </label>
             <label class="flex items-center gap-2 mb-2.5 cursor-pointer select-none group">
-              <div class="relative flex items-center justify-center w-4 h-4 shrink-0">
+              <div class="relative flex items-center justify-center w-5 h-5 shrink-0">
                   <input type="checkbox" x-model="sameAsAuthor"
-                         class="peer sr-only">
-                  <div class="w-4 h-4 bg-white border border-gray-300 rounded-sm peer-checked:bg-green-600 peer-checked:border-green-600 transition-colors flex items-center justify-center shadow-sm group-hover:border-green-400">
-                      <i class="bi bi-check2 text-white text-xs opacity-0 peer-checked:opacity-100 transition-opacity"></i>
-                  </div>
+                         class="w-5 h-5 rounded-md border-2 border-gray-300 dark:border-zinc-600 text-emerald-600 focus:ring-emerald-500 bg-white dark:bg-zinc-950 transition cursor-pointer">
               </div>
-              <span class="text-xs text-gray-600 font-medium group-hover:text-gray-900 transition-colors">Cùng tác giả bài viết</span>
+              <span class="text-xs text-gray-600 dark:text-zinc-400 font-medium group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">Cùng tác giả bài viết</span>
             </label>
             <input type="text" name="photographer" id="photographer"
                    x-model="photographerVal"
                    :readonly="sameAsAuthor"
-                   :class="sameAsAuthor ? 'bg-gray-50 text-gray-400 cursor-not-allowed' : 'bg-white'"
+                   :class="sameAsAuthor ? 'bg-gray-50 dark:bg-zinc-900/50 text-gray-400 dark:text-zinc-600 cursor-not-allowed border-gray-200 dark:border-zinc-800' : 'bg-white dark:bg-zinc-950/50 text-gray-900 dark:text-zinc-100 border-gray-200 dark:border-zinc-800'"
                    placeholder="VD: Nguyễn Văn A"
-                   class="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-green-400 focus:ring-2 focus:ring-green-100 transition">
-            <p class="text-xs text-gray-400 mt-1.5">Dùng để tính nhuận bút ảnh riêng biệt</p>
+                   class="w-full border rounded-xl px-3 py-2.5 text-sm outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 dark:focus:ring-emerald-500/20 transition">
+            <p class="text-xs text-gray-400 dark:text-zinc-500 mt-1.5">Dùng để tính nhuận bút ảnh riêng biệt</p>
           </div>
 
           {{-- Tips card --}}
-          <div class="bg-gradient-to-br from-amber-50 to-orange-50 rounded-2xl border border-amber-100 p-5">
-            <p class="text-xs font-bold text-amber-700 mb-2">💡 Mẹo viết bài hay</p>
-            <ul class="space-y-1.5 text-xs text-amber-600">
+          <div class="bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-950/20 dark:to-orange-950/10 rounded-2xl border border-amber-100 dark:border-amber-500/20 p-5 transition-colors">
+            <p class="text-xs font-bold text-amber-700 dark:text-amber-500 mb-2">💡 Mẹo viết bài hay</p>
+            <ul class="space-y-1.5 text-xs text-amber-600 dark:text-amber-500/80">
               <li>• Tiêu đề ngắn gọn, dưới 80 ký tự</li>
               <li>• Ảnh đại diện tỉ lệ 16:9, rõ nét</li>
               <li>• Dùng AI để tạo bản nháp ban đầu</li>
@@ -373,25 +377,25 @@
 
 {{-- ══════ Confirm Submit Modal ══════ --}}
 <div id="confirmSubmitModal" class="hidden fixed inset-0 z-[110] flex items-center justify-center p-4">
-  <div class="absolute inset-0 bg-gray-900/60 backdrop-blur-sm transition-opacity" onclick="document.getElementById('confirmSubmitModal').classList.add('hidden')"></div>
-  <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 transform transition-all scale-100 opacity-100 border border-gray-100">
+  <div class="absolute inset-0 bg-gray-900/60 dark:bg-zinc-900/90 backdrop-blur-sm transition-opacity" onclick="document.getElementById('confirmSubmitModal').classList.add('hidden')"></div>
+  <div class="relative bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl w-full max-w-md p-6 transform transition-all scale-100 opacity-100 border border-gray-100 dark:border-zinc-800">
     <div class="flex items-start gap-4 mb-2">
-      <div class="w-12 h-12 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0 shadow-inner">
+      <div class="w-12 h-12 rounded-full bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0 shadow-inner">
         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>
       </div>
       <div class="pt-1">
-        <h3 class="text-lg font-bold text-gray-900 leading-none">Xác nhận gửi bài?</h3>
-        <p class="text-sm text-gray-500 mt-2 leading-relaxed">Ban Biên tập sẽ nhận được bài viết này. <strong class="text-gray-700">Bạn sẽ không thể tự chỉnh sửa</strong> trong lúc chờ duyệt.</p>
+        <h3 class="text-lg font-bold text-gray-900 dark:text-zinc-100 leading-none">Xác nhận gửi bài?</h3>
+        <p class="text-sm text-gray-500 dark:text-zinc-400 mt-2 leading-relaxed">Ban Biên tập sẽ nhận được bài viết này. <strong class="text-gray-700 dark:text-zinc-300">Bạn sẽ không thể tự chỉnh sửa</strong> trong lúc chờ duyệt.</p>
       </div>
     </div>
     
     <div class="flex items-center justify-end gap-3 mt-6">
       <button type="button" onclick="document.getElementById('confirmSubmitModal').classList.add('hidden')"
-              class="px-5 py-2.5 text-sm font-semibold text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-xl transition">
+              class="px-5 py-2.5 text-sm font-semibold text-gray-600 dark:text-zinc-400 hover:text-gray-900 dark:hover:text-zinc-200 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-xl transition">
         Chưa, quay lại
       </button>
       <button type="button" onclick="processSubmit()"
-              class="px-6 py-2.5 text-sm font-bold text-white bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 rounded-xl shadow-lg shadow-emerald-200 focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2 transition transform active:scale-95">
+              class="px-6 py-2.5 text-sm font-bold text-white bg-gradient-to-r from-emerald-500 to-green-600 dark:from-emerald-600 dark:to-green-700 hover:from-emerald-600 hover:to-green-700 rounded-xl shadow-lg shadow-emerald-200 dark:shadow-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2 transition transform active:scale-95">
         Đồng ý gửi
       </button>
     </div>
@@ -400,32 +404,32 @@
 
 {{-- ══════ Media Library Modal ══════ --}}
 <div id="mediaModal" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-4">
-  <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" onclick="document.getElementById('mediaModal').classList.add('hidden')"></div>
-  <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[85vh] flex flex-col overflow-hidden">
-    <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-gray-50/60">
-      <h3 class="font-bold text-gray-800">🖼️ Media Library</h3>
+  <div class="absolute inset-0 bg-black/50 dark:bg-zinc-900/80 backdrop-blur-sm" onclick="document.getElementById('mediaModal').classList.add('hidden')"></div>
+  <div class="relative bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-2xl shadow-2xl w-full max-w-3xl max-h-[85vh] flex flex-col overflow-hidden transition-colors">
+    <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-zinc-800 bg-gray-50/60 dark:bg-zinc-950/50">
+      <h3 class="font-bold text-gray-800 dark:text-zinc-100">🖼️ Media Library</h3>
       <button type="button" onclick="document.getElementById('mediaModal').classList.add('hidden')"
-              class="text-gray-400 hover:text-gray-700 w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 transition text-lg">✕</button>
+              class="text-gray-400 dark:text-zinc-500 hover:text-gray-700 dark:hover:text-zinc-300 w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-zinc-800 transition text-lg">✕</button>
     </div>
 
     {{-- Tabs --}}
-    <div class="flex border-b border-gray-100 px-6">
-      <button type="button" class="media-tab-btn active-tab px-4 py-3 text-sm font-semibold border-b-2 -mb-px transition" data-tab="upload">📤 Tải lên</button>
-      <button type="button" class="media-tab-btn px-4 py-3 text-sm font-medium text-gray-500 border-b-2 border-transparent -mb-px hover:text-gray-700 transition" data-tab="library" id="library-tab">📁 Của tôi</button>
-      <button type="button" class="media-tab-btn px-4 py-3 text-sm font-medium text-gray-500 border-b-2 border-transparent -mb-px hover:text-gray-700 transition" data-tab="shared" id="shared-tab">🌐 Shared</button>
+    <div class="flex border-b border-gray-100 dark:border-zinc-800 px-6">
+      <button type="button" class="media-tab-btn active-tab px-4 py-3 text-sm font-semibold border-b-2 -mb-px transition dark:text-zinc-300" data-tab="upload">📤 Tải lên</button>
+      <button type="button" class="media-tab-btn px-4 py-3 text-sm font-medium text-gray-500 dark:text-zinc-500 border-b-2 border-transparent -mb-px hover:text-gray-700 dark:hover:text-zinc-300 transition" data-tab="library" id="library-tab">📁 Của tôi</button>
+      <button type="button" class="media-tab-btn px-4 py-3 text-sm font-medium text-gray-500 dark:text-zinc-500 border-b-2 border-transparent -mb-px hover:text-gray-700 dark:hover:text-zinc-300 transition" data-tab="shared" id="shared-tab">🌐 Shared</button>
     </div>
 
-    <div class="flex-1 overflow-y-auto p-6">
+    <div class="flex-1 overflow-y-auto p-6 bg-white dark:bg-zinc-900">
       {{-- Upload Tab --}}
       <div id="tab-upload" class="media-tab-pane">
         <label for="mediaUploadInput" id="mediaDropZone"
-               class="flex flex-col items-center gap-3 h-40 border-2 border-dashed border-gray-200 rounded-2xl cursor-pointer hover:border-green-400 hover:bg-green-50/30 transition justify-center w-full relative">
-          <svg class="w-10 h-10 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
-          <span class="text-sm text-gray-400" id="mediaUploadText">Click hoặc kéo thả file ảnh/video vào đây</span>
+               class="flex flex-col items-center gap-3 h-40 border-2 border-dashed border-gray-200 dark:border-zinc-700 bg-gray-50/50 dark:bg-zinc-950/50 hover:bg-green-50/30 dark:hover:bg-green-500/5 hover:border-green-400 dark:hover:border-green-500/50 rounded-2xl cursor-pointer transition justify-center w-full relative">
+          <svg class="w-10 h-10 text-gray-300 dark:text-zinc-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
+          <span class="text-sm text-gray-400 dark:text-zinc-500 text-center px-4" id="mediaUploadText">Click hoặc kéo thả file ảnh/video vào đây</span>
         </label>
         <input type="file" id="mediaUploadInput" accept="image/*,video/*" class="hidden">
         <button type="button" id="btnUploadMediaFile"
-                class="mt-3 w-full py-2.5 bg-green-600 hover:bg-green-700 text-white text-sm font-bold rounded-xl transition">
+                class="mt-3 w-full py-2.5 bg-green-600 hover:bg-green-700 dark:bg-green-600 text-white text-sm font-bold rounded-xl transition">
           Tải lên
         </button>
         <div id="uploadResult" class="mt-3 text-sm"></div>
@@ -434,14 +438,14 @@
       {{-- Library Tab --}}
       <div id="tab-library" class="media-tab-pane hidden">
         <div id="personalMediaList" class="grid grid-cols-3 sm:grid-cols-4 gap-3">
-          <p class="col-span-full text-center text-sm text-gray-400 py-8">Đang tải...</p>
+          <p class="col-span-full text-center text-sm text-gray-400 dark:text-zinc-500 py-8">Đang tải...</p>
         </div>
       </div>
 
       {{-- Shared Tab --}}
       <div id="tab-shared" class="media-tab-pane hidden">
         <div id="sharedMediaList" class="grid grid-cols-3 sm:grid-cols-4 gap-3">
-          <p class="col-span-full text-center text-sm text-gray-400 py-8">Đang tải...</p>
+          <p class="col-span-full text-center text-sm text-gray-400 dark:text-zinc-500 py-8">Đang tải...</p>
         </div>
       </div>
     </div>
@@ -449,11 +453,11 @@
 </div>
 
 {{-- ══════ CUTE TOAST NOTIFICATION ══════ --}}
-<div id="cuteToast" class="fixed top-24 right-5 z-[200] transform transition-all duration-500 translate-x-[150%] opacity-0 flex items-center gap-4 bg-white px-5 py-4 rounded-[1.25rem] shadow-2xl shadow-green-900/10 border-b-4 border-emerald-400">
+<div id="cuteToast" class="fixed top-24 right-5 z-[200] transform transition-all duration-500 translate-x-[150%] opacity-0 flex items-center gap-4 bg-white dark:bg-zinc-800 px-5 py-4 rounded-[1.25rem] shadow-2xl shadow-green-900/10 border-b-4 border-emerald-400">
   <div id="cuteToastIcon" class="text-3xl animate-bounce">✨📝</div>
   <div>
-    <h4 id="cuteToastTitle" class="font-bold text-emerald-600 text-sm mb-0.5">Xong rồi nè!</h4>
-    <p id="cuteToastMsg" class="text-xs text-gray-500 font-medium leading-relaxed">Đã copy nội dung vào trình soạn thảo.</p>
+    <h4 id="cuteToastTitle" class="font-bold text-emerald-600 dark:text-emerald-400 text-sm mb-0.5">Xong rồi nè!</h4>
+    <p id="cuteToastMsg" class="text-xs text-gray-500 dark:text-zinc-400 font-medium leading-relaxed">Đã copy nội dung vào trình soạn thảo.</p>
   </div>
 </div>
 
@@ -463,6 +467,12 @@
   .ck.ck-editor { border: 0 !important; }
   .ck.ck-editor__main>.ck-editor__editable:not(.ck-focused) { border: 0 !important; }
   .media-tab-btn.active-tab { color: #16a34a; border-color: #16a34a; }
+  
+  html.dark .ck-editor__editable { background: #18181b !important; color: #f4f4f5 !important; }
+  html.dark .ck.ck-toolbar { border-bottom: 1px solid #27272a !important; background: #09090b !important; }
+  html.dark .ck.ck-button { color: #d4d4d8 !important; }
+  html.dark .ck.ck-button:hover, html.dark .ck.ck-button.ck-on { background: #27272a !important; color: #fff !important; }
+  html.dark .media-tab-btn.active-tab { color: #10b981; border-color: #10b981; }
 </style>
 @endsection
 
@@ -954,7 +964,7 @@ async function startPlagiarismCheck() {
             if (result.isPlagiarized) plagiarizedCount++;
 
             // Lưu lại kết quả câu này để show Report
-            if (result.similarity > 15) {
+            if (result.similarity > 25) {
                 let sourcesList = result.sources.map(src => `<a href="${src.url}" target="_blank" class="block text-blue-600 hover:underline truncate" title="${src.url}">🔹 ${src.similarity}% - ${src.url}</a>`).join('');
                 
                 resultsHtml.push(`
@@ -993,9 +1003,8 @@ async function startPlagiarismCheck() {
     let colorClass = 'text-green-600';
     let ringClass = 'ring-green-500';
     let statusText = 'An toàn';
-    if (plagPercent > 15) { colorClass = 'text-yellow-600'; ringClass = 'ring-yellow-500'; statusText = 'Đáng ngờ'; }
-    if (plagPercent > 35) { colorClass = 'text-orange-600'; ringClass = 'ring-orange-500'; statusText = 'Đạo văn một phần'; }
-    if (plagPercent > 60) { colorClass = 'text-red-600'; ringClass = 'ring-red-500'; statusText = 'Cảnh báo ĐẠO VĂN NẶNG!'; }
+    if (plagPercent > 10) { colorClass = 'text-yellow-600'; ringClass = 'ring-yellow-500'; statusText = 'Nguy cơ thấp'; }
+    if (plagPercent > 25) { colorClass = 'text-red-600'; ringClass = 'ring-red-500'; statusText = 'Vi phạm bản quyền (>25%)'; }
 
     document.getElementById('plagScoreUi').className = `text-4xl font-extrabold ${colorClass}`;
     document.getElementById('plagScoreUi').textContent = `${plagPercent}%`;
@@ -1009,8 +1018,8 @@ async function startPlagiarismCheck() {
                 <p class="text-xs text-gray-500 uppercase">Tổng số câu quét</p>
                 <p class="text-xl font-bold text-gray-800">${sentences.length}</p>
             </div>
-            <div class="bg-gray-50 rounded-lg p-3 text-center border border-gray-100">
-                <p class="text-xs text-gray-500 uppercase">Câu vi phạm (>50%)</p>
+            <div class="bg-gray-50 rounded-lg p-3 text-center border border-gray-100 dark:bg-zinc-800 dark:border-zinc-700">
+                <p class="text-xs text-gray-500 dark:text-zinc-400 uppercase">Câu vi phạm (>25%)</p>
                 <p class="text-xl font-bold text-red-600">${plagiarizedCount}</p>
             </div>
         </div>
@@ -1024,7 +1033,7 @@ async function startPlagiarismCheck() {
                 <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-green-100 text-green-500 mb-3">
                     <i class="bi bi-shield-check text-2xl"></i>
                 </div>
-                <p class="text-gray-500 text-sm">Tuyệt vời! Không phát hiện câu nào có dấu hiệu sao chép (trùng khớp > 15%).</p>
+                <p class="text-gray-500 text-sm">Tuyệt vời! Không phát hiện câu nào có dấu hiệu sao chép (trùng khớp > 25%).</p>
             </div>
         `;
     }
@@ -1036,35 +1045,35 @@ async function startPlagiarismCheck() {
 {{-- ============================== --}}
 <div id="plagiarismModal" class="hidden fixed inset-0 z-[100] flex items-center justify-center">
   <!-- Backdrop -->
-  <div class="absolute inset-0 bg-gray-900/60 backdrop-blur-sm transition-opacity" onclick="closePlagiarismModal()"></div>
+  <div class="absolute inset-0 bg-gray-900/60 dark:bg-zinc-900/90 backdrop-blur-sm transition-opacity" onclick="closePlagiarismModal()"></div>
   
   <!-- Modal Content -->
-  <div class="relative bg-white rounded-3xl shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col overflow-hidden animate-in fade-in zoom-in duration-200">
+  <div class="relative bg-white dark:bg-zinc-900 rounded-3xl shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col overflow-hidden animate-in fade-in zoom-in duration-200 border border-gray-100 dark:border-zinc-800">
     <!-- Header -->
-    <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-gray-50/50">
+    <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-zinc-800 bg-gray-50/50 dark:bg-zinc-950/50">
       <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-xl bg-indigo-100 text-indigo-600 flex items-center justify-center">
+        <div class="w-10 h-10 rounded-xl bg-indigo-100 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
           <i class="bi bi-shield-check text-xl"></i>
         </div>
         <div>
-          <h3 class="text-lg font-bold text-gray-900 leading-tight">Mắt Thần E-News</h3>
-          <p class="text-xs text-gray-500">Công cụ rà soát đạo văn bằng N-Gram & Cosine</p>
+          <h3 class="text-lg font-bold text-gray-900 dark:text-zinc-100 leading-tight">Mắt Thần E-News</h3>
+          <p class="text-xs text-gray-500 dark:text-zinc-400">Công cụ rà soát đạo văn bằng N-Gram & Cosine</p>
         </div>
       </div>
-      <button type="button" onclick="closePlagiarismModal()" class="text-gray-400 hover:text-red-500 hover:bg-red-50 p-2 rounded-xl transition">
+      <button type="button" onclick="closePlagiarismModal()" class="text-gray-400 dark:text-zinc-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 p-2 rounded-xl transition">
         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
       </button>
     </div>
 
     <!-- Body -->
-    <div class="p-6 overflow-y-auto flex-1 bg-white">
+    <div class="p-6 overflow-y-auto flex-1 bg-white dark:bg-zinc-900">
       
       <!-- SCREEN 1: Bắt đầu -->
       <div id="plagiarismStartScreen" class="text-center py-10">
         <img src="https://cdni.iconscout.com/illustration/premium/thumb/detective-searching-document-4438848-3718485.png" alt="Scan" class="w-48 mx-auto mb-6 opacity-80">
-        <h4 class="text-xl font-bold text-gray-800 mb-2">Chuẩn bị quét tài liệu</h4>
-        <p class="text-gray-500 text-sm max-w-md mx-auto mb-6">Hệ thống sẽ bẻ gãy bài viết của bạn thành từng mảnh nhỏ và đối chiếu với hơn 40 tỷ trang web trên Internet.</p>
-        <button type="button" onclick="startPlagiarismCheck()" class="inline-flex items-center justify-center gap-2 px-8 py-3 text-base font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-full shadow-lg shadow-indigo-600/30 transition transform hover:scale-105">
+        <h4 class="text-xl font-bold text-gray-800 dark:text-zinc-100 mb-2">Chuẩn bị quét tài liệu</h4>
+        <p class="text-gray-500 dark:text-zinc-400 text-sm max-w-md mx-auto mb-6">Hệ thống sẽ bẻ gãy bài viết của bạn thành từng mảnh nhỏ và đối chiếu với hơn 40 tỷ trang web trên Internet.</p>
+        <button type="button" onclick="startPlagiarismCheck()" class="inline-flex items-center justify-center gap-2 px-8 py-3 text-base font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-full shadow-lg shadow-indigo-600/30 dark:shadow-none transition transform hover:scale-105">
           <i class="bi bi-radar"></i> Khởi chạy Mắt Thần
         </button>
       </div>
@@ -1072,18 +1081,18 @@ async function startPlagiarismCheck() {
       <!-- SCREEN 2: Tiến trình quét -->
       <div id="plagiarismProgressScreen" class="hidden py-16 text-center max-w-sm mx-auto">
         <div class="relative w-24 h-24 mx-auto mb-8">
-            <div class="absolute inset-0 rounded-full border-4 border-gray-100"></div>
+            <div class="absolute inset-0 rounded-full border-4 border-gray-100 dark:border-zinc-800"></div>
             <div class="absolute inset-0 rounded-full border-4 border-indigo-600 border-t-transparent animate-spin"></div>
-            <i class="bi bi-radar absolute inset-0 flex items-center justify-center text-3xl text-indigo-600 animate-pulse"></i>
+            <i class="bi bi-radar absolute inset-0 flex items-center justify-center text-3xl text-indigo-600 dark:text-indigo-400 animate-pulse"></i>
         </div>
         
-        <h4 class="text-lg font-bold text-gray-800 mb-4" id="plagProgressText">Đang khởi động thuật toán...</h4>
+        <h4 class="text-lg font-bold text-gray-800 dark:text-zinc-100 mb-4" id="plagProgressText">Đang khởi động thuật toán...</h4>
         
         <!-- Progress Bar -->
-        <div class="w-full bg-gray-100 rounded-full h-3 mb-3 overflow-hidden">
+        <div class="w-full bg-gray-100 dark:bg-zinc-800 rounded-full h-3 mb-3 overflow-hidden">
           <div id="plagProgressBar" class="bg-gradient-to-r from-indigo-500 to-purple-500 h-3 rounded-full transition-all duration-300" style="width: 0%"></div>
         </div>
-        <p class="text-xs text-gray-400 italic" id="plagCurrentSentence">Đang bóc tách cú pháp...</p>
+        <p class="text-xs text-gray-400 dark:text-zinc-500 italic" id="plagCurrentSentence">Đang bóc tách cú pháp...</p>
       </div>
 
       <!-- SCREEN 3: Kết quả -->
@@ -1091,19 +1100,25 @@ async function startPlagiarismCheck() {
         <div class="flex flex-col md:flex-row gap-6">
             <!-- Left: Overview Card -->
             <div class="md:w-1/3">
-                <div class="bg-white border rounded-2xl p-6 shadow-sm sticky top-0 text-center">
-                    <div class="inline-flex items-center justify-center w-24 h-24 rounded-full bg-gray-50 border-8 border-gray-100 mb-4">
-                        <span id="plagScoreUi" class="text-4xl font-extrabold text-gray-900">0%</span>
+                <div class="bg-white dark:bg-zinc-900 border dark:border-zinc-800 rounded-2xl p-6 shadow-sm sticky top-0 text-center">
+                    <div class="inline-flex items-center justify-center w-24 h-24 rounded-full bg-gray-50 dark:bg-zinc-800 border-8 border-gray-100 dark:border-zinc-700 mb-4">
+                        <span id="plagScoreUi" class="text-4xl font-extrabold text-gray-900 dark:text-zinc-100">0%</span>
                     </div>
-                    <p class="text-xs text-gray-500 uppercase tracking-widest font-semibold">Tỷ lệ Trùng Lặp</p>
-                    <p id="plagStatusUi" class="text-sm font-bold text-gray-800 mt-1">An toàn</p>
+                    <p class="text-xs text-gray-500 dark:text-zinc-400 uppercase tracking-widest font-semibold">Tỷ lệ Trùng Lặp</p>
+                    <p id="plagStatusUi" class="text-sm font-bold text-gray-800 dark:text-zinc-200 mt-1">An toàn</p>
                     <div id="plagReportOverview"></div>
+                    
+                    <div class="mt-6 pt-5 border-t dark:border-zinc-800">
+                        <button type="button" onclick="openPlagiarismModal()" class="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold text-gray-700 dark:text-zinc-300 bg-gray-100 dark:bg-zinc-800 hover:bg-gray-200 dark:hover:bg-zinc-700 rounded-xl transition">
+                            <i class="bi bi-arrow-clockwise"></i> Quét lại
+                        </button>
+                    </div>
                 </div>
             </div>
 
             <!-- Right: Detailed Results -->
             <div class="md:w-2/3">
-                <h4 class="text-base font-bold text-gray-900 border-b pb-3 mb-4">Chi tiết nguồn vi phạm</h4>
+                <h4 class="text-base font-bold text-gray-900 dark:text-zinc-100 border-b dark:border-zinc-800 pb-3 mb-4">Chi tiết nguồn vi phạm</h4>
                 <div id="plagDetailedResults" class="space-y-4">
                     <!-- JS sẽ append kết quả vào đây -->
                 </div>

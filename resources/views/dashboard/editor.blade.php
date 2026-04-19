@@ -76,12 +76,12 @@
                 <div style="display:flex; justify-content:flex-end; gap:6px;">
                   <a href="{{ route('post.show', $p->slug) }}" target="_blank" style="padding:6px 12px; background:rgba(42,122,39,.1); color:#2a7a27; border-radius:6px; font-size:.75rem; font-weight:700; text-decoration:none;"><i class="bi bi-eye"></i> Xem</a>
                   
-                  <form action="{{ route('editor.posts.approve', $p) }}" method="POST" onsubmit="return confirm('Bạn muốn duyệt bài viết này?');">
+                  <form action="{{ route('editor.posts.approve', $p) }}" method="POST" onsubmit="window.confirmFormSubmit(event, 'Bạn muốn duyệt bài viết này?');">
                     @csrf
                     <button type="submit" style="padding:6px 12px; background:#2a7a27; color:#fff; border:none; border-radius:6px; font-size:.75rem; font-weight:700; cursor:pointer;"><i class="bi bi-check-lg"></i> Duyệt</button>
                   </form>
                   
-                  <form action="{{ route('editor.posts.reject', $p) }}" method="POST" onsubmit="return confirm('Bạn có chắc chắn từ chối bài?');">
+                  <form action="{{ route('editor.posts.reject', $p) }}" method="POST" onsubmit="window.confirmFormSubmit(event, 'Bạn có chắc chắn từ chối bài?');">
                     @csrf
                     <button type="submit" style="padding:6px 12px; background:#fff; color:#c62828; border:1px solid #ffcdd2; border-radius:6px; font-size:.75rem; font-weight:700; cursor:pointer;"><i class="bi bi-x-lg"></i></button>
                   </form>

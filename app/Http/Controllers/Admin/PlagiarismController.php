@@ -45,7 +45,7 @@ class PlagiarismController extends Controller
                     $maxSimilarity = $similarity;
                 }
 
-                if ($similarity > 0.15) { // Chỉ quan tâm nếu trùng > 15%
+                if ($similarity > 0.25) { // Chỉ quan tâm nếu trùng > 25%
                     $matchedSources[] = [
                         'url' => $url,
                         'similarity' => round($similarity * 100)
@@ -61,7 +61,7 @@ class PlagiarismController extends Controller
             'sentence' => $sentence,
             'similarity' => round($maxSimilarity * 100),
             'sources' => $matchedSources,
-            'isPlagiarized' => $maxSimilarity > 0.5 // Cảnh báo Đạo văn nếu trùng > 50%
+            'isPlagiarized' => $maxSimilarity > 0.25 // Cảnh báo Đạo văn nếu trùng > 25%
         ]);
     }
 }

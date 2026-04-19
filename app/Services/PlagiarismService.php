@@ -16,32 +16,39 @@ class PlagiarismService
         $urls = [];
         $queryEncoded = urlencode(Str::limit($query, 150, ''));
 
-        // 1. DuckDuckGo (HTML Version)
+        // 1. Serper.dev (Google Search API)
         try {
-            $ddgUrl = "https://html.duckduckgo.com/html/?q={$queryEncoded}";
-            $response = Http::withHeaders([
-                'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
-            ])
-            ->timeout(5)
-            ->get($ddgUrl);
+            $apiKey = env('SERPER_API_KEY');
+            if (!empty($apiKey)) {
+                $response = Http::withHeaders([
+                    'X-API-KEY' => $apiKey,
+                    'Content-Type' => 'application/json'
+                ])
+                ->timeout(5)
+                ->post('https://google.serper.dev/search', [
+                    'q' => Str::limit($query, 100, ''), // Google might not allow queries too long
+                    'gl' => 'vn', // Lấy kết quả tiếng Việt
+                    'hl' => 'vi'
+                ]);
 
-            if ($response->successful()) {
-                $html = $response->body();
-                // Regex tìm các uddg= URL trong DuckDuckGo
-                if (preg_match_all('/uddg=([^"&]+)/i', $html, $matches)) {
-                    foreach ($matches[1] as $match) {
-                        $decoded = urldecode($match);
-                        if (Str::startsWith($decoded, 'http') && !Str::contains($decoded, 'duckduckgo.com')) {
-                            $urls[] = $decoded;
+                if ($response->successful()) {
+                    $data = $response->json();
+                    if (isset($data['organic']) && is_array($data['organic'])) {
+                        foreach ($data['organic'] as $result) {
+                            if (isset($result['link'])) {
+                                $urls[] = $result['link'];
+                            }
                         }
                     }
                 }
+            } else {
+                Log::warning("Serper API Key chưa được cài đặt trong .env");
             }
         } catch (\Exception $e) {
-            Log::warning("DDG Search Error: " . $e->getMessage());
+            Log::warning("Serper Search Error: " . $e->getMessage());
         }
 
-        // Lấy top 8 từ DDG
+        // Lấy top 8 từ Serper
         $urls = array_slice($urls, 0, 8);
 
         // 2. CrossRef API (for academic/articles)

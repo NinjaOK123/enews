@@ -122,7 +122,7 @@
               <form action="{{ route('editor.posts.approve', $p) }}" method="POST">
                  @csrf <button style="width:28px; height:28px; border-radius:6px; background:rgba(42,122,39,.1); color:#2a7a27; border:none; cursor:pointer;" title="Duyệt"><i class="bi bi-check-lg"></i></button>
               </form>
-              <form action="{{ route('editor.posts.reject', $p) }}" method="POST" onsubmit="return confirm('Từ chối?');">
+              <form action="{{ route('editor.posts.reject', $p) }}" method="POST" onsubmit="window.confirmFormSubmit(event, 'Từ chối?');">
                  @csrf <button style="width:28px; height:28px; border-radius:6px; background:#fff; color:#c62828; border:1px solid #ffcdd2; cursor:pointer;" title="Từ chối"><i class="bi bi-x-lg"></i></button>
               </form>
             </div>

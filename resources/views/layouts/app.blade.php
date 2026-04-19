@@ -23,6 +23,7 @@
 
   {{-- Google Translate hidden banner fix --}}
   <style>
+    [x-cloak] { display: none !important; }
     .goog-te-banner-frame.skiptranslate,
     iframe.goog-te-banner-frame { display: none !important; }
     .VIpgJd-ZVi9od-ORHb-OEVmcd { display: none !important; }
@@ -47,6 +48,16 @@
     #nprogress .bar { display: none !important; }
     #nprogress .spinner { display: none !important; }
   </style>
+
+  {{-- Dark Mode Init Script --}}
+  <script>
+      try {
+          const theme = localStorage.getItem('app_theme');
+          if (theme === 'dark' || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+              document.documentElement.classList.add('dark');
+          }
+      } catch (_) {}
+  </script>
 
   {{-- Nạp hiệu ứng hoạt ảnh cực mượt AOS --}}
   <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
@@ -75,7 +86,7 @@
   }
   </script>
 </head>
-<body class="bg-gray-50 text-gray-900 antialiased">
+<body class="bg-gray-50 dark:bg-zinc-950 text-gray-900 dark:text-zinc-300 antialiased transition-colors duration-300">
 
 {{-- ═══ PAGE WRAPPER ═══ --}}
 <div class="flex flex-col min-h-screen">
@@ -112,6 +123,45 @@
           <span class="w-px h-3.5 bg-white/25 mx-1"></span>
         </div>
 
+        {{-- Theme Switcher --}}
+        <div class="relative flex items-center" x-data="{
+            themeOpen: false, 
+            currentTheme: localStorage.getItem('app_theme') || 'system',
+            setAppTheme(theme) {
+                this.currentTheme = theme;
+                localStorage.setItem('app_theme', theme);
+                if (theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                    document.documentElement.classList.add('dark');
+                } else {
+                    document.documentElement.classList.remove('dark');
+                }
+                this.themeOpen = false;
+            }
+        }" @click.outside="themeOpen = false">
+            <button @click="themeOpen = !themeOpen" title="Chế độ hiển thị"
+                    class="w-7 h-7 flex items-center justify-center rounded bg-white/15 hover:bg-white/30 text-white transition-colors duration-200 focus:outline-none">
+                <i class="bi text-xs" :class="currentTheme === 'dark' ? 'bi-moon-stars-fill text-blue-200' : (currentTheme === 'system' ? 'bi-display text-gray-200' : 'bi-sun-fill text-yellow-300')"></i>
+            </button>
+            <div x-show="themeOpen" x-cloak x-transition.origin.top.right
+                 class="absolute right-0 top-full mt-2 w-36 bg-white dark:bg-zinc-900 rounded-xl shadow-xl py-1.5 border border-gray-100 dark:border-white/10 z-[100]">
+                <button @click="setAppTheme('light')" 
+                        class="w-full text-left px-4 py-2 text-[13px] font-semibold flex items-center gap-2 transition-colors duration-150"
+                        :class="currentTheme === 'light' ? 'bg-[#e8f5e2] text-[#2a7a27] dark:bg-zinc-800 dark:text-emerald-400' : 'text-gray-700 dark:text-zinc-300 hover:bg-gray-50 dark:hover:bg-zinc-800'">
+                    <i class="bi bi-sun w-4 text-center"></i> Sáng
+                </button>
+                <button @click="setAppTheme('dark')" 
+                        class="w-full text-left px-4 py-2 text-[13px] font-semibold flex items-center gap-2 transition-colors duration-150"
+                        :class="currentTheme === 'dark' ? 'bg-[#e8f5e2] text-[#2a7a27] dark:bg-zinc-800 dark:text-emerald-400' : 'text-gray-700 dark:text-zinc-300 hover:bg-gray-50 dark:hover:bg-zinc-800'">
+                    <i class="bi bi-moon-stars w-4 text-center"></i> Tối
+                </button>
+                <button @click="setAppTheme('system')" 
+                        class="w-full text-left px-4 py-2 text-[13px] font-semibold flex items-center gap-2 transition-colors duration-150"
+                        :class="currentTheme === 'system' ? 'bg-[#e8f5e2] text-[#2a7a27] dark:bg-zinc-800 dark:text-emerald-400' : 'text-gray-700 dark:text-zinc-300 hover:bg-gray-50 dark:hover:bg-zinc-800'">
+                    <i class="bi bi-display w-4 text-center"></i> Hệ thống
+                </button>
+            </div>
+        </div>
+
         {{-- Google Translate --}}
         <div class="top-bar-lang flex items-center [&_.goog-te-combo]:rounded [&_.goog-te-combo]:border [&_.goog-te-combo]:border-white/35 [&_.goog-te-combo]:px-2 [&_.goog-te-combo]:py-0.5 [&_.goog-te-combo]:text-xs [&_.goog-te-combo]:text-white [&_.goog-te-combo]:bg-white/15 [&_.goog-te-combo]:cursor-pointer [&_.goog-te-combo]:max-w-[120px] [&_.goog-te-combo_option]:bg-[#1b5e20] [&_.goog-te-combo_option]:text-white">
           <div id="google_translate_element"></div>
@@ -132,7 +182,7 @@
   </div>
 
   {{-- ═══ MAIN HEADER (logo + nav + user) ═══ --}}
-  <header class="sticky top-0 z-50 bg-white/75 backdrop-blur-xl border-b border-[#2a7a27]/10 shadow-[0_4px_25px_rgba(0,0,0,0.05)] transition-all duration-300">
+  <header class="sticky top-0 z-50 bg-white/75 dark:bg-zinc-950/80 backdrop-blur-xl border-b border-[#2a7a27]/10 dark:border-white/5 shadow-[0_4px_25px_rgba(0,0,0,0.05)] dark:shadow-none transition-all duration-300">
     <div class="w-full px-4 sm:px-6 lg:px-8">
       <div class="flex items-center justify-between flex-wrap gap-4 py-4">
 
@@ -160,8 +210,8 @@
           @endphp
           @foreach($navLinks as $nav)
           <a href="{{ route($nav['route']) }}" wire:navigate.hover
-             class="relative flex items-center gap-1.5 px-3 py-2.5 text-sm font-semibold transition-all duration-200 group rounded-xl border border-transparent hover:border-white/50 hover:bg-[#2a7a27]/5 hover:shadow-sm
-                    {{ request()->routeIs($nav['route']) ? 'text-[#2a7a27] bg-[#2a7a27]/5 border-white/50 shadow-sm' : 'text-gray-600 hover:text-[#2a7a27]' }}">
+             class="relative flex items-center gap-1.5 px-3 py-2.5 text-sm font-semibold transition-all duration-200 group rounded-xl border border-transparent hover:border-white/50 dark:hover:border-white/10 hover:bg-[#2a7a27]/5 dark:hover:bg-white/5 hover:shadow-sm
+                    {{ request()->routeIs($nav['route']) ? 'text-[#2a7a27] dark:text-emerald-400 bg-[#2a7a27]/5 dark:bg-zinc-800 border-white/50 dark:border-white/10 shadow-sm' : 'text-gray-600 dark:text-zinc-400 hover:text-[#2a7a27] dark:hover:text-emerald-300' }}">
             <i class="bi {{ $nav['icon'] }} text-base"></i>
             <span>{{ $nav['label'] }}</span>
             {{-- Underline slide-in khi hover/active --}}
@@ -195,20 +245,20 @@
                  x-transition:enter-start="opacity-0 scale-95 translate-y-2" x-transition:enter-end="opacity-100 scale-100 translate-y-0"
                  x-transition:leave="transition ease-in duration-100"
                  x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95"
-                 class="absolute right-0 mt-3 w-56 bg-white rounded-[16px] shadow-xl py-2 z-50 overflow-hidden border border-gray-100"
+                 class="absolute right-0 mt-3 w-56 bg-white dark:bg-zinc-900 rounded-[16px] shadow-xl py-2 z-50 overflow-hidden border border-gray-100 dark:border-white/10"
                  style="display:none;">
 
               {{-- Trang chủ --}}
               <a href="{{ route('home') }}"
-                 class="flex items-center gap-3 px-4 py-3 text-[14px] font-medium hover:bg-gray-50 transition-colors no-underline" style="color: #333;">
-                <i class="bi bi-house text-[18px]" style="color: #666;"></i>
+                 class="flex items-center gap-3 px-4 py-3 text-[14px] font-medium hover:bg-gray-50 dark:hover:bg-zinc-800 transition-colors no-underline text-gray-800 dark:text-zinc-200">
+                <i class="bi bi-house text-[18px] text-gray-500 dark:text-gray-400"></i>
                 <span>Trang chủ</span>
               </a>
 
               {{-- Cài đặt tài khoản --}}
               <a href="{{ route('profile') }}"
-                 class="flex items-center gap-3 px-4 py-3 text-[14px] font-medium hover:bg-gray-50 transition-colors no-underline" style="color: #333;">
-                <i class="bi bi-person-fill text-[18px]" style="color: #666;"></i>
+                 class="flex items-center gap-3 px-4 py-3 text-[14px] font-medium hover:bg-gray-50 dark:hover:bg-zinc-800 transition-colors no-underline text-gray-800 dark:text-zinc-200">
+                <i class="bi bi-person-fill text-[18px] text-gray-500 dark:text-gray-400"></i>
                 <span>Cài đặt tài khoản</span>
               </a>
 
@@ -222,20 +272,20 @@
                   };
                 @endphp
                 <a href="{{ $dashUrl }}"
-                   class="flex items-center gap-3 px-4 py-3 text-[14px] font-medium hover:bg-gray-50 transition-colors no-underline" style="color: #333;">
-                  <i class="bi bi-speedometer2 text-[18px]" style="color: #666;"></i>
+                   class="flex items-center gap-3 px-4 py-3 text-[14px] font-medium hover:bg-gray-50 dark:hover:bg-zinc-800 transition-colors no-underline text-gray-800 dark:text-zinc-200">
+                  <i class="bi bi-speedometer2 text-[18px] text-gray-500 dark:text-gray-400"></i>
                   <span>Dashboard</span>
                 </a>
               @endif
 
               {{-- Divider --}}
-              <div class="my-1" style="border-top: 1px solid #eaeaea;"></div>
+              <div class="my-1 border-t border-gray-100 dark:border-white/10"></div>
 
               {{-- Đăng xuất --}}
               <form method="POST" action="{{ route('logout') }}" class="m-0 p-0 block w-full">
                 @csrf
                 <button type="button" @click="open = false; $dispatch('open-logout')"
-                        class="w-full flex items-center gap-3 px-4 py-3 text-[14px] font-bold hover:bg-gray-50 transition-colors text-left" style="color: #e11d48;">
+                        class="w-full flex items-center gap-3 px-4 py-3 text-[14px] font-bold hover:bg-gray-50 dark:hover:bg-zinc-800 transition-colors text-left text-[#e11d48] dark:text-red-400">
                   <i class="bi bi-power text-[18px]"></i>
                   <span>Đăng xuất</span>
                 </button>
@@ -270,7 +320,7 @@
                  x-transition:enter-start="opacity-0 scale-95 translate-y-2" x-transition:enter-end="opacity-100 scale-100 translate-y-0"
                  x-transition:leave="transition ease-in duration-100"
                  x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95"
-                 class="absolute right-0 mt-3 w-80 sm:w-[360px] bg-white/95 backdrop-blur-2xl rounded-3xl shadow-2xl overflow-hidden z-50 border border-white ring-1 ring-black/5"
+                 class="absolute right-0 mt-3 w-80 sm:w-[360px] bg-white/95 dark:bg-zinc-900/95 backdrop-blur-2xl rounded-3xl shadow-2xl overflow-hidden z-50 border border-white dark:border-white/10 ring-1 ring-black/5 dark:ring-white/5"
                  style="display:none;">
               {{-- Header --}}
               <div class="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-[#1a5c38] to-[#2d9e60]">
@@ -521,79 +571,79 @@
 
   {{-- ═══ ADVANCED SEARCH PANEL (Clean Web Style) ═══ --}}
   <div id="advSearchPanel"
-       class="hidden relative z-[27] bg-white border-b border-gray-200 shadow-xl pb-6 pt-4">
+       class="hidden relative z-[27] bg-white dark:bg-zinc-900 border-b border-gray-200 dark:border-white/10 shadow-xl pb-6 pt-4 transition-colors duration-300">
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
       <form action="{{ route('search') }}" method="GET">
         
-        <div class="flex items-center gap-2 mb-3 text-gray-800 font-bold uppercase tracking-wide text-sm">
-          <i class="bi bi-funnel-fill text-[#2a7a27]"></i> Bộ Lọc Tìm Kiếm
+        <div class="flex items-center gap-2 mb-3 text-gray-800 dark:text-zinc-200 font-bold uppercase tracking-wide text-sm">
+          <i class="bi bi-funnel-fill text-[#2a7a27] dark:text-emerald-400"></i> Bộ Lọc Tìm Kiếm
         </div>
-        <hr class="border-gray-200 mb-5">
+        <hr class="border-gray-200 dark:border-white/10 mb-5">
 
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
           
           {{-- Từ khóa --}}
           <div class="lg:col-span-2">
-            <label class="block text-xs font-semibold text-gray-600 mb-1.5 pt-0">Từ khóa tìm kiếm</label>
-            <div class="flex items-center w-full bg-gray-50 border border-gray-300 rounded-lg focus-within:bg-white focus-within:border-[#2a7a27] focus-within:ring-1 focus-within:ring-[#2a7a27] transition overflow-hidden">
-              <div class="pl-3 pr-2 text-gray-400 flex items-center justify-center">
+            <label class="block text-xs font-semibold text-gray-600 dark:text-zinc-400 mb-1.5 pt-0">Từ khóa tìm kiếm</label>
+            <div class="flex items-center w-full bg-gray-50 dark:bg-zinc-950 border border-gray-300 dark:border-white/10 rounded-lg focus-within:bg-white dark:focus-within:bg-zinc-800 focus-within:border-[#2a7a27] dark:focus-within:border-emerald-500 focus-within:ring-1 focus-within:ring-[#2a7a27] dark:focus-within:ring-emerald-500 transition overflow-hidden">
+              <div class="pl-3 pr-2 text-gray-400 dark:text-zinc-500 flex items-center justify-center">
                 <i class="bi bi-search"></i>
               </div>
               <input type="text" name="keyword" placeholder="Nhập tiêu đề hoặc nội dung cần tìm..." value="{{ request('keyword') }}"
-                     class="flex-1 w-full bg-transparent border-0 py-2.5 pr-3 text-sm text-gray-900 outline-none focus:ring-0">
+                     class="flex-1 w-full bg-transparent border-0 py-2.5 pr-3 text-sm text-gray-900 dark:text-zinc-200 outline-none focus:ring-0">
             </div>
           </div>
 
           {{-- Chuyên mục --}}
           <div class="lg:col-span-2">
-            <label class="block text-xs font-semibold text-gray-600 mb-1.5 pt-0">Chuyên mục</label>
-            <div class="flex items-center w-full bg-gray-50 border border-gray-300 rounded-lg focus-within:bg-white focus-within:border-[#2a7a27] focus-within:ring-1 focus-within:ring-[#2a7a27] transition overflow-hidden relative">
-              <div class="pl-3 pr-2 text-gray-400 flex items-center justify-center">
+            <label class="block text-xs font-semibold text-gray-600 dark:text-zinc-400 mb-1.5 pt-0">Chuyên mục</label>
+            <div class="flex items-center w-full bg-gray-50 dark:bg-zinc-950 border border-gray-300 dark:border-white/10 rounded-lg focus-within:bg-white dark:focus-within:bg-zinc-800 focus-within:border-[#2a7a27] dark:focus-within:border-emerald-500 focus-within:ring-1 focus-within:ring-[#2a7a27] dark:focus-within:ring-emerald-500 transition overflow-hidden relative">
+              <div class="pl-3 pr-2 text-gray-400 dark:text-zinc-500 flex items-center justify-center">
                 <i class="bi bi-collection"></i>
               </div>
               <select name="category_id"
-                      class="flex-1 w-full bg-transparent border-0 py-2.5 pr-8 text-sm text-gray-900 outline-none focus:ring-0 appearance-none">
-                <option value="">-- Tất cả chuyên mục --</option>
+                      class="flex-1 w-full bg-transparent border-0 py-2.5 pr-8 text-sm text-gray-900 dark:text-zinc-200 outline-none focus:ring-0 appearance-none">
+                <option value="" class="dark:bg-zinc-800">-- Tất cả chuyên mục --</option>
                 @foreach($allNavCategories ?? [] as $cat)
-                <option value="{{ $cat->id }}" {{ request('category_id') == $cat->id ? 'selected' : '' }}>{{ $cat->name }}</option>
+                <option value="{{ $cat->id }}" {{ request('category_id') == $cat->id ? 'selected' : '' }} class="dark:bg-zinc-800">{{ $cat->name }}</option>
                 @endforeach
               </select>
-              <i class="bi bi-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 text-xs pointer-events-none"></i>
+              <i class="bi bi-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-zinc-500 text-xs pointer-events-none"></i>
             </div>
           </div>
 
           {{-- Tác giả --}}
           <div>
-            <label class="block text-xs font-semibold text-gray-600 mb-1.5 pt-0">Tác giả</label>
-            <div class="flex items-center w-full bg-gray-50 border border-gray-300 rounded-lg focus-within:bg-white focus-within:border-[#2a7a27] focus-within:ring-1 focus-within:ring-[#2a7a27] transition overflow-hidden">
-              <div class="pl-3 pr-2 text-gray-400 flex items-center justify-center">
+            <label class="block text-xs font-semibold text-gray-600 dark:text-zinc-400 mb-1.5 pt-0">Tác giả</label>
+            <div class="flex items-center w-full bg-gray-50 dark:bg-zinc-950 border border-gray-300 dark:border-white/10 rounded-lg focus-within:bg-white dark:focus-within:bg-zinc-800 focus-within:border-[#2a7a27] dark:focus-within:border-emerald-500 focus-within:ring-1 focus-within:ring-[#2a7a27] dark:focus-within:ring-emerald-500 transition overflow-hidden">
+              <div class="pl-3 pr-2 text-gray-400 dark:text-zinc-500 flex items-center justify-center">
                 <i class="bi bi-person"></i>
               </div>
               <input type="text" name="author" placeholder="Tên tác giả..." value="{{ request('author') }}"
-                     class="flex-1 w-full bg-transparent border-0 py-2 pr-3 text-sm text-gray-900 outline-none focus:ring-0">
+                     class="flex-1 w-full bg-transparent border-0 py-2 pr-3 text-sm text-gray-900 dark:text-zinc-200 outline-none focus:ring-0">
             </div>
           </div>
 
           {{-- Từ ngày --}}
           <div>
-            <label class="block text-xs font-semibold text-gray-600 mb-1.5 pt-0">Từ ngày</label>
+            <label class="block text-xs font-semibold text-gray-600 dark:text-zinc-400 mb-1.5 pt-0">Từ ngày</label>
             <input type="date" name="date_from" value="{{ request('date_from') }}"
-                   class="w-full bg-gray-50 border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 outline-none focus:bg-white focus:border-[#2a7a27] focus:ring-1 focus:ring-[#2a7a27] transition">
+                   class="w-full bg-gray-50 dark:bg-zinc-950 border border-gray-300 dark:border-white/10 rounded-lg px-3 py-2 text-sm text-gray-900 dark:text-zinc-200 outline-none focus:bg-white dark:focus:bg-zinc-800 focus:border-[#2a7a27] dark:focus:border-emerald-500 focus:ring-1 focus:ring-[#2a7a27] dark:focus:ring-emerald-500 transition [color-scheme:light] dark:[color-scheme:dark]">
           </div>
 
           {{-- Đến ngày --}}
           <div>
-            <label class="block text-xs font-semibold text-gray-600 mb-1.5 pt-0">Đến ngày</label>
+            <label class="block text-xs font-semibold text-gray-600 dark:text-zinc-400 mb-1.5 pt-0">Đến ngày</label>
             <input type="date" name="date_to" value="{{ request('date_to') }}"
-                   class="w-full bg-gray-50 border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 outline-none focus:bg-white focus:border-[#2a7a27] focus:ring-1 focus:ring-[#2a7a27] transition">
+                   class="w-full bg-gray-50 dark:bg-zinc-950 border border-gray-300 dark:border-white/10 rounded-lg px-3 py-2 text-sm text-gray-900 dark:text-zinc-200 outline-none focus:bg-white dark:focus:bg-zinc-800 focus:border-[#2a7a27] dark:focus:border-emerald-500 focus:ring-1 focus:ring-[#2a7a27] dark:focus:ring-emerald-500 transition [color-scheme:light] dark:[color-scheme:dark]">
           </div>
 
           {{-- Buttons --}}
           <div class="flex items-end gap-3 justify-end lg:col-span-1 pt-1">
-            <a href="{{ route('search') }}" class="px-4 py-2 text-sm font-semibold text-gray-600 bg-gray-100 hover:bg-gray-200 border border-gray-200 hover:border-gray-300 rounded-lg transition-colors whitespace-nowrap">
+            <a href="{{ route('search') }}" class="px-4 py-2 text-sm font-semibold text-gray-600 dark:text-zinc-300 bg-gray-100 dark:bg-zinc-800 hover:bg-gray-200 dark:hover:bg-zinc-700 border border-gray-200 dark:border-zinc-700 rounded-lg transition-colors whitespace-nowrap">
               Xóa Lọc 
             </a>
-            <button type="submit" class="flex items-center justify-center w-full sm:w-auto gap-2 px-5 py-2 bg-[#2a7a27] hover:bg-[#1a4a18] text-white text-sm font-bold rounded-lg transition-colors shadow-sm active:scale-95 whitespace-nowrap">
+            <button type="submit" class="flex items-center justify-center w-full sm:w-auto gap-2 px-5 py-2 bg-[#2a7a27] hover:bg-[#1a4a18] dark:bg-emerald-600 dark:hover:bg-emerald-500 text-white text-sm font-bold rounded-lg transition-colors shadow-sm active:scale-95 whitespace-nowrap">
               <i class="bi bi-search"></i> Tìm Kiếm
             </button>
           </div>
@@ -604,7 +654,7 @@
   </div>
 
   {{-- ═══ PAGE CONTENT ═══ --}}
-  <main class="flex-1 bg-white pt-4">
+  <main class="flex-1 bg-white dark:bg-zinc-950 pt-4 transition-colors duration-300">
     @yield('content')
   </main>
 
@@ -850,7 +900,25 @@ document.addEventListener('DOMContentLoaded', () => { toggleAdvSearch(); });
 })();
 </script>
 
-<!-- Logout Modal -->
+    {{-- Floating Back to top button (Frontend) --}}
+    <div x-data="{ showScrollTop: false }"
+         @scroll.window="showScrollTop = (window.pageYOffset > 400) ? true : false"
+         class="fixed bottom-6 right-6 z-[90]">
+        <button x-show="showScrollTop" x-cloak
+                x-transition:enter="transition ease-out duration-300 transform"
+                x-transition:enter-start="opacity-0 translate-y-6 scale-95"
+                x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+                x-transition:leave="transition ease-in duration-200 transform"
+                x-transition:leave-start="opacity-100 translate-y-0 scale-100"
+                x-transition:leave-end="opacity-0 translate-y-6 scale-95"
+                @click="window.scrollTo({top: 0, behavior: 'smooth'})"
+                class="flex items-center gap-2 px-3.5 py-2 bg-[#071d08] text-[#f5d400] hover:bg-[#0d3b10] rounded-full shadow-[0_8px_30px_rgb(0,0,0,0.2)] transition-all duration-300 font-bold text-xs border border-[#f5d400]/20 hover:-translate-y-1 hover:shadow-[0_8px_30px_rgba(245,212,0,0.15)] group"
+                title="Trở lên trên">
+            <i class="bi bi-arrow-up-circle-fill text-base group-hover:-translate-y-0.5 transition-transform duration-300"></i> Trở lên trên
+        </button>
+    </div>
+
+    <!-- Logout Modal -->
 <div
     x-data="{ showLogoutModal: false }"
     @open-logout.window="showLogoutModal = true"

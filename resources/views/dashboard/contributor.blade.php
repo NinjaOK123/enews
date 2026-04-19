@@ -91,7 +91,7 @@
               <div style="display:flex; justify-content:flex-end; gap:8px;">
                 @if(in_array($p->status, ['draft', 'rejected']))
                   <a href="{{ route('contributor.posts.edit', $p) }}" style="width:32px; height:32px; border-radius:8px; display:flex; align-items:center; justify-content:center; background:#f8f9fa; color:#444; border:1px solid #e9ecef; text-decoration:none; transition:bg .2s;" title="Sửa"><i class="bi bi-pencil"></i></a>
-                  <form action="{{ route('contributor.posts.destroy', $p) }}" method="POST" onsubmit="return confirm('Bạn có chắc chắn muốn xóa bài viết này không?');">
+                  <form action="{{ route('contributor.posts.destroy', $p) }}" method="POST" onsubmit="window.confirmFormSubmit(event, 'Bạn có chắc chắn muốn xóa bài viết này không?');">
                     @csrf @method('DELETE')
                     <button type="submit" style="width:32px; height:32px; border-radius:8px; display:flex; align-items:center; justify-content:center; background:#fff; color:#c62828; border:1px solid #ffcdd2; cursor:pointer;" title="Xóa"><i class="bi bi-trash"></i></button>
                   </form>

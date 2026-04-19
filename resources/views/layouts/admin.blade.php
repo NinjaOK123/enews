@@ -22,28 +22,29 @@
     @stack('styles')
 
     <style>
-        html, body {
-            min-height: 100vh;
-            height: auto !important;
-            overflow-x: hidden !important;
-            overflow-y: auto !important;
-            font-family: 'Inter', sans-serif;
-            background-color: #f8fafc; /* slate-50 */
-            color: #111827; /* gray-900 */
-        }
         [x-cloak] { display: none !important; }
 
-        /* Custom Scrollbar cho Sidebar */
+        /* TypeUI Custom Scrollbar */
         .adm-sidebar::-webkit-scrollbar { width: 4px; }
         .adm-sidebar::-webkit-scrollbar-track { background: transparent; }
-        .adm-sidebar::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
-        .adm-sidebar::-webkit-scrollbar-thumb:hover { background: #475569; }
+        .adm-sidebar::-webkit-scrollbar-thumb { background: #3f3f46; border-radius: 4px; }
+        .adm-sidebar::-webkit-scrollbar-thumb:hover { background: #52525b; }
 
         @yield('styles')
     </style>
+
+    {{-- Dark Mode Init Script (No FOUC) --}}
+    <script>
+        try {
+            const theme = localStorage.getItem('adm_theme');
+            if (theme === 'dark' || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+            }
+        } catch (_) {}
+    </script>
 </head>
 
-<body x-data="adminLayout()" x-init="init()" class="antialiased">
+<body x-data="adminLayout()" x-init="init()" class="antialiased bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 min-h-screen transition-colors duration-200">
 
     {{-- ── Mobile Overlay ── --}}
     <div x-show="mobileOpen" x-cloak
@@ -52,19 +53,19 @@
          style="display:none;"></div>
 
     {{-- ───────────── SIDEBAR (SaaS STYLE) ───────────── --}}
-    <aside class="fixed top-0 bottom-0 left-0 bg-slate-950 z-40 flex flex-col transition-all duration-300 ease-in-out border-r border-slate-800"
+    <aside class="fixed top-0 bottom-0 left-0 bg-white dark:bg-zinc-950 z-40 flex flex-col transition-all duration-300 ease-in-out border-r border-zinc-200 dark:border-white/10"
            :style="sidebarStyle()">
 
         {{-- Logo --}}
-        <div class="flex items-center gap-3 h-[64px] border-b border-slate-800 shrink-0 relative w-full overflow-hidden transition-all duration-300" :class="collapsed ? 'justify-center px-0' : 'justify-start px-5'">
-            <div class="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-500 shrink-0 transition-all duration-300">
+        <div class="flex items-center gap-3 h-[64px] border-b border-zinc-200 dark:border-white/10 shrink-0 relative w-full overflow-hidden transition-all duration-300" :class="collapsed ? 'justify-center px-0' : 'justify-start px-5'">
+            <div class="w-8 h-8 rounded-lg bg-zinc-100 dark:bg-white/5 border border-zinc-200 dark:border-white/10 flex items-center justify-center text-zinc-900 dark:text-zinc-100 shrink-0 transition-all duration-300">
                 <i class="bi bi-newspaper"></i>
             </div>
-            <span class="text-[16px] font-bold text-white tracking-tight truncate transition-opacity duration-300" :class="collapsed ? 'opacity-0 hidden' : 'opacity-100'">E-News Admin</span>
+            <span class="text-[16px] font-bold text-zinc-900 dark:text-white tracking-tight truncate transition-opacity duration-300" :class="collapsed ? 'opacity-0 hidden' : 'opacity-100'">E-News Admin</span>
         </div>
 
         {{-- Nav links --}}
-        <nav class="adm-sidebar flex-1 overflow-y-auto py-4 space-y-1 w-full flex flex-col px-3" style="color: #cbd5e1;">
+        <nav class="adm-sidebar flex-1 overflow-y-auto py-4 space-y-1 w-full flex flex-col px-3">
             @php
                 $role = auth()->user()->role ?? 'reader';
                 $dashRoute = match($role) {
@@ -120,40 +121,37 @@
                 
                 if($role==='admin') {
                     $pendingC = \App\Models\Comment::where('is_approved', false)->count();
-                    $navItems[] = ['route'=>route('admin.comments.index'),'is'=>'admin.comments.*','icon'=>'bi-chat-dots','label'=>'Bình luận','badge'=>$pendingC,'badgeColor'=>'bg-red-500'];
+                    $navItems[] = ['route'=>route('admin.comments.index'),'is'=>'admin.comments.*','icon'=>'bi-chat-dots','label'=>'Bình luận','badge'=>$pendingC,'badgeColor'=>'bg-red-500 text-white dark:bg-red-500/20 dark:text-red-400'];
                 }
                 if($role==='admin') {
                     $pendingCTV = \App\Models\ContributorRequest::where('status','pending')->count();
-                    $navItems[] = ['route'=>route('admin.contributor.index'),'is'=>'admin.contributor.*','icon'=>'bi-person-check','label'=>'Cộng tác viên','badge'=>$pendingCTV,'badgeColor'=>'bg-emerald-500'];
+                    $navItems[] = ['route'=>route('admin.contributor.index'),'is'=>'admin.contributor.*','icon'=>'bi-person-check','label'=>'Cộng tác viên','badge'=>$pendingCTV,'badgeColor'=>'bg-emerald-500 text-white dark:bg-emerald-500/20 dark:text-emerald-400'];
                 }
             @endphp
 
             @foreach($navItems as $item)
                 @if(isset($item['type']) && $item['type'] === 'header')
-                    <div class="px-3 pt-6 pb-2 text-[11px] font-bold tracking-wider uppercase truncate" style="color: #94a3b8;" x-show="!collapsed">
+                    <div class="px-3 pt-6 pb-2 text-[11px] font-bold tracking-wider uppercase truncate text-zinc-500 dark:text-zinc-500" x-show="!collapsed">
                         {{ $item['label'] }}
                     </div>
                 @else
                     @php $isActive = request()->routeIs($item['is']); @endphp
-                    <a href="{{ $item['route'] }}" wire:navigate
-                       class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-[14px] transition-all duration-200 w-full outline-none group relative overflow-hidden"
-                       style="color: {{ $isActive ? '#ffffff' : '#cbd5e1' }}; {{ $isActive ? 'background-color: rgba(255,255,255,0.1); font-weight: 600;' : 'font-weight: 500;' }}"
-                       title="{{ $item['label'] }}"
-                       onmouseover="this.style.color='#ffffff'; this.style.backgroundColor='rgba(255,255,255,0.1)';"
-                       onmouseout="this.style.color='{{ $isActive ? '#ffffff' : '#cbd5e1' }}'; this.style.backgroundColor='{{ $isActive ? "rgba(255,255,255,0.1)" : "transparent" }}';">
+                    <a href="{{ $item['route'] }}" wire:navigate.hover
+                       class="flex items-center gap-3 px-3 py-2.5 rounded-xl border border-transparent text-[14px] font-medium transition-all duration-200 w-full outline-none group relative overflow-hidden {{ $isActive ? 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 font-bold shadow-sm ring-1 ring-emerald-500/20' : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-white/5 hover:text-zinc-900 dark:hover:text-white' }}"
+                       title="{{ $item['label'] }}">
                         
                         {{-- Indicator dọc khi active (SaaS style) --}}
                         @if($isActive)
-                            <div class="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-emerald-500 rounded-r-md shadow-[0_0_8px_rgba(16,185,129,0.5)]"></div>
+                            <div class="absolute left-0 top-0 bottom-0 w-1 bg-emerald-500 rounded-r-md shadow-[0_0_8px_rgba(16,185,129,0.5)]"></div>
                         @endif
 
-                        <i class="bi {{ $item['icon'] }} text-[18px] shrink-0 w-6 text-center transition-colors duration-200 drop-shadow-sm"></i>
+                        <i class="bi {{ $item['icon'] }} text-[18px] shrink-0 w-6 text-center transition-colors duration-200 {{ $isActive ? 'text-emerald-600 dark:text-emerald-400' : 'group-hover:text-emerald-600 dark:group-hover:text-emerald-400' }}"></i>
                         <span class="whitespace-nowrap truncate tracking-tight transition-opacity" :class="collapsed ? 'opacity-0 hidden' : 'opacity-100'">
                             {{ $item['label'] }}
                         </span>
 
                         @if(!empty($item['badge']) && $item['badge'] > 0)
-                        <span class="ml-auto text-[10px] font-bold min-w-[20px] h-[20px] flex items-center justify-center px-1.5 rounded-full {{ $item['badgeColor'] }} transition-opacity shadow-sm" style="color: #ffffff;" :class="collapsed ? 'opacity-0 hidden' : 'opacity-100'">
+                        <span class="ml-auto text-[10px] font-bold min-w-[20px] h-[20px] flex items-center justify-center px-1.5 rounded-full {{ $item['badgeColor'] }} transition-opacity shadow-sm" :class="collapsed ? 'opacity-0 hidden' : 'opacity-100'">
                             {{ $item['badge'] }}
                         </span>
                         @endif
@@ -163,38 +161,39 @@
         </nav>
 
         {{-- User info bottom --}}
-        <div class="p-3 border-t border-slate-800 shrink-0 relative w-full" x-data="{ dropupOpen: false }" @click.outside="dropupOpen = false">
+        <div class="p-3 border-t border-zinc-200 dark:border-white/10 shrink-0 relative w-full transition-colors duration-200" x-data="{ dropupOpen: false }" @click.outside="dropupOpen = false">
             {{-- Dropup Menu --}}
             <div x-show="dropupOpen" x-transition x-cloak
-                 class="absolute bottom-[calc(100%+8px)] left-3 bg-white rounded-xl py-1.5 z-50 overflow-hidden shadow-lg border border-gray-200" 
+                 class="absolute bottom-[calc(100%+8px)] left-3 bg-white dark:bg-zinc-900 rounded-xl py-1.5 z-50 overflow-hidden shadow-lg border border-zinc-200 dark:border-white/10" 
                  :class="collapsed ? 'min-w-[180px]' : 'w-[calc(100%-24px)]'"
                  style="display:none;">
-                <a href="{{ route('home') }}" wire:navigate class="flex items-center gap-3 px-4 py-2 text-[13px] font-medium hover:bg-gray-50 text-gray-700 no-underline transition-colors whitespace-nowrap">
-                    <i class="bi bi-box-arrow-up-right text-gray-400"></i>
+                <a href="{{ route('home') }}" wire:navigate.hover class="flex items-center gap-3 px-4 py-2 text-[13px] font-medium hover:bg-zinc-50 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300 no-underline transition-colors whitespace-nowrap">
+                    <i class="bi bi-box-arrow-up-right text-zinc-400 dark:text-zinc-500"></i>
                     <span>Tới trang chủ</span>
                 </a>
-                <a href="{{ route('profile') }}" wire:navigate class="flex items-center gap-3 px-4 py-2 text-[13px] font-medium hover:bg-gray-50 text-gray-700 no-underline transition-colors whitespace-nowrap">
-                    <i class="bi bi-person-gear text-gray-400"></i> 
+                <a href="{{ route('profile') }}" wire:navigate.hover class="flex items-center gap-3 px-4 py-2 text-[13px] font-medium hover:bg-zinc-50 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300 no-underline transition-colors whitespace-nowrap">
+                    <i class="bi bi-person-gear text-zinc-400 dark:text-zinc-500"></i> 
                     <span>Tài khoản</span>
                 </a>
-                <div class="my-1 border-t border-gray-100"></div>
-                <button @click.prevent="$dispatch('open-logout'); dropupOpen = false" type="button" class="w-full flex items-center gap-3 px-4 py-2 text-[13px] font-medium hover:bg-red-50 text-red-600 outline-none text-left transition-colors whitespace-nowrap">
-                    <i class="bi bi-power"></i> 
-                    <span>Đăng xuất</span>
-                </button>
+                <form method="POST" action="{{ route('logout') }}" id="sidebar-logout-form">
+                    @csrf
+                    <button type="submit" class="w-full text-left flex items-center gap-3 px-4 py-2 text-[13px] font-medium hover:bg-red-50 dark:hover:bg-red-500/10 text-red-600 dark:text-red-400 outline-none transition-colors whitespace-nowrap">
+                        <i class="bi bi-box-arrow-right"></i>
+                        <span>Đăng xuất</span>
+                    </button>
+                </form>
             </div>
 
             {{-- Trigger Button --}}
-            <button @click="dropupOpen = !dropupOpen" 
-                    class="w-full flex items-center gap-3 p-2 rounded-lg hover:bg-slate-800/50 transition cursor-pointer border-none outline-none focus:outline-none text-left" :class="collapsed ? 'justify-center' : ''">
-                <div class="w-8 h-8 rounded-md overflow-hidden shrink-0">
-                    <img src="https://ui-avatars.com/api/?name={{ urlencode(auth()->user()->name ?? 'A') }}&background=0f172a&color=10b981&rounded=false" alt="Avatar" class="w-full h-full object-cover">
+            <button @click="dropupOpen = !dropupOpen"
+                    class="w-full flex items-center gap-3 p-2 rounded-lg hover:bg-zinc-100 dark:hover:bg-white/5 transition cursor-pointer border-none outline-none focus:outline-none text-left" :class="collapsed ? 'justify-center' : ''">
+                <img src="https://ui-avatars.com/api/?name={{ urlencode(auth()->user()->name ?? 'A') }}&background=059669&color=fff&rounded=true" 
+                     alt="Avatar" class="w-8 h-8 rounded-full shadow-sm ring-1 ring-zinc-200 dark:ring-white/10 shrink-0">
+                <div class="flex-1 min-w-0 transition-opacity" :class="collapsed ? 'opacity-0 hidden' : 'opacity-100'">
+                    <p class="text-[13px] font-semibold text-zinc-900 dark:text-zinc-100 truncate">{{ auth()->user()->name ?? 'Admin' }}</p>
+                    <p class="text-[11px] text-zinc-500 dark:text-zinc-400 font-medium truncate uppercase tracking-wider">{{ auth()->user()->role ?? 'Admin' }}</p>
                 </div>
-                <div class="min-w-0 flex-1 transition-opacity" :class="collapsed ? 'opacity-0 hidden' : 'opacity-100'">
-                    <p class="text-[13px] font-semibold text-slate-200 truncate">{{ auth()->user()->name ?? 'Admin' }}</p>
-                    <p class="text-[11px] text-slate-400 font-medium truncate uppercase tracking-wider">{{ auth()->user()->role ?? 'Admin' }}</p>
-                </div>
-                <i class="bi bi-chevron-expand text-slate-400 shrink-0 transition-opacity" :class="collapsed ? 'opacity-0 hidden' : 'opacity-100'"></i>
+                <i class="bi bi-chevron-expand text-zinc-400 dark:text-zinc-500 shrink-0 transition-opacity" :class="collapsed ? 'opacity-0 hidden' : 'opacity-100'"></i>
             </button>
         </div>
     </aside>
@@ -204,12 +203,12 @@
          :style="mainStyle()">
 
         {{-- Topbar (SaaS STYLE) --}}
-        <header class="h-[64px] bg-white border-b border-gray-200 sticky top-0 z-30 px-6 flex items-center justify-between shadow-sm">
+        <header class="h-[64px] bg-white dark:bg-zinc-950 border-b border-zinc-200 dark:border-white/10 sticky top-0 z-30 px-6 flex items-center justify-between shadow-sm transition-colors duration-200">
             
             <div class="flex items-center gap-4">
                 {{-- Hamburger --}}
                 <button @click="toggle()"
-                        class="w-8 h-8 flex items-center justify-center rounded-md hover:bg-gray-100 text-gray-500 transition cursor-pointer outline-none">
+                        class="w-8 h-8 flex items-center justify-center rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-500 dark:text-zinc-400 transition cursor-pointer outline-none">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
                     </svg>
@@ -217,38 +216,57 @@
 
                 {{-- Breadcrumbs / Welcome --}}
                 <div class="hidden md:flex flex-col">
-                    <span class="text-[14px] font-semibold text-gray-900">Workspace</span>
-                    <span class="text-[11px] text-gray-500 font-medium uppercase tracking-wider">Tin Tức AGU Admin</span>
+                    <span class="text-[14px] font-medium tracking-tight text-zinc-900 dark:text-zinc-100">Workspace</span>
+                    <span class="text-[11px] text-zinc-500 dark:text-zinc-400 font-medium uppercase tracking-wider">Tin Tức AGU Admin</span>
                 </div>
             </div>
 
-            <div class="flex items-center gap-3">
+            <div class="flex items-center gap-2">
                 
                 {{-- Nút truy cập Web --}}
-                <a href="{{ route('home') }}" class="hidden sm:inline-flex items-center gap-2 px-3 py-1.5 text-[13px] font-medium text-gray-600 bg-white border border-gray-200 hover:bg-gray-50 hover:text-gray-900 rounded-md transition-colors shadow-sm">
+                <a href="{{ route('home') }}" class="hidden sm:inline-flex items-center gap-2 px-3 py-1.5 text-[13px] font-medium text-zinc-600 dark:text-zinc-300 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-white/10 hover:bg-zinc-50 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-white rounded-md transition-colors shadow-sm">
                     <i class="bi bi-box-arrow-up-right"></i> Web
                 </a>
 
-                <div class="h-5 w-px bg-gray-200 mx-1"></div>
+                <div class="h-5 w-px bg-zinc-200 dark:bg-zinc-800 mx-1"></div>
+
+                {{-- Theme Switcher --}}
+                <div class="relative" x-data="{themeOpen: false}" @click.outside="themeOpen = false">
+                    <button @click="themeOpen = !themeOpen" class="w-8 h-8 flex items-center justify-center rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-500 dark:text-zinc-400 transition cursor-pointer outline-none">
+                        <i class="bi text-lg" :class="currentTheme === 'dark' ? 'bi-moon-stars' : (currentTheme === 'system' ? 'bi-display' : 'bi-sun')"></i>
+                    </button>
+                    <div x-show="themeOpen" x-cloak x-transition.origin.top.right
+                         class="absolute right-0 top-full mt-1 w-36 bg-white dark:bg-zinc-900 rounded-lg shadow-lg py-1 border border-zinc-200 dark:border-white/10 z-50">
+                        <button @click="setTheme('light'); themeOpen = false" class="w-full text-left px-4 py-2 text-[13px] font-medium hover:bg-zinc-50 dark:hover:bg-zinc-800 flex items-center gap-2 transition-colors" :class="currentTheme==='light' ? 'text-emerald-600 dark:text-emerald-400' : 'text-zinc-600 dark:text-zinc-300'">
+                            <i class="bi bi-sun"></i> Sáng
+                        </button>
+                        <button @click="setTheme('dark'); themeOpen = false" class="w-full text-left px-4 py-2 text-[13px] font-medium hover:bg-zinc-50 dark:hover:bg-zinc-800 flex items-center gap-2 transition-colors" :class="currentTheme==='dark' ? 'text-emerald-600 dark:text-emerald-400' : 'text-zinc-600 dark:text-zinc-300'">
+                            <i class="bi bi-moon-stars"></i> Tối
+                        </button>
+                        <button @click="setTheme('system'); themeOpen = false" class="w-full text-left px-4 py-2 text-[13px] font-medium hover:bg-zinc-50 dark:hover:bg-zinc-800 flex items-center gap-2 transition-colors" :class="currentTheme==='system' ? 'text-emerald-600 dark:text-emerald-400' : 'text-zinc-600 dark:text-zinc-300'">
+                            <i class="bi bi-display"></i> Hệ thống
+                        </button>
+                    </div>
+                </div>
 
                 {{-- User Dropdown Topbar --}}
-                <div class="relative" x-data="{open:false}" @click.outside="open=false">
-                    <button @click="open=!open" class="flex items-center gap-2 hover:bg-gray-50 p-1 rounded-md transition outline-none">
-                        <img src="https://ui-avatars.com/api/?name={{ urlencode(auth()->user()->name) }}&background=059669&color=fff&rounded=true" alt="Avatar" class="w-7 h-7 rounded-full shadow-sm">
-                        <i class="bi bi-chevron-down text-[10px] text-gray-400 ml-1 transition-transform" :class="open ? 'rotate-180' : ''"></i>
+                <div class="relative ml-2" x-data="{open:false}" @click.outside="open=false">
+                    <button @click="open=!open" class="flex items-center gap-2 hover:bg-zinc-50 dark:hover:bg-zinc-800 p-1 rounded-md transition outline-none">
+                        <img src="https://ui-avatars.com/api/?name={{ urlencode(auth()->user()->name) }}&background=059669&color=fff&rounded=true" alt="Avatar" class="w-7 h-7 rounded-full shadow-sm ring-1 ring-zinc-200 dark:ring-white/10">
+                        <i class="bi bi-chevron-down text-[10px] text-zinc-400 dark:text-zinc-500 ml-1 transition-transform" :class="open ? 'rotate-180' : ''"></i>
                     </button>
 
                     <div x-show="open" x-cloak x-transition.origin.top.right
-                         class="absolute right-0 top-full mt-1 w-48 bg-white rounded-lg shadow-lg py-1 border border-gray-100 z-50">
-                        <div class="px-4 py-2 border-b border-gray-100 mb-1">
-                            <p class="text-[13px] font-semibold text-gray-900 truncate">{{ auth()->user()->name }}</p>
-                            <p class="text-[11px] text-gray-500 truncate">{{ auth()->user()->email }}</p>
+                         class="absolute right-0 top-full mt-1 w-48 bg-white dark:bg-zinc-900 rounded-lg shadow-lg py-1 border border-zinc-200 dark:border-white/10 z-50">
+                        <div class="px-4 py-2 border-b border-zinc-100 dark:border-white/10 mb-1">
+                            <p class="text-[13px] font-semibold text-zinc-900 dark:text-zinc-100 truncate">{{ auth()->user()->name }}</p>
+                            <p class="text-[11px] text-zinc-500 dark:text-zinc-400 truncate">{{ auth()->user()->email }}</p>
                         </div>
-                        <a href="{{ route('profile') }}" class="flex items-center gap-2 px-4 py-2 text-[13px] text-gray-700 hover:bg-gray-50 no-underline">
-                           <i class="bi bi-person text-gray-400"></i> Hồ sơ
+                        <a href="{{ route('profile') }}" class="flex items-center gap-2 px-4 py-2 text-[13px] text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800 font-medium no-underline transition-colors">
+                           <i class="bi bi-person text-zinc-400 dark:text-zinc-500"></i> Hồ sơ
                         </a>
-                        <div class="my-1 border-t border-gray-100"></div>
-                        <button @click.prevent="$dispatch('open-logout'); open = false" class="w-full flex items-center gap-2 px-4 py-2 text-[13px] text-red-600 hover:bg-red-50 outline-none text-left">
+                        <div class="my-1 border-t border-zinc-100 dark:border-white/10"></div>
+                        <button @click.prevent="$dispatch('open-logout'); open = false" class="w-full flex items-center gap-2 px-4 py-2 text-[13px] font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 outline-none text-left transition-colors">
                             <i class="bi bi-power"></i> Đăng xuất
                         </button>
                     </div>
@@ -264,7 +282,6 @@
 
     <script>
     function adminLayout() {
-        // Linear/Vercel standard sidebar width is usually 240px-260px.
         const SIDEBAR_W = 260; 
         const SIDEBAR_COLLAPSED_W = 72;
 
@@ -272,12 +289,37 @@
             collapsed: localStorage.getItem('adm_saas_collapsed') === '1',
             mobileOpen: false,
             isMobile: window.innerWidth < 1024,
+            currentTheme: localStorage.getItem('adm_theme') || 'system',
 
             init() {
                 window.addEventListener('resize', () => {
                     this.isMobile = window.innerWidth < 1024;
                     if (!this.isMobile) this.mobileOpen = false;
                 });
+                this.applyTheme(this.currentTheme);
+            },
+
+            setTheme(val) {
+                this.currentTheme = val;
+                if (val === 'system') {
+                    localStorage.removeItem('adm_theme');
+                } else {
+                    localStorage.setItem('adm_theme', val);
+                }
+                this.applyTheme(val);
+                // Dispatch event so charts can re-render if needed
+                window.dispatchEvent(new CustomEvent('theme-changed', {
+                    detail: document.documentElement.classList.contains('dark') ? 'dark' : 'light'
+                }));
+            },
+
+            applyTheme(val) {
+                const root = document.documentElement;
+                if (val === 'dark' || (val === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                    root.classList.add('dark');
+                } else {
+                    root.classList.remove('dark');
+                }
             },
 
             toggle() {
@@ -306,6 +348,27 @@
     
     @yield('scripts')
     @stack('scripts')
+
+    {{-- Back to top button --}}
+    <div x-data="{ showScrollTop: false }"
+         @scroll.window="showScrollTop = (window.pageYOffset > 300) ? true : false"
+         class="fixed bottom-8 right-8 z-[90]">
+        <button x-show="showScrollTop" x-cloak
+                x-transition:enter="transition ease-out duration-300 transform"
+                x-transition:enter-start="opacity-0 translate-y-8 scale-95"
+                x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+                x-transition:leave="transition ease-in duration-200 transform"
+                x-transition:leave-start="opacity-100 translate-y-0 scale-100"
+                x-transition:leave-end="opacity-0 translate-y-8 scale-95"
+                @click="window.scrollTo({top: 0, behavior: 'smooth'})"
+                class="flex items-center gap-2.5 px-4 py-2.5 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 hover:bg-zinc-800 dark:hover:bg-zinc-100 rounded-full shadow-[0_8px_30px_rgb(0,0,0,0.12)] transition-all duration-300 font-bold text-[13px] group border border-zinc-700 dark:border-white/20 hover:-translate-y-1"
+                title="Trở lên trên">
+            <div class="w-6 h-6 rounded-full bg-emerald-500 flex items-center justify-center shrink-0 text-white shadow-sm transition-transform duration-300 group-hover:scale-110">
+                <i class="bi bi-arrow-up text-[14px] group-hover:-translate-y-0.5 transition-transform duration-300"></i>
+            </div>
+            Trở lên trên
+        </button>
+    </div>
 
     {{-- Global SweetAlert2 Form Helpers --}}
     <script>
@@ -444,6 +507,47 @@
                 </div>
             </div>
         </div>
+        <script>
+            window.confirmFormSubmit = function(event, message) {
+                event.preventDefault();
+                const form = event.target;
+                Swal.fire({
+                    title: 'Xác nhận',
+                    text: message,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#ef4444',
+                    cancelButtonColor: '#6b7280',
+                    confirmButtonText: 'Đồng ý',
+                    cancelButtonText: 'Hủy bỏ',
+                    background: document.documentElement.classList.contains('dark') ? '#1e293b' : '#fff',
+                    color: document.documentElement.classList.contains('dark') ? '#f1f5f9' : '#0f172a'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        form.submit();
+                    }
+                });
+            };
+
+            window.confirmCustomAction = function(message, callback) {
+                Swal.fire({
+                    title: 'Xác nhận',
+                    text: message,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#ef4444',
+                    cancelButtonColor: '#6b7280',
+                    confirmButtonText: 'Đồng ý',
+                    cancelButtonText: 'Hủy bỏ',
+                    background: document.documentElement.classList.contains('dark') ? '#1e293b' : '#fff',
+                    color: document.documentElement.classList.contains('dark') ? '#f1f5f9' : '#0f172a'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        callback();
+                    }
+                });
+            };
+        </script>
     </div>
 </body>
 </html>

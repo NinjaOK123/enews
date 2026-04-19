@@ -10,6 +10,8 @@
         'Segoe UI Symbol', 'Noto Color Emoji';
 }
 
+@custom-variant dark (&:is(.dark *));
+
 /* =============================================
    AGU E-NEWS — FUSION Design
    Green #2a7a27 · Orange #FF6600 · Yellow #f5d400
@@ -41,6 +43,33 @@
   --app-radius:       8px;
   --app-radius-lg:    14px;
   --trans:        all .22s ease;
+  
+  --panel-bg:     #ffffff;
+  --marquee-bg:   #f8fafb;
+}
+
+.dark {
+  --green:        #10b981;
+  --green-dark:   #047857;
+  --green-light:  #064e3b;
+  --green-mid:    #059669;
+  --orange:       #f97316;
+  --orange-dark:  #ea580c;
+  --yellow:       #fbbf24;
+  --white:        #18181b;
+  --bg:           #09090b;
+  --text:         #e4e4e7;
+  --border:       rgba(255,255,255,0.1);
+  --gray-50:      #18181b;
+  --gray-100:     rgba(255,255,255,0.05);
+  --gray-200:     rgba(255,255,255,0.1);
+  --gray-400:     #a1a1aa;
+  --gray-600:     #a1a1aa;
+  --gray-700:     #d4d4d8;
+  --gray-800:     #e4e4e7;
+  
+  --panel-bg:     #18181b;
+  --marquee-bg:   #18181b;
 }
 
 /* ── BASE ── */
@@ -50,8 +79,6 @@ html { scroll-behavior: smooth; }
 body {
   font-family: 'Be Vietnam Pro', 'Inter', Arial, sans-serif;
   font-size: 14.5px;
-  color: var(--text);
-  background: var(--bg);
   line-height: 1.65;
 }
 
@@ -63,7 +90,7 @@ img { max-width: 100%; height: auto; display: block; }
 .page-wrapper {
   max-width: 1180px;
   margin: 0 auto;
-  background: #fff;
+  background: var(--bg);
   box-shadow: 0 0 40px rgba(0,0,0,.08);
 }
 
@@ -150,7 +177,7 @@ img { max-width: 100%; height: auto; display: block; }
 }
 
 /* ══ MAIN CONTENT ══ */
-.main-content-area { padding: 14px 18px; background: #fff; }
+.main-content-area { padding: 14px 18px; background: transparent; }
 
 /* HERO */
 .hero-area { display: flex; gap: 16px; margin-top: 32px; margin-bottom: 20px; }
@@ -372,7 +399,7 @@ hr.fusion {
 /* ── Banner Marquee ───────────────────────────────────────────── */
 .banner-marquee-wrap {
   overflow: hidden;
-  background: #f8fafb;
+  background: var(--marquee-bg);
   border-radius: var(--app-radius-lg);
   border: 1px solid var(--border);
   box-shadow: var(--shadow-sm);
@@ -394,11 +421,11 @@ hr.fusion {
 }
 .banner-marquee-wrap::before {
   left: 0;
-  background: linear-gradient(to right, #f8fafb, transparent);
+  background: linear-gradient(to right, var(--marquee-bg), transparent);
 }
 .banner-marquee-wrap::after {
   right: 0;
-  background: linear-gradient(to left, #f8fafb, transparent);
+  background: linear-gradient(to left, var(--marquee-bg), transparent);
 }
 
 .banner-marquee-track {
@@ -455,7 +482,7 @@ hr.fusion {
   border: 1px solid var(--border);
   border-radius: var(--app-radius);
   overflow: hidden;
-  background: #fff;
+  background: var(--panel-bg);
   box-shadow: var(--shadow-sm);
   transition: var(--trans);
 }
@@ -500,7 +527,7 @@ hr.fusion {
   border: 1px solid var(--border);
   border-radius: var(--app-radius);
   overflow: hidden;
-  background: #fff;
+  background: var(--panel-bg);
   box-shadow: var(--shadow-sm);
   transition: var(--trans);
 }
