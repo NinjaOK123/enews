@@ -157,7 +157,19 @@
         </div>
 
         {{-- ═══ RIGHT: Sidebar ═══ --}}
-        <div class="w-80 shrink-0 space-y-5">
+        <div class="w-80 shrink-0 space-y-5" x-data="{
+            sameAsAuthor: {{ old('photographer_same', (!isset($post) || (isset($post) && $post->photographer === $post->source_author)) ? 'true' : 'false') }},
+            authorVal: @js(old('source_author', $post->source_author ?? '')),
+            photographerVal: @js(old('photographer', $post->photographer ?? '')),
+            init() {
+                this.$watch('sameAsAuthor', (val) => {
+                    if (val) this.photographerVal = this.authorVal;
+                });
+                this.$watch('authorVal', (val) => {
+                    if (this.sameAsAuthor) this.photographerVal = val;
+                });
+            }
+        }">
 
           {{-- Chuyên mục --}}
           <div class="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-100 dark:border-zinc-800 shadow-sm p-5 transition-colors">
@@ -315,33 +327,14 @@
               Tác giả / Nguồn
             </label>
             <input type="text" name="source_author" id="source_author"
-                   value="{{ old('source_author', $post->source_author ?? '') }}"
+                   x-model="authorVal"
                    placeholder="VD: Cẩm Thiều - TV"
                    class="w-full border border-gray-200 dark:border-zinc-800 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 dark:focus:ring-emerald-500/20 bg-white dark:bg-zinc-950/50 dark:text-zinc-100 transition">
             <p class="text-xs text-gray-400 dark:text-zinc-500 mt-1.5">Hiển thị in đậm cuối bài viết</p>
           </div>
 
           {{-- Người chụp ảnh --}}
-          <div class="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-100 dark:border-zinc-800 shadow-sm p-5 transition-colors" x-data="{
-              sameAsAuthor: {{ old('photographer_same', (!isset($post) || (isset($post) && $post->photographer === $post->source_author)) ? 'true' : 'false') }},
-              photographerVal: '{{ old('photographer', $post->photographer ?? '') }}',
-              authorVal: '{{ old('source_author', $post->source_author ?? '') }}',
-              init() {
-                  const authorInput = document.getElementById('source_author');
-                  if (authorInput) {
-                      authorInput.addEventListener('input', (e) => {
-                          this.authorVal = e.target.value;
-                          if (this.sameAsAuthor) this.photographerVal = e.target.value;
-                      });
-                  }
-                  
-                  this.$watch('sameAsAuthor', (val) => {
-                      if (val) {
-                          this.photographerVal = document.getElementById('source_author')?.value || '';
-                      }
-                  });
-              }
-          }">
+          <div class="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-100 dark:border-zinc-800 shadow-sm p-5 transition-colors">
             <label class="block text-xs font-semibold text-gray-500 dark:text-zinc-400 uppercase tracking-wider mb-3">
               <i class="bi bi-camera"></i> Người chụp ảnh
             </label>
