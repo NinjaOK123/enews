@@ -58,8 +58,9 @@ class PostController extends Controller
     {
         $categories = \App\Models\Category::all();
         $royaltyRates = \App\Models\RoyaltyRate::orderBy('group_name')->orderBy('name')->get();
+        $suggestedAuthors = \App\Models\User::whereIn('role', ['contributor', 'editor', 'admin'])->pluck('name');
         // Uses the same view as contributor, or a dedicated admin view.
-        return view('contributor.posts.create', compact('post', 'categories', 'royaltyRates'));
+        return view('contributor.posts.create', compact('post', 'categories', 'royaltyRates', 'suggestedAuthors'));
     }
 
     /**

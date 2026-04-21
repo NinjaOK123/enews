@@ -161,18 +161,6 @@
             sameAsAuthor: {{ old('photographer_same', (!isset($post) || (isset($post) && $post->photographer === $post->source_author)) ? 'true' : 'false') }},
             authorVal: @js(old('source_author', $post->source_author ?? '')),
             photographerVal: @js(old('photographer', $post->photographer ?? '')),
-            authorsList: @js(isset($suggestedAuthors) ? $suggestedAuthors : []),
-            showAuthorDropdown: false,
-            showPhoDropdown: false,
-            
-            get filteredAuthors() {
-                if(this.authorVal.trim() === '') return this.authorsList.slice(0, 10);
-                return this.authorsList.filter(i => i.toLowerCase().includes(this.authorVal.toLowerCase())).slice(0, 10);
-            },
-            get filteredPhos() {
-                if(this.photographerVal.trim() === '') return this.authorsList.slice(0, 10);
-                return this.authorsList.filter(i => i.toLowerCase().includes(this.photographerVal.toLowerCase())).slice(0, 10);
-            },
             init() {
                 this.$watch('sameAsAuthor', (val) => {
                     if (val) this.photographerVal = this.authorVal;
@@ -338,27 +326,22 @@
             <label for="source_author" class="block text-xs font-semibold text-gray-500 dark:text-zinc-400 uppercase tracking-wider mb-3">
               Tác giả / Nguồn
             </label>
-            <div class="relative" @click.away="showAuthorDropdown = false">
-              <input type="text" name="source_author" id="source_author"
-                     x-model="authorVal"
-                     @focus="showAuthorDropdown = true"
-                     @input="showAuthorDropdown = true"
-                     autocomplete="off"
-                     placeholder="VD: Cẩm Thiều - TV"
-                     class="w-full border border-gray-200 dark:border-zinc-800 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 dark:focus:ring-emerald-500/20 bg-white dark:bg-zinc-950/50 dark:text-zinc-100 transition">
-              
-              <div x-show="showAuthorDropdown && filteredAuthors.length > 0" 
-                   x-transition style="display: none;"
-                   class="absolute z-50 w-full mt-1 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-xl shadow-xl max-h-48 overflow-y-auto overflow-x-hidden">
-                <template x-for="suggestion in filteredAuthors" :key="suggestion">
-                  <div @click="authorVal = suggestion; showAuthorDropdown = false"
-                       class="px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-emerald-50 dark:hover:bg-emerald-500/10 hover:text-emerald-700 dark:hover:text-emerald-400 cursor-pointer transition-colors border-b border-gray-50 dark:border-zinc-800/50 last:border-0"
-                       x-text="suggestion"></div>
-                </template>
-              </div>
-            </div>
-            <p class="text-xs text-gray-400 dark:text-zinc-500 mt-2">Hiển thị in đậm cuối bài viết</p>
+            <input type="text" name="source_author" id="source_author"
+                   x-model="authorVal"
+                   list="authorSuggestions"
+                   placeholder="VD: Cẩm Thiều - TV"
+                   class="w-full border border-gray-200 dark:border-zinc-800 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 dark:focus:ring-emerald-500/20 bg-white dark:bg-zinc-950/50 dark:text-zinc-100 transition">
+            <p class="text-xs text-gray-400 dark:text-zinc-500 mt-1.5">Hiển thị in đậm cuối bài viết</p>
           </div>
+
+          {{-- Datalist for Author suggestions --}}
+          @if(isset($suggestedAuthors))
+          <datalist id="authorSuggestions">
+            @foreach($suggestedAuthors as $sName)
+              <option value="{{ $sName }}"></option>
+            @endforeach
+          </datalist>
+          @endif
 
           {{-- Người chụp ảnh --}}
           <div class="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-100 dark:border-zinc-800 shadow-sm p-5 transition-colors">
@@ -372,28 +355,14 @@
               </div>
               <span class="text-xs text-gray-600 dark:text-zinc-400 font-medium group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">Cùng tác giả bài viết</span>
             </label>
-            <div class="relative" @click.away="showPhoDropdown = false">
-              <input type="text" name="photographer" id="photographer"
-                     x-model="photographerVal"
-                     @focus="if(!sameAsAuthor) showPhoDropdown = true"
-                     @input="if(!sameAsAuthor) showPhoDropdown = true"
-                     autocomplete="off"
-                     :readonly="sameAsAuthor"
-                     :class="sameAsAuthor ? 'bg-gray-50 dark:bg-zinc-900/50 text-gray-400 dark:text-zinc-600 cursor-not-allowed border-gray-200 dark:border-zinc-800' : 'bg-white dark:bg-zinc-950/50 text-gray-900 dark:text-zinc-100 border-gray-200 dark:border-zinc-800'"
-                     placeholder="VD: Nguyễn Văn A"
-                     class="w-full border rounded-xl px-3 py-2.5 text-sm outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 dark:focus:ring-emerald-500/20 transition">
-              
-              <div x-show="showPhoDropdown && !sameAsAuthor && filteredPhos.length > 0" 
-                   x-transition style="display: none;"
-                   class="absolute z-50 w-full mt-1 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-xl shadow-xl max-h-48 overflow-y-auto overflow-x-hidden">
-                <template x-for="suggestion in filteredPhos" :key="suggestion">
-                  <div @click="photographerVal = suggestion; showPhoDropdown = false"
-                       class="px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-emerald-50 dark:hover:bg-emerald-500/10 hover:text-emerald-700 dark:hover:text-emerald-400 cursor-pointer transition-colors border-b border-gray-50 dark:border-zinc-800/50 last:border-0"
-                       x-text="suggestion"></div>
-                </template>
-              </div>
-            </div>
-            <p class="text-xs text-gray-400 dark:text-zinc-500 mt-2">Dùng để tính nhuận bút ảnh riêng biệt</p>
+            <input type="text" name="photographer" id="photographer"
+                   x-model="photographerVal"
+                   list="authorSuggestions"
+                   :readonly="sameAsAuthor"
+                   :class="sameAsAuthor ? 'bg-gray-50 dark:bg-zinc-900/50 text-gray-400 dark:text-zinc-600 cursor-not-allowed border-gray-200 dark:border-zinc-800' : 'bg-white dark:bg-zinc-950/50 text-gray-900 dark:text-zinc-100 border-gray-200 dark:border-zinc-800'"
+                   placeholder="VD: Nguyễn Văn A"
+                   class="w-full border rounded-xl px-3 py-2.5 text-sm outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 dark:focus:ring-emerald-500/20 transition">
+            <p class="text-xs text-gray-400 dark:text-zinc-500 mt-1.5">Dùng để tính nhuận bút ảnh riêng biệt</p>
           </div>
 
           {{-- Tips card --}}
