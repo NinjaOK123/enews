@@ -141,6 +141,28 @@
   .dsn-hero { flex-direction: column; text-align: center; padding: 28px 20px; gap: 20px; }
   .dsn-note { flex-direction: column; align-items: center; text-align: center; padding: 20px; }
 }
+
+/* ── Dark Mode ────────────────────────────────────────── */
+html.dark .dsn-intro {
+  background: #18181b; /* zinc-900 */
+  border-color: #27272a; /* zinc-800 */
+  color: #e4e4e7; /* zinc-200 */
+}
+html.dark .act-card {
+  background: #18181b;
+  border-color: #27272a;
+}
+html.dark .act-title { color: #f4f4f5; }
+html.dark .act-desc { color: #a1a1aa; }
+html.dark .act-card.c-blue .act-icon { background: rgba(25,118,210,0.1); }
+html.dark .act-card.c-green .act-icon { background: rgba(56,142,60,0.1); }
+html.dark .act-card.c-purple .act-icon { background: rgba(123,31,162,0.1); }
+html.dark .act-reward { background: rgba(245,127,23,0.1); border-color: rgba(245,127,23,0.2); }
+html.dark .dsn-note { background: #1f2937; border-color: #374151; }
+html.dark .note-body h3 { color: #a7f3d0; }
+html.dark .note-body p { color: #d1d5db; }
+html.dark .dsn-outro { background: #18181b; border-color: #27272a; }
+html.dark .dsn-outro p { color: #e4e4e7; }
 </style>
 @endpush
 

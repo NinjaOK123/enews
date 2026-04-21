@@ -27,11 +27,20 @@ class PlagiarismController extends Controller
 
         $sentence = $request->input('sentence');
         
-        $urls = $this->plagiarismService->searchWeb($sentence);
-        
         $maxSimilarity = 0;
         $matchedSources = [];
 
+        // 1. Quét nội bộ (E-News DB)
+        $internalResults = $this->plagiarismService->searchInternal($sentence);
+        foreach ($internalResults as $result) {
+            $matchedSources[] = $result;
+            if ($result['similarity'] > $maxSimilarity) {
+                $maxSimilarity = $result['similarity'];
+            }
+        }
+
+        // 2. Quét mạng (Google Serper)
+        $urls = $this->plagiarismService->searchWeb($sentence);
         foreach ($urls as $url) {
             $content = $this->plagiarismService->fetchPageContent($url);
             
@@ -41,15 +50,18 @@ class PlagiarismController extends Controller
                 
                 $similarity = max($cosineSim, $ngramSim);
 
-                if ($similarity > $maxSimilarity) {
-                    $maxSimilarity = $similarity;
-                }
-
-                if ($similarity > 0.25) { // Chỉ quan tâm nếu trùng > 25%
+                if ($similarity > 0.25) { // Cảnh báo Đạo văn nếu trùng > 25%
+                    $simPercent = round($similarity * 100);
                     $matchedSources[] = [
                         'url' => $url,
-                        'similarity' => round($similarity * 100)
+                        'title' => 'External Web Source',
+                        'similarity' => $simPercent,
+                        'is_internal' => false
                     ];
+                    
+                    if ($simPercent > $maxSimilarity) {
+                        $maxSimilarity = $simPercent;
+                    }
                 }
             }
         }
@@ -59,9 +71,9 @@ class PlagiarismController extends Controller
 
         return response()->json([
             'sentence' => $sentence,
-            'similarity' => round($maxSimilarity * 100),
-            'sources' => $matchedSources,
-            'isPlagiarized' => $maxSimilarity > 0.25 // Cảnh báo Đạo văn nếu trùng > 25%
+            'similarity' => (int) $maxSimilarity,
+            'sources' => array_slice($matchedSources, 0, 5), // Trả về top 5 nguồn lặp nhiều nhất
+            'isPlagiarized' => $maxSimilarity > 25
         ]);
     }
 }

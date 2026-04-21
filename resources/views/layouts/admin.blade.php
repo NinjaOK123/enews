@@ -33,15 +33,23 @@
         @yield('styles')
     </style>
 
-    {{-- Dark Mode Init Script (No FOUC) --}}
+    {{-- Dark Mode Init Script & Livewire Navigator Fix --}}
     <script>
-        try {
-            const theme = localStorage.getItem('adm_theme');
-            if (theme === 'dark' || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-                document.documentElement.classList.add('dark');
-            }
-        } catch (_) {}
+        function applyAdmTheme() {
+            try {
+                const theme = localStorage.getItem('adm_theme');
+                if (theme === 'dark' || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                    document.documentElement.classList.add('dark');
+                } else {
+                    document.documentElement.classList.remove('dark');
+                }
+            } catch (_) {}
+        }
+        applyAdmTheme();
+        document.addEventListener('livewire:navigated', applyAdmTheme);
     </script>
+    
+    @livewireStyles
 </head>
 
 <body x-data="adminLayout()" x-init="init()" class="antialiased bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 min-h-screen transition-colors duration-200">
@@ -134,10 +142,14 @@
                     <div class="px-3 pt-6 pb-2 text-[11px] font-bold tracking-wider uppercase truncate text-zinc-500 dark:text-zinc-500" x-show="!collapsed">
                         {{ $item['label'] }}
                     </div>
+                    <div class="px-4 pt-6 pb-2 flex justify-center" x-show="collapsed" x-cloak>
+                        <div class="h-px w-6 bg-zinc-200 dark:bg-white/10 rounded-full"></div>
+                    </div>
                 @else
                     @php $isActive = request()->routeIs($item['is']); @endphp
                     <a href="{{ $item['route'] }}" wire:navigate.hover
-                       class="flex items-center gap-3 px-3 py-2.5 rounded-xl border border-transparent text-[14px] font-medium transition-all duration-200 w-full outline-none group relative overflow-hidden {{ $isActive ? 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 font-bold shadow-sm ring-1 ring-emerald-500/20' : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-white/5 hover:text-zinc-900 dark:hover:text-white' }}"
+                       class="flex items-center gap-3 py-2.5 rounded-xl border border-transparent text-[14px] font-medium transition-all duration-200 w-full outline-none group relative overflow-hidden {{ $isActive ? 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 font-bold shadow-sm ring-1 ring-emerald-500/20' : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-white/5 hover:text-zinc-900 dark:hover:text-white' }}"
+                       :class="collapsed ? 'justify-center px-0' : 'px-3 justify-start'"
                        title="{{ $item['label'] }}">
                         
                         {{-- Indicator dọc khi active (SaaS style) --}}
@@ -151,9 +163,12 @@
                         </span>
 
                         @if(!empty($item['badge']) && $item['badge'] > 0)
-                        <span class="ml-auto text-[10px] font-bold min-w-[20px] h-[20px] flex items-center justify-center px-1.5 rounded-full {{ $item['badgeColor'] }} transition-opacity shadow-sm" :class="collapsed ? 'opacity-0 hidden' : 'opacity-100'">
+                        {{-- Expanded badge --}}
+                        <span class="ml-auto text-[10px] font-bold min-w-[20px] h-[20px] flex items-center justify-center px-1.5 rounded-full {{ $item['badgeColor'] }} transition-opacity shadow-sm" x-show="!collapsed">
                             {{ $item['badge'] }}
                         </span>
+                        {{-- Collapsed dot --}}
+                        <span class="absolute top-2.5 right-2 w-2 h-2 rounded-full shadow-sm {{ $item['badgeColor'] }}" x-show="collapsed" x-cloak></span>
                         @endif
                     </a>
                 @endif
@@ -549,5 +564,7 @@
             };
         </script>
     </div>
+    
+    @livewireScripts
 </body>
 </html>

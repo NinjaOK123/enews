@@ -177,4 +177,73 @@ class PlagiarismService
 
         return $matches / max($size1, $size2);
     }
+
+    /**
+     * Tìm kiếm nội bộ trong DB các bài viết của ENews để tìm các câu văn trùng khớp.
+     * Sử dụng LIKE với các từ khóa dài/hiếm.
+     */
+    public function searchInternal(string $sentence): array
+    {
+        $urls = [];
+        
+        // 1. Phân tách và lấy các từ có độ dài trên 4 ký tự (bỏ qua hư từ "và", "là", "thì", "mà", "của")
+        $words = preg_split('/[\s,\.\!\?]+/', mb_strtolower($sentence));
+        $longWords = array_filter($words, function($w) {
+            return mb_strlen($w) >= 5;
+        });
+
+        // Nếu không có từ dài, lấy luôn những từ vừa
+        if (empty($longWords)) {
+            $longWords = array_filter($words, function($w) {
+                return mb_strlen($w) >= 3;
+            });
+        }
+
+        // Lấy 3 từ khoá dài nhất để search
+        usort($longWords, function($a, $b) {
+            return mb_strlen($b) - mb_strlen($a);
+        });
+        $keywords = array_slice($longWords, 0, 3);
+
+        if (empty($keywords)) {
+            return []; // Câu văn toàn số hoặc ký tự vô nghĩa
+        }
+
+        // 2. Query cơ sở dữ liệu `posts` xem có bài nào chứa các cụm này không
+        $query = \App\Models\Post::where('status', 'published')
+            ->select('slug', 'content', 'title', 'id');
+            
+        // Tìm kiếm kết hợp: Các bài viết phải chứa ít nhất 1-2 từ khoá khó
+        $query->where(function($q) use ($keywords) {
+            foreach ($keywords as $kw) {
+                $q->orWhere('content', 'like', "%{$kw}%");
+            }
+        });
+
+        // Giới hạn max 20 bài viết nội bộ có chứa các từ hiếm
+        $posts = $query->limit(20)->get();
+
+        foreach ($posts as $post) {
+            $strippedContent = strip_tags($post->content);
+            $strippedContent = html_entity_decode($strippedContent, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+            
+            // Xoá khoảng trắng thừa
+            $strippedContent = preg_replace('/\s+/u', ' ', $strippedContent);
+
+            $cosineSim = $this->calculateSimilarity($sentence, $strippedContent);
+            $ngramSim = $this->nGramSimilarity($sentence, $strippedContent, 5);
+            $similarity = max($cosineSim, $ngramSim);
+
+            if ($similarity > 0.25) { // Trùng > 25% nội bộ cũng xử lý
+                $urls[] = [
+                    'url' => route('post.show', $post->slug) . '?internal=true', // Đánh dấu URL nội bộ
+                    'title' => $post->title,
+                    'similarity' => round($similarity * 100),
+                    'is_internal' => true
+                ];
+            }
+        }
+
+        return $urls;
+    }
 }

@@ -72,10 +72,6 @@ class HomeController extends Controller
         return view('frontend.home', $homeData);
     }
 
-    /**
-     * Load posts for each section — tối ưu: 1 query categories + 1 query posts tất cả
-     * Thay vì 20 queries riêng lẻ → chỉ 2 queries tổng
-     */
     private function loadSections(array $slugs): array
     {
         // 1 query: lấy tất cả categories cần thiết
@@ -83,27 +79,22 @@ class HomeController extends Controller
             ->where('is_active', true)
             ->pluck('id', 'slug');
 
-        $catIds = $categories->values()->toArray();
-
-        if (empty($catIds)) {
-            return array_fill_keys($slugs, collect());
-        }
-
-        // 1 query: lấy TẤT CẢ posts của tất cả sections cùng lúc
-        $allPosts = Post::published()
-            ->whereIn('category_id', $catIds)
-            ->with(['author:id,name', 'category:id,name,slug'])
-            ->latest()
-            ->get()
-            ->groupBy('category_id');
-
-        // Map về đúng slug
         $sections = [];
+        
+        // Tuy dùng vòng lặp N query nhưng mỗi query đều có LIMIT 4, 
+        // tốc độ cực nhanh so với việc load hàng vạn bài viết rồi groupBy trên RAM
         foreach ($slugs as $slug) {
             $catId = $categories[$slug] ?? null;
-            $sections[$slug] = $catId
-                ? ($allPosts[$catId] ?? collect())->take(4)
-                : collect();
+            if ($catId) {
+                $sections[$slug] = Post::published()
+                    ->where('category_id', $catId)
+                    ->with(['author:id,name', 'category:id,name,slug'])
+                    ->latest()
+                    ->limit(4)
+                    ->get();
+            } else {
+                $sections[$slug] = collect();
+            }
         }
 
         return $sections;

@@ -51,15 +51,15 @@
         <div class="flex-1 min-w-0 space-y-5">
 
           {{-- Tiêu đề --}}
-          <div class="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-100 dark:border-zinc-800 shadow-sm p-5 overflow-hidden transition-colors relative group focus-within:border-emerald-500/50 dark:focus-within:border-emerald-500/50">
+          <div class="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-100 dark:border-zinc-800 shadow-sm p-5 transition-colors relative group focus-within:border-emerald-500/50 dark:focus-within:border-emerald-500/50">
             <label for="title" class="block text-xs font-semibold text-gray-500 dark:text-zinc-400 uppercase tracking-wider mb-2">
               Tiêu đề bài viết <span class="text-red-500">*</span>
             </label>
             <input type="text" id="title" name="title" required
                    value="{{ old('title', $post->title ?? '') }}"
                    placeholder="Nhập tiêu đề hấp dẫn, rõ ràng..."
-                   class="w-full text-xl font-semibold text-gray-900 dark:text-zinc-100 border-0 outline-none placeholder:text-gray-300 dark:placeholder:text-zinc-600 bg-transparent ring-0 focus:ring-0 p-0 m-0">
-            @error('title')<p class="mt-1 text-xs text-red-500">{{ $message }}</p>@enderror
+                   class="w-full text-xl md:text-2xl font-bold text-gray-900 dark:text-zinc-100 border-0 outline-none placeholder:text-gray-300 dark:placeholder:text-zinc-600 bg-transparent ring-0 focus:ring-0 px-0 py-1 m-0 leading-normal">
+            @error('title')<p class="mt-2 text-xs text-red-500">{{ $message }}</p>@enderror
           </div>
 
           {{-- AI Prompt (ẩn mặc định) --}}
@@ -80,8 +80,8 @@
           </div>
 
           {{-- Editor --}}
-          <div class="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-100 dark:border-zinc-800 shadow-sm overflow-hidden transition-colors">
-            <div class="flex items-center justify-between px-5 py-3 border-b border-gray-100 dark:border-zinc-800 bg-gray-50/60 dark:bg-zinc-950/50">
+          <div class="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-100 dark:border-zinc-800 shadow-sm transition-colors">
+            <div class="flex items-center justify-between px-5 py-3 border-b border-gray-100 dark:border-zinc-800 bg-gray-50/60 dark:bg-zinc-950/50 rounded-t-[15px]">
               <span class="text-xs font-semibold text-gray-500 dark:text-zinc-400 uppercase tracking-wider">
                 Nội dung bài viết <span class="text-red-500">*</span>
               </span>
@@ -160,7 +160,7 @@
         <div class="w-80 shrink-0 space-y-5">
 
           {{-- Chuyên mục --}}
-          <div class="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-100 dark:border-zinc-800 shadow-sm p-5 overflow-hidden transition-colors">
+          <div class="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-100 dark:border-zinc-800 shadow-sm p-5 transition-colors">
             <label class="block text-xs font-semibold text-gray-500 dark:text-zinc-400 uppercase tracking-wider mb-3">
               Chuyên mục <span class="text-red-500">*</span>
             </label>
@@ -184,9 +184,11 @@
 
           {{-- Đặt làm Tiêu Điểm / Nổi bật (Chỉ dành cho Ban Biên tập) --}}
           @if(in_array(auth()->user()->role ?? '', ['admin', 'editor']))
-          <div class="bg-gradient-to-br from-indigo-50 to-blue-50 dark:from-indigo-950/40 dark:to-blue-900/20 rounded-2xl border border-indigo-100 dark:border-indigo-500/20 shadow-sm p-5 relative overflow-hidden transition-colors">
-            <div class="absolute -right-4 -bottom-4 text-indigo-200 dark:text-indigo-500/10 opacity-20 dark:opacity-100 pointer-events-none">
-              <i class="bi bi-star-fill" style="font-size: 6rem;"></i>
+          <div class="bg-gradient-to-br from-indigo-50 to-blue-50 dark:from-indigo-950/40 dark:to-blue-900/20 rounded-2xl border border-indigo-100 dark:border-indigo-500/20 shadow-sm p-5 relative transition-colors">
+            <div class="absolute inset-0 overflow-hidden rounded-2xl pointer-events-none">
+              <div class="absolute -right-4 -bottom-4 text-indigo-200 dark:text-indigo-500/10 opacity-20 dark:opacity-100 pointer-events-none">
+                <i class="bi bi-star-fill" style="font-size: 6rem;"></i>
+              </div>
             </div>
             <label class="flex items-center gap-3 cursor-pointer relative z-10 group">
               <div class="relative flex items-center justify-center w-5 h-5 shrink-0">
@@ -202,9 +204,11 @@
 
           {{-- Nhuận bút (Chỉ dành cho Ban Biên tập) --}}
           @if(in_array(auth()->user()->role ?? '', ['admin', 'editor']) && isset($royaltyRates))
-          <div class="bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-950/30 dark:to-teal-900/20 rounded-2xl border border-emerald-100 dark:border-emerald-500/20 shadow-sm p-5 relative overflow-hidden transition-colors">
-            <div class="absolute -right-4 -top-4 text-emerald-200 dark:text-emerald-500/10 opacity-30 dark:opacity-100 pointer-events-none">
-              <i class="bi bi-wallet2" style="font-size: 5rem;"></i>
+          <div class="bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-950/30 dark:to-teal-900/20 rounded-2xl border border-emerald-100 dark:border-emerald-500/20 shadow-sm p-5 relative transition-colors">
+            <div class="absolute inset-0 overflow-hidden rounded-2xl pointer-events-none">
+              <div class="absolute -right-4 -top-4 text-emerald-200 dark:text-emerald-500/10 opacity-30 dark:opacity-100 pointer-events-none">
+                <i class="bi bi-wallet2" style="font-size: 5rem;"></i>
+              </div>
             </div>
             <label class="block text-xs font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider mb-3 relative z-10">
               <i class="bi bi-cash-coin me-1"></i> Định mức Nhuận bút
@@ -281,7 +285,7 @@
           @endif
 
           {{-- Thumbnail --}}
-          <div class="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-100 dark:border-zinc-800 shadow-sm p-5 overflow-hidden transition-colors">
+          <div class="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-100 dark:border-zinc-800 shadow-sm p-5 transition-colors">
             <label class="block text-xs font-semibold text-gray-500 dark:text-zinc-400 uppercase tracking-wider mb-3">
               Ảnh đại diện (Thumbnail)
             </label>
@@ -306,7 +310,7 @@
           </div>
 
           {{-- Tên tác giả / Nguồn --}}
-          <div class="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-100 dark:border-zinc-800 shadow-sm p-5 overflow-hidden transition-colors">
+          <div class="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-100 dark:border-zinc-800 shadow-sm p-5 transition-colors">
             <label for="source_author" class="block text-xs font-semibold text-gray-500 dark:text-zinc-400 uppercase tracking-wider mb-3">
               Tác giả / Nguồn
             </label>
@@ -318,7 +322,7 @@
           </div>
 
           {{-- Người chụp ảnh --}}
-          <div class="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-100 dark:border-zinc-800 shadow-sm p-5 overflow-hidden transition-colors" x-data="{
+          <div class="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-100 dark:border-zinc-800 shadow-sm p-5 transition-colors" x-data="{
               sameAsAuthor: {{ old('photographer_same', (!isset($post) || (isset($post) && $post->photographer === $post->source_author)) ? 'true' : 'false') }},
               photographerVal: '{{ old('photographer', $post->photographer ?? '') }}',
               authorVal: '{{ old('source_author', $post->source_author ?? '') }}',
@@ -886,7 +890,10 @@ function openPlagiarismModal() {
 
 function closePlagiarismModal() {
     document.getElementById('plagiarismModal').classList.add('hidden');
-    document.getElementById('plagiarismResults').innerHTML = '';
+    resetPlagiarismScreens();
+}
+
+function resetPlagiarismScreens() {
     document.getElementById('plagiarismStartScreen').classList.remove('hidden');
     document.getElementById('plagiarismProgressScreen').classList.add('hidden');
     document.getElementById('plagiarismReportScreen').classList.add('hidden');
@@ -941,7 +948,7 @@ async function startPlagiarismCheck() {
         const sentence = sentences[i];
         
         // Update Tiền trình UI
-        const percent = Math.round((i / sentences.length) * 100);
+        const percent = Math.round(((i + 1) / sentences.length) * 100);
         progressBar.style.width = percent + '%';
         progressText.textContent = `Đang quét: ${i+1}/${sentences.length} câu (${percent}%)`;
         currentSentenceEl.textContent = sentence.substring(0, 60) + '...';
@@ -965,16 +972,38 @@ async function startPlagiarismCheck() {
 
             // Lưu lại kết quả câu này để show Report
             if (result.similarity > 25) {
-                let sourcesList = result.sources.map(src => `<a href="${src.url}" target="_blank" class="block text-blue-600 hover:underline truncate" title="${src.url}">🔹 ${src.similarity}% - ${src.url}</a>`).join('');
+                let sourcesList = result.sources.map(src => {
+                    if (src.is_internal) {
+                        return `
+                            <div class="flex justify-between items-center text-xs mb-1.5 p-1.5 rounded bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-500/30 transition">
+                                <div class="flex items-center gap-2 truncate mr-4">
+                                    <span class="bg-red-500 text-white text-[9px] font-black px-1.5 py-0.5 rounded uppercase tracking-widest shrink-0">Nội bộ</span>
+                                    <a href="${src.url}" target="_blank" class="text-red-700 dark:text-red-400 font-bold hover:underline truncate" title="${src.title}">${src.title}</a>
+                                </div>
+                                <span class="text-red-600 dark:text-red-400 font-black ml-2 shrink-0">${src.similarity}%</span>
+                            </div>
+                        `;
+                    } else {
+                        return `
+                            <div class="flex justify-between items-center text-xs mb-1.5 p-1.5 rounded hover:bg-gray-50 dark:hover:bg-zinc-800/50 transition">
+                                <a href="${src.url}" target="_blank" class="text-blue-500 hover:text-blue-600 dark:text-blue-400 hover:underline truncate mr-4" title="${src.url}">${src.url}</a>
+                                <span class="text-gray-500 dark:text-zinc-400 font-bold ml-2 shrink-0">${src.similarity}%</span>
+                            </div>
+                        `;
+                    }
+                }).join('');
                 
                 resultsHtml.push(`
-                    <div class="mb-4 p-4 rounded-xl ${result.isPlagiarized ? 'bg-red-50 border border-red-200' : 'bg-orange-50 border border-orange-200'}">
-                        <p class="text-sm font-semibold text-gray-800 mb-2">"${result.sentence}"</p>
-                        <div class="flex items-center gap-2 mb-2">
-                            <span class="px-2 py-1 rounded text-xs font-bold ${result.isPlagiarized ? 'bg-red-500 text-white' : 'bg-orange-400 text-white'}">Trùng khớp: ${result.similarity}%</span>
+                    <div class="bg-red-50/50 dark:bg-red-900/10 border border-red-200 dark:border-red-500/20 rounded-xl p-5 mb-4">
+                        <div class="flex justify-between items-start gap-4 mb-4">
+                            <p class="text-gray-800 dark:text-zinc-200 font-medium text-sm leading-relaxed">"${result.sentence}"</p>
+                            <span class="bg-red-600 text-white px-3 py-1 rounded-full text-sm font-bold shrink-0">${result.similarity}% trùng lập</span>
                         </div>
-                        <div class="space-y-1 text-xs pl-2 border-l-2 ${result.isPlagiarized ? 'border-red-300' : 'border-orange-300'}">
-                            ${sourcesList}
+                        <div>
+                            <p class="text-[10px] text-gray-500 dark:text-zinc-400 font-bold uppercase tracking-wider mb-2">Nguồn phát hiện</p>
+                            <div class="bg-white dark:bg-zinc-900 rounded-lg p-2 border border-gray-100 dark:border-zinc-800">
+                                ${sourcesList}
+                            </div>
                         </div>
                     </div>
                 `);
@@ -1001,29 +1030,15 @@ async function startPlagiarismCheck() {
 
     // Xác định mức độ màu sắc
     let colorClass = 'text-green-600';
-    let ringClass = 'ring-green-500';
-    let statusText = 'An toàn';
-    if (plagPercent > 10) { colorClass = 'text-yellow-600'; ringClass = 'ring-yellow-500'; statusText = 'Nguy cơ thấp'; }
-    if (plagPercent > 25) { colorClass = 'text-red-600'; ringClass = 'ring-red-500'; statusText = 'Vi phạm bản quyền (>25%)'; }
+    if (plagPercent > 10) colorClass = 'text-yellow-600';
+    if (plagPercent > 25) colorClass = 'text-red-600';
 
-    document.getElementById('plagScoreUi').className = `text-4xl font-extrabold ${colorClass}`;
+    document.getElementById('plagScoreUi').className = `text-5xl font-bold ${colorClass}`;
     document.getElementById('plagScoreUi').textContent = `${plagPercent}%`;
-    document.getElementById('plagStatusUi').textContent = statusText;
-    document.getElementById('plagStatusUi').className = `text-sm font-bold mt-1 ${colorClass}`;
-
-    const reportOverview = document.getElementById('plagReportOverview');
-    reportOverview.innerHTML = `
-        <div class="grid grid-cols-2 gap-4 mt-4">
-            <div class="bg-gray-50 rounded-lg p-3 text-center border border-gray-100">
-                <p class="text-xs text-gray-500 uppercase">Tổng số câu quét</p>
-                <p class="text-xl font-bold text-gray-800">${sentences.length}</p>
-            </div>
-            <div class="bg-gray-50 rounded-lg p-3 text-center border border-gray-100 dark:bg-zinc-800 dark:border-zinc-700">
-                <p class="text-xs text-gray-500 dark:text-zinc-400 uppercase">Câu vi phạm (>25%)</p>
-                <p class="text-xl font-bold text-red-600">${plagiarizedCount}</p>
-            </div>
-        </div>
-    `;
+    document.getElementById('plagSimScoreUi').textContent = `${avgScore}%`;
+    
+    document.getElementById('plagTotalSentences').textContent = sentences.length;
+    document.getElementById('plagViolatedSentences').textContent = plagiarizedCount;
 
     if (resultsHtml.length > 0) {
         document.getElementById('plagDetailedResults').innerHTML = resultsHtml.join('');
@@ -1045,85 +1060,159 @@ async function startPlagiarismCheck() {
 {{-- ============================== --}}
 <div id="plagiarismModal" class="hidden fixed inset-0 z-[100] flex items-center justify-center">
   <!-- Backdrop -->
-  <div class="absolute inset-0 bg-gray-900/60 dark:bg-zinc-900/90 backdrop-blur-sm transition-opacity" onclick="closePlagiarismModal()"></div>
+  <div class="absolute inset-0 bg-gray-900/40 dark:bg-zinc-950/80 backdrop-blur-md transition-opacity" onclick="closePlagiarismModal()"></div>
   
   <!-- Modal Content -->
-  <div class="relative bg-white dark:bg-zinc-900 rounded-3xl shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col overflow-hidden animate-in fade-in zoom-in duration-200 border border-gray-100 dark:border-zinc-800">
+  <div class="relative bg-white dark:bg-zinc-950 rounded-2xl shadow-2xl w-full max-w-5xl max-h-[90vh] flex flex-col overflow-hidden animate-in fade-in zoom-in duration-300 border border-gray-100 dark:border-zinc-800 shadow-indigo-500/10 dark:shadow-indigo-500/5">
+    
+    <!-- Top Accent Line -->
+    <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-indigo-500 via-purple-500 to-blue-500 z-10"></div>
+
     <!-- Header -->
-    <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-zinc-800 bg-gray-50/50 dark:bg-zinc-950/50">
+    <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-zinc-800 bg-white dark:bg-zinc-900/50 relative z-0">
       <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-xl bg-indigo-100 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
+        <div class="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center border border-indigo-100 dark:border-indigo-500/20">
           <i class="bi bi-shield-check text-xl"></i>
         </div>
         <div>
-          <h3 class="text-lg font-bold text-gray-900 dark:text-zinc-100 leading-tight">Mắt Thần E-News</h3>
-          <p class="text-xs text-gray-500 dark:text-zinc-400">Công cụ rà soát đạo văn bằng N-Gram & Cosine</p>
+          <h3 class="text-lg font-bold text-gray-900 dark:text-zinc-100 leading-tight flex items-center gap-2">
+            Turnitin <span class="bg-indigo-100 text-indigo-700 dark:bg-indigo-500/20 dark:text-indigo-300 text-[10px] uppercase font-bold px-2 py-0.5 rounded-full">Free Edition</span>
+          </h3>
+          <p class="text-xs text-gray-500 dark:text-zinc-400 font-mono tracking-tight mt-0.5">ALGORITHM: N-GRAM & COSINE SIMILARITY</p>
         </div>
       </div>
-      <button type="button" onclick="closePlagiarismModal()" class="text-gray-400 dark:text-zinc-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 p-2 rounded-xl transition">
-        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+      <button type="button" onclick="closePlagiarismModal()" class="text-gray-400 dark:text-zinc-500 hover:text-gray-600 dark:hover:text-zinc-300 bg-gray-50 hover:bg-gray-100 dark:bg-zinc-800 dark:hover:bg-zinc-700 p-2 rounded-xl transition">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
       </button>
     </div>
 
     <!-- Body -->
-    <div class="p-6 overflow-y-auto flex-1 bg-white dark:bg-zinc-900">
+    <div class="p-6 lg:p-10 overflow-y-auto flex-1 bg-gray-50/30 dark:bg-zinc-950 relative">
       
       <!-- SCREEN 1: Bắt đầu -->
-      <div id="plagiarismStartScreen" class="text-center py-10">
-        <img src="https://cdni.iconscout.com/illustration/premium/thumb/detective-searching-document-4438848-3718485.png" alt="Scan" class="w-48 mx-auto mb-6 opacity-80">
-        <h4 class="text-xl font-bold text-gray-800 dark:text-zinc-100 mb-2">Chuẩn bị quét tài liệu</h4>
-        <p class="text-gray-500 dark:text-zinc-400 text-sm max-w-md mx-auto mb-6">Hệ thống sẽ bẻ gãy bài viết của bạn thành từng mảnh nhỏ và đối chiếu với hơn 40 tỷ trang web trên Internet.</p>
-        <button type="button" onclick="startPlagiarismCheck()" class="inline-flex items-center justify-center gap-2 px-8 py-3 text-base font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-full shadow-lg shadow-indigo-600/30 dark:shadow-none transition transform hover:scale-105">
-          <i class="bi bi-radar"></i> Khởi chạy Mắt Thần
+      <div id="plagiarismStartScreen" class="flex flex-col items-center justify-center py-12 h-full min-h-[400px]">
+        
+        <div class="relative w-32 h-32 mb-8 flex flex-col items-center justify-center">
+            <div class="absolute inset-0 bg-indigo-100 dark:bg-indigo-500/10 rounded-full animate-ping opacity-30"></div>
+            <div class="w-24 h-24 bg-white dark:bg-zinc-900 border-2 border-indigo-100 dark:border-indigo-500/20 rounded-full flex items-center justify-center shadow-lg relative z-10">
+                <i class="bi bi-file-earmark-text text-4xl text-indigo-600 dark:text-indigo-400"></i>
+                <!-- Scanner line simulation -->
+                <div class="absolute top-0 w-full h-1/2 bg-gradient-to-b from-transparent to-indigo-500/20 dark:to-indigo-500/40 rounded-t-full border-b border-indigo-400 hidden group-hover:block"></div>
+            </div>
+        </div>
+
+        <h4 class="text-2xl font-extrabold text-gray-900 dark:text-white mb-3 text-center tracking-tight">Phân tích Tính Nguyên gốc</h4>
+        <p class="text-gray-500 dark:text-zinc-400 text-sm max-w-lg text-center mb-8 leading-relaxed">
+            Hệ thống sẽ đối chiếu chuyên sâu từng mảnh dữ liệu của bài viết với <span class="font-semibold text-gray-700 dark:text-zinc-300">hàng tỷ trang mạng internet</span> và các cơ sở dữ liệu học thuật mở để đảm bảo tính độc bản của nội dung.
+        </p>
+        
+        <button type="button" onclick="startPlagiarismCheck()" class="group inline-flex items-center justify-center gap-3 px-8 py-3.5 text-base font-bold text-white bg-gray-900 hover:bg-gray-800 dark:bg-white dark:text-zinc-900 dark:hover:bg-gray-200 rounded-full shadow-xl transition-all hover:-translate-y-0.5">
+          Khởi chạy Quá trình Quét
+          <i class="bi bi-arrow-right group-hover:translate-x-1 transition-transform"></i>
         </button>
+
+        <div class="mt-8 flex items-center gap-6 text-xs text-gray-400 dark:text-zinc-500 font-medium">
+            <span class="flex items-center gap-1.5"><i class="bi bi-lock-fill"></i> Bảo mật dữ liệu 100%</span>
+            <span class="flex items-center gap-1.5"><i class="bi bi-lightning-charge-fill"></i> Tốc độ phân tích cực nhanh</span>
+        </div>
       </div>
 
       <!-- SCREEN 2: Tiến trình quét -->
-      <div id="plagiarismProgressScreen" class="hidden py-16 text-center max-w-sm mx-auto">
-        <div class="relative w-24 h-24 mx-auto mb-8">
-            <div class="absolute inset-0 rounded-full border-4 border-gray-100 dark:border-zinc-800"></div>
-            <div class="absolute inset-0 rounded-full border-4 border-indigo-600 border-t-transparent animate-spin"></div>
-            <i class="bi bi-radar absolute inset-0 flex items-center justify-center text-3xl text-indigo-600 dark:text-indigo-400 animate-pulse"></i>
+      <div id="plagiarismProgressScreen" class="hidden flex flex-col items-center justify-center py-16 h-full min-h-[400px]">
+        <div class="relative w-28 h-28 mb-10">
+            <!-- Ripple Effects -->
+            <div class="absolute inset-0 rounded-full border border-indigo-200 dark:border-indigo-500/30 scale-150 animate-ping opacity-20"></div>
+            <div class="absolute inset-0 rounded-full border border-indigo-300 dark:border-indigo-500/40 scale-110 animate-ping opacity-40" style="animation-delay: 300ms;"></div>
+            
+            <div class="absolute inset-0 rounded-full border-[3px] border-gray-100 dark:border-zinc-800/50"></div>
+            <div class="absolute inset-0 rounded-full border-[3px] border-indigo-600 border-t-transparent animate-spin ring-4 ring-indigo-50 dark:ring-indigo-500/10"></div>
+            
+            <div class="absolute inset-0 flex flex-col items-center justify-center bg-white dark:bg-zinc-900 rounded-full m-1 shadow-sm">
+                <span id="plagProgressPercent" class="text-xl font-bold text-indigo-600 dark:text-indigo-400">0%</span>
+            </div>
         </div>
         
-        <h4 class="text-lg font-bold text-gray-800 dark:text-zinc-100 mb-4" id="plagProgressText">Đang khởi động thuật toán...</h4>
+        <h4 class="text-lg font-bold text-gray-900 dark:text-white mb-2 text-center" id="plagProgressText">Hệ thống đang truy xuất dữ liệu</h4>
         
-        <!-- Progress Bar -->
-        <div class="w-full bg-gray-100 dark:bg-zinc-800 rounded-full h-3 mb-3 overflow-hidden">
-          <div id="plagProgressBar" class="bg-gradient-to-r from-indigo-500 to-purple-500 h-3 rounded-full transition-all duration-300" style="width: 0%"></div>
+        <div class="w-full max-w-md bg-gray-100 dark:bg-zinc-800/50 rounded-full h-1.5 mb-6 overflow-hidden">
+          <div id="plagProgressBar" class="bg-indigo-600 h-full rounded-full transition-all duration-300 relative overflow-hidden" style="width: 0%">
+            <!-- Animated shimmer on progress bar -->
+            <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full animate-[shimmer_1.5s_infinite]"></div>
+          </div>
         </div>
-        <p class="text-xs text-gray-400 dark:text-zinc-500 italic" id="plagCurrentSentence">Đang bóc tách cú pháp...</p>
+
+        <div class="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-xl px-5 py-4 w-full max-w-md shadow-sm">
+            <p class="text-xs font-semibold text-gray-400 dark:text-zinc-500 uppercase tracking-widest mb-2 flex items-center justify-between">
+                <span>Trạng thái máy quét</span>
+                <i class="bi bi-activity animate-pulse text-indigo-500"></i>
+            </p>
+            <p class="text-sm text-gray-600 dark:text-zinc-300 italic truncate font-mono" id="plagCurrentSentence">Đang phân tích cấu trúc cú pháp...</p>
+        </div>
       </div>
 
       <!-- SCREEN 3: Kết quả -->
-      <div id="plagiarismReportScreen" class="hidden">
-        <div class="flex flex-col md:flex-row gap-6">
-            <!-- Left: Overview Card -->
-            <div class="md:w-1/3">
-                <div class="bg-white dark:bg-zinc-900 border dark:border-zinc-800 rounded-2xl p-6 shadow-sm sticky top-0 text-center">
-                    <div class="inline-flex items-center justify-center w-24 h-24 rounded-full bg-gray-50 dark:bg-zinc-800 border-8 border-gray-100 dark:border-zinc-700 mb-4">
-                        <span id="plagScoreUi" class="text-4xl font-extrabold text-gray-900 dark:text-zinc-100">0%</span>
-                    </div>
-                    <p class="text-xs text-gray-500 dark:text-zinc-400 uppercase tracking-widest font-semibold">Tỷ lệ Trùng Lặp</p>
-                    <p id="plagStatusUi" class="text-sm font-bold text-gray-800 dark:text-zinc-200 mt-1">An toàn</p>
-                    <div id="plagReportOverview"></div>
-                    
-                    <div class="mt-6 pt-5 border-t dark:border-zinc-800">
-                        <button type="button" onclick="openPlagiarismModal()" class="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold text-gray-700 dark:text-zinc-300 bg-gray-100 dark:bg-zinc-800 hover:bg-gray-200 dark:hover:bg-zinc-700 rounded-xl transition">
-                            <i class="bi bi-arrow-clockwise"></i> Quét lại
-                        </button>
-                    </div>
+      <div id="plagiarismReportScreen" class="hidden max-w-4xl mx-auto w-full py-4">
+        <div class="flex items-center justify-between mb-8">
+            <div>
+                <h2 class="text-2xl font-bold text-gray-900 dark:text-zinc-100">Báo cáo Phân tích Trùng lặp</h2>
+                <div class="flex items-center gap-2 mt-1">
+                    <span class="flex h-2 w-2 relative">
+                      <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                      <span class="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                    </span>
+                    <p class="text-sm text-gray-500 dark:text-zinc-400">Turnitin Checker AI Engine</p>
                 </div>
             </div>
-
-            <!-- Right: Detailed Results -->
-            <div class="md:w-2/3">
-                <h4 class="text-base font-bold text-gray-900 dark:text-zinc-100 border-b dark:border-zinc-800 pb-3 mb-4">Chi tiết nguồn vi phạm</h4>
-                <div id="plagDetailedResults" class="space-y-4">
-                    <!-- JS sẽ append kết quả vào đây -->
-                </div>
+            <button type="button" onclick="resetPlagiarismScreens()" class="inline-flex items-center gap-2 px-4 py-2 hover:bg-gray-100 dark:hover:bg-zinc-800 text-gray-700 dark:text-zinc-300 rounded-lg text-sm font-medium transition border border-gray-200 dark:border-zinc-700">
+                <i class="bi bi-arrow-clockwise"></i> Quét lại báo cáo
+            </button>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-6">
+            <div class="bg-gray-50 dark:bg-zinc-800/80 border border-gray-100 dark:border-zinc-700/50 rounded-2xl p-6 flex flex-col justify-center items-center text-center">
+                <p class="text-sm font-medium text-gray-500 dark:text-zinc-400 mb-1">Tỷ lệ Đạo văn</p>
+                <p id="plagScoreUi" class="text-5xl font-bold text-green-500">0%</p>
+            </div>
+            <div class="bg-gray-50 dark:bg-zinc-800/80 border border-gray-100 dark:border-zinc-700/50 rounded-2xl p-6 flex flex-col justify-center items-center text-center">
+                <p class="text-sm font-medium text-gray-500 dark:text-zinc-400 mb-1">Mức độ Tương đồng</p>
+                <p id="plagSimScoreUi" class="text-5xl font-bold text-blue-500">0%</p>
             </div>
         </div>
+
+        <div class="grid grid-cols-3 gap-5 mb-8">
+            <div class="bg-gray-50 dark:bg-zinc-800/80 border border-gray-100 dark:border-zinc-700/50 rounded-2xl p-4 text-center">
+                <p class="text-xs text-gray-500 dark:text-zinc-400 mb-1 uppercase tracking-wide">Tổng số câu quét</p>
+                <p id="plagTotalSentences" class="text-xl font-bold text-gray-900 dark:text-zinc-100">0</p>
+            </div>
+            <div class="bg-gray-50 dark:bg-zinc-800/80 border border-gray-100 dark:border-zinc-700/50 rounded-2xl p-4 text-center">
+                <p class="text-xs text-gray-500 dark:text-zinc-400 mb-1 uppercase tracking-wide">Câu văn vi phạm</p>
+                <p id="plagViolatedSentences" class="text-xl font-bold text-red-500">0</p>
+            </div>
+            <div class="bg-gray-50 dark:bg-zinc-800/80 border border-gray-100 dark:border-zinc-700/50 rounded-2xl p-4 text-center">
+                <p class="text-xs text-gray-500 dark:text-zinc-400 mb-1 uppercase tracking-wide">Đánh giá chung</p>
+                <p id="plagStatusUi" class="text-sm font-bold text-green-600 dark:text-green-400 inline-block mt-1">An toàn</p>
+            </div>
+        </div>
+
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-bold text-gray-900 dark:text-zinc-100 flex items-center gap-2">
+                Phân tích Chi tiết
+            </h3>
+            <span class="text-xs text-gray-500 dark:text-zinc-400 bg-gray-100 dark:bg-zinc-800 px-2 py-1 rounded">Mức cảnh báo >25%</span>
+        </div>
+
+        <!-- Detailed Breakdown -->
+        <div class="mb-4 flex items-center justify-between">
+            <h3 class="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                <i class="bi bi-list-columns-reverse text-indigo-500"></i> Phân tích Chi tiết
+            </h3>
+            <span class="text-xs bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 px-2 py-1 rounded font-medium">Hiển thị các khối vi phạm >25%</span>
+        </div>
+
+        <div id="plagDetailedResults" class="space-y-4 pb-6">
+            <!-- JS sẽ append kết quả vào đây -->
+        </div>
+
       </div>
 
     </div>

@@ -284,6 +284,21 @@
   .hero-stats    { justify-content: center; }
   .hero-title    { font-size: 1.55rem; }
 }
+
+/* ── Dark Mode ────────────────────────────────────────── */
+html.dark .section-heading { color: #f4f4f5; border-bottom-color: #27272a; }
+html.dark .intro-card { background: #18181b; border-color: #27272a; }
+html.dark .intro-text { color: #e4e4e7; }
+html.dark .topic-card { background: #18181b; border-color: #27272a; }
+html.dark .topic-card-title { color: #f4f4f5; }
+html.dark .topic-card-items li { color: #a1a1aa; border-bottom-color: #27272a; }
+html.dark .sw-body { background: #18181b; border-color: #27272a; }
+html.dark .sw-stat-row { border-bottom-color: #27272a; color: #a1a1aa; }
+html.dark .timeline-item { border-bottom-color: #27272a; }
+html.dark .timeline-text { color: #a1a1aa; }
+html.dark .contact-row { color: #a1a1aa; border-bottom-color: #27272a; }
+html.dark .sw-body a, html.dark .about-page a.hero-url { color: #e4e4e7 !important; }
+html.dark .sw-body a:hover { background: #27272a !important; color: #a7f3d0 !important; }
 </style>
 @endpush
 

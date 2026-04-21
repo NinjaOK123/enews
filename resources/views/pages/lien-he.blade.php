@@ -212,6 +212,26 @@
   .team-grid.cols-5,
   .team-grid.cols-1 { grid-template-columns: 1fr; }
 }
+
+/* ── Dark Mode ────────────────────────────────────────── */
+html.dark .info-card { background: #18181b; border-color: #27272a; }
+html.dark .info-card-val { color: #e4e4e7; }
+html.dark .info-card-val a { color: #6ee7b7; }
+html.dark .info-card-icon { background: rgba(255,255,255,0.05) !important; color: #a1a1aa !important; }
+html.dark .team-heading { color: #f4f4f5; border-bottom-color: #27272a; }
+html.dark .person-card { background: #18181b; border-color: #27272a; }
+html.dark .person-name { color: #f4f4f5; }
+html.dark .person-email a { color: #6ee7b7; }
+html.dark .person-phone { color: #a1a1aa; }
+html.dark .contact-form-wrap { background: #18181b; border-color: #27272a; }
+html.dark .cf-label { color: #a1a1aa; }
+html.dark .cf-input, html.dark .cf-textarea, html.dark .cf-select { background: #27272a; border-color: #3f3f46; color: #f4f4f5; }
+html.dark .cf-input:focus, html.dark .cf-textarea:focus, html.dark .cf-select:focus { border-color: #34d399; }
+html.dark .map-wrap { border-color: #27272a; }
+html.dark .contact-page div[style*="background:linear-gradient(135deg,#f3fbf2,#fff)"] { background: #18181b !important; border-color: #27272a !important; }
+html.dark .contact-page p[style*="color:#1b5e20"] { color: #a7f3d0 !important; }
+html.dark .contact-page p[style*="color:#666"] { color: #a1a1aa !important; }
+html.dark .contact-page a[style*="background:#fff"] { background: #27272a !important; color: #6ee7b7 !important; border-color: #3f3f46 !important; }
 </style>
 @endpush
 

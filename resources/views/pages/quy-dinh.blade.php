@@ -156,6 +156,25 @@
   .rules-page { flex-direction:column; }
   .rules-side { width:100%; position:static; }
 }
+
+/* ── Dark Mode ────────────────────────────────────────── */
+html.dark .rule-section { background: #18181b; border-color: #27272a; }
+html.dark .rule-item { border-bottom-color: #27272a; }
+html.dark .rule-item-text { color: #e4e4e7; }
+html.dark .rule-item-text strong { color: #6ee7b7; }
+html.dark .rule-highlight.info { background: rgba(42,122,39,0.1); border-left-color: #34d399; }
+html.dark .rule-highlight.blue { background: rgba(21,101,192,0.1); border-left-color: #60a5fa; }
+html.dark .rule-highlight.danger { background: rgba(229,57,53,0.1); border-left-color: #f87171; }
+html.dark .rule-highlight.warn { background: rgba(245,127,23,0.1); border-left-color: #fbbf24; }
+html.dark .rule-highlight p { color: #d1d5db; }
+html.dark .tag-green { background: rgba(42,122,39,0.15); color: #6ee7b7; }
+html.dark .tag-red { background: rgba(229,57,53,0.15); color: #f87171; }
+html.dark .sw-body { background: #18181b; border-color: #27272a; }
+html.dark .toc-item { color: #a1a1aa; border-bottom-color: #27272a; }
+html.dark .toc-item:hover { background: #27272a; color: #a7f3d0; }
+html.dark .sw-body div[style*="border-bottom"] { border-bottom-color: #27272a !important; color: #a1a1aa !important; }
+html.dark .sw-body a:not(.toc-item) { border-bottom-color: #27272a !important; color: #d1d5db !important; }
+html.dark .sw-body a:hover:not(.toc-item) { background: #27272a !important; color: #a7f3d0 !important; }
 </style>
 @endpush
 

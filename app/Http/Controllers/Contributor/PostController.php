@@ -347,15 +347,15 @@ class PostController extends Controller
             }
         }
         
-        if (method_exists($element, 'getText')) {
-            $val = $element->getText();
-            if (is_string($val)) $text .= $val;
-        }
+        $hasChildren = method_exists($element, 'getElements') && is_array($element->getElements()) && count($element->getElements()) > 0;
         
-        if (method_exists($element, 'getElements')) {
+        if ($hasChildren) {
             foreach ($element->getElements() as $child) {
                 $text .= $this->getWordTextAndStyles($child, $isBold, $align);
             }
+        } elseif (method_exists($element, 'getText')) {
+            $val = $element->getText();
+            if (is_string($val)) $text .= $val;
         }
         
         return $text;

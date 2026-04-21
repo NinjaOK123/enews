@@ -49,42 +49,28 @@
     #nprogress .spinner { display: none !important; }
   </style>
 
-  {{-- Dark Mode Init Script --}}
+  {{-- Dark Mode Init Script & Livewire Navigator Fix --}}
   <script>
-      try {
-          const theme = localStorage.getItem('app_theme');
-          if (theme === 'dark' || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-              document.documentElement.classList.add('dark');
-          }
-      } catch (_) {}
+      function applyAppTheme() {
+          try {
+              const theme = localStorage.getItem('app_theme');
+              if (theme === 'dark' || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                  document.documentElement.classList.add('dark');
+              } else {
+                  document.documentElement.classList.remove('dark');
+              }
+          } catch (_) {}
+      }
+      applyAppTheme();
+      document.addEventListener('livewire:navigated', applyAppTheme);
   </script>
 
   {{-- Nạp hiệu ứng hoạt ảnh cực mượt AOS --}}
   <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
 
-  {{-- Kích hoạt View Transitions API API (Chuyển trang siêu mượt như App Native trên Chrome/Edge) --}}
   <meta name="view-transition" content="same-origin">
 
   @stack('styles')
-
-  {{-- Speculation Rules API: Tải trước siêu tốc các trang cốt lõi --}}
-  <script type="speculationrules">
-  {
-    "prerender": [
-      {
-        "source": "list",
-        "urls": [
-          "{{ route('home') }}",
-          "{{ route('about') }}",
-          "{{ route('rules') }}",
-          "{{ route('contact') }}",
-          "{{ route('doc-suy-ngam') }}"
-        ],
-        "eagerness": "moderate"
-      }
-    ]
-  }
-  </script>
 </head>
 <body class="bg-gray-50 dark:bg-zinc-950 text-gray-900 dark:text-zinc-300 antialiased transition-colors duration-300">
 
