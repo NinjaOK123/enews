@@ -278,9 +278,12 @@ class ReportController extends Controller
         // Get posts in the specified month with royalty_rate_id set
         $postsQuery = Post::with(['author', 'royaltyRate', 'category'])
             ->whereYear('published_at', $year)
-            ->whereMonth('published_at', $month)
             ->where('status', 'published')
             ->whereNotNull('royalty_rate_id');
+
+        if ($month !== 'all') {
+            $postsQuery->whereMonth('published_at', $month);
+        }
 
         $unitFilter = $request->input('unit_name');
         if ($unitFilter) {
@@ -299,6 +302,18 @@ class ReportController extends Controller
         return view('admin.reports.royalty', compact('posts', 'month', 'year', 'units', 'unitFilter', 'totalRoyalty'));
     }
 
+    public function uploadTemplate(Request $request)
+    {
+        $request->validate([
+            'template' => 'required|mimes:xlsx,xls|max:5120',
+        ]);
+        
+        $file = $request->file('template');
+        $file->storeAs('templates', 'royalty_template.xlsx');
+
+        return redirect()->back()->with('success', 'Đã tải lên File Mẫu Báo cáo Nhuận bút thành công.');
+    }
+
     /**
      * Xuất Excel Nhuận bút (Multi-sheet bằng PhpSpreadsheet)
      */
@@ -306,74 +321,81 @@ class ReportController extends Controller
     {
         $month = $request->input('month', date('n'));
         $year = $request->input('year', date('Y'));
+        
+        $editedDataText = $request->input('edited_data');
+        if ($editedDataText) {
+            $postsList = json_decode($editedDataText, true);
+            $posts = collect($postsList);
+        } else {
+            // Fallback nếu không truyền data từ form
+            $posts = Post::with(['author', 'royaltyRate'])
+                ->whereYear('published_at', $year)
+                ->where('status', 'published')
+                ->whereNotNull('royalty_rate_id');
+                
+            if ($month !== 'all') {
+                $posts->whereMonth('published_at', $month);
+            }
+                
+            $posts = $posts->get()->map(function($p) {
+                return [
+                    'title' => $p->title,
+                    'author_name' => $p->source_author ?: ($p->author->name ?? 'N/A'),
+                    'unit_name' => $p->author->unit_name ?? 'N/A',
+                    'rate_name' => $p->royaltyRate->name ?? 'N/A',
+                    'rate_group' => $p->royaltyRate->group_name ?? 'Khác',
+                    'image_count' => $p->image_count,
+                    'total' => $p->royalty_total
+                ];
+            });
+        }
 
-        $posts = Post::with(['author', 'royaltyRate'])
-            ->whereYear('published_at', $year)
-            ->whereMonth('published_at', $month)
-            ->where('status', 'published')
-            ->whereNotNull('royalty_rate_id')
-            ->get();
+        $groupedByRate = $posts->groupBy('rate_group');
+        $templatePath = storage_path('app/templates/royalty_template.xlsx');
 
+        if (file_exists($templatePath)) {
+            return $this->exportFromTemplate($month, $year, $groupedByRate, $templatePath);
+        }
+
+        // FALLBACK CŨ (KHI CHƯA UPLOAD TEMPLATE)
         $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
         $sheet0 = $spreadsheet->getActiveSheet();
         $sheet0->setTitle('Tổng hợp');
-
-        $groupedByRate = $posts->groupBy(function($post) {
-            return $post->royaltyRate->group_name ?? 'Khác';
-        });
 
         $sheetIndex = 1;
         $tongHopData = [];
         $totalAll = 0;
 
         foreach ($groupedByRate as $groupName => $groupPosts) {
-            // Rút gọn tên sheet (max 31 chars)
             $safeName = substr(str_replace(['/','\\','?','*','[',']'], '_', $groupName), 0, 25);
-
-            // BÀI VIẾT (Sheet 1)
             $sheet1 = $spreadsheet->createSheet($sheetIndex++);
-            $sheet1->setTitle($safeName . ' (1)');
-            $this->buildDetailSheet($sheet1, "Tháng {$month}/{$year} - {$groupName}", $groupPosts, 'article');
+            $sheet1->setTitle($safeName);
             
-            $sum1 = $groupPosts->reduce(function($carry, $p) {
-                return $carry + (($p->royaltyRate->amount ?? 0) * ($p->royalty_multiplier ?? 1));
+            $thangNamStr = $month == 'all' ? "Năm {$year}" : "Tháng {$month}/{$year}";
+            $this->buildFallbackDetailSheet($sheet1, "{$thangNamStr} - {$groupName}", $groupPosts);
+            
+            $sum = $groupPosts->reduce(function($carry, $p) {
+                return $carry + floatval(str_replace(',', '', $p['total'] ?? 0));
             }, 0);
             
-            if ($sum1 > 0) {
+            if ($sum > 0) {
                 $tongHopData[] = [
-                    'noidung' => 'Nhuận bút ' . $groupName . ' (Bài viết)',
-                    'sotien' => $sum1
+                    'noidung' => 'Nhuận bút ' . $groupName,
+                    'sotien' => $sum
                 ];
-                $totalAll += $sum1;
-            }
-
-            // HÌNH ẢNH (Sheet 2)
-            $postsWithImages = $groupPosts->filter(function($p) { return $p->image_count > 0; });
-            if ($postsWithImages->count() > 0) {
-                $sum2 = $postsWithImages->sum('image_count') * 10000;
-                $sheet2 = $spreadsheet->createSheet($sheetIndex++);
-                $sheet2->setTitle($safeName . ' (2)');
-                $this->buildDetailSheet($sheet2, "Tháng {$month}/{$year} - {$groupName}", $postsWithImages, 'image');
-                
-                $tongHopData[] = [
-                    'noidung' => 'Nhuận bút ' . $groupName . ' (Ảnh)',
-                    'sotien' => $sum2
-                ];
-                $totalAll += $sum2;
+                $totalAll += $sum;
             }
         }
 
-        // BULD TỔNG HỢP SHEET
-        $sheet0->setCellValue('A1', 'Đơn vị: Trường Đại học An Giang - Thư viện');
+        // TỔNG HỢP SHEET (FALLBACK)
         $sheet0->setCellValue('A3', 'BẢNG KÊ ĐỀ NGHỊ THANH TOÁN TIỀN NHUẬN BÚT');
-        $sheet0->setCellValue('A5', "Tháng {$month} Năm {$year}");
+        $sheet0->setCellValue('A5', $month == 'all' ? "Năm {$year}" : "Tháng {$month} Năm {$year}");
         $sheet0->getStyle('A3')->getFont()->setBold(true)->setSize(14);
         
         $sheet0->setCellValue('A8', 'STT');
         $sheet0->setCellValue('B8', 'Nội dung');
         $sheet0->setCellValue('C8', 'Số tiền');
-        $sheet0->setCellValue('D8', 'Ghi chú');
-        $sheet0->getStyle('A8:D8')->getFont()->setBold(true);
+        $sheet0->getStyle('A8:C8')->getFont()->setBold(true);
         $sheet0->getColumnDimension('B')->setWidth(40);
         $sheet0->getColumnDimension('C')->setWidth(15);
 
@@ -385,73 +407,206 @@ class ReportController extends Controller
             $rowNum++;
         }
         
-        // Tổng
         $sheet0->setCellValue("B{$rowNum}", "Tổng cộng:");
         $sheet0->setCellValue("C{$rowNum}", $totalAll);
         $sheet0->getStyle("B{$rowNum}:C{$rowNum}")->getFont()->setBold(true);
 
-        // Xuất file
+        return $this->downloadSpreadsheet($spreadsheet, $month, $year);
+    }
+
+    private function buildFallbackDetailSheet($sheet, $title, $posts)
+    {
+        $sheet->setCellValue('A1', 'BẢNG THANH TOÁN TIỀN NHUẬN BÚT');
+        $sheet->setCellValue('A2', $title);
+        $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(12);
+
+        $headers = ['STT', 'Tác giả', 'Đơn vị', 'Nội dung tin/bài', 'Thành tiền'];
+        $sheet->fromArray($headers, NULL, 'A4');
+        $sheet->getStyle('A4:E4')->getFont()->setBold(true);
+        
+        $sheet->getColumnDimension('B')->setWidth(20);
+        $sheet->getColumnDimension('C')->setWidth(15);
+        $sheet->getColumnDimension('D')->setWidth(40);
+        $sheet->getColumnDimension('E')->setWidth(15);
+
+        $rowNum = 5;
+        $idx = 1;
+        $total = 0;
+        foreach ($posts as $post) {
+            $lineTotal = floatval(str_replace(',', '', $post['total'] ?? 0));
+            $sheet->setCellValue("A{$rowNum}", $idx++);
+            $sheet->setCellValue("B{$rowNum}", $post['author_name']);
+            $sheet->setCellValue("C{$rowNum}", $post['unit_name']);
+            $sheet->setCellValue("D{$rowNum}", $post['title']);
+            $sheet->setCellValue("E{$rowNum}", $lineTotal);
+            $total += $lineTotal;
+            $rowNum++;
+        }
+        
+        $sheet->setCellValue("D{$rowNum}", 'Tổng cộng:');
+        $sheet->setCellValue("E{$rowNum}", $total);
+        $sheet->getStyle("A{$rowNum}:E{$rowNum}")->getFont()->setBold(true);
+    }
+
+    private function exportFromTemplate($month, $year, $groupedByRate, $templatePath)
+    {
+        $spreadsheet = \PhpOffice\PhpSpreadsheet\IOFactory::load($templatePath);
+        $sheet0 = $spreadsheet->getSheet(0); // Tổng hợp
+        $masterSheet = $spreadsheet->getSheet(1); // Khuôn Đúc
+
+        $totalAll = 0;
+        $tongHopData = [];
+        $thangNamStr = $month == 'all' ? "Năm {$year}" : "Tháng {$month}/{$year}";
+
+        foreach ($groupedByRate as $groupName => $groupPosts) {
+            $safeName = substr(str_replace(['/','\\','?','*','[',']'], '_', $groupName), 0, 25);
+            $clonedSheet = clone $masterSheet;
+            $clonedSheet->setTitle($safeName);
+            $spreadsheet->addSheet($clonedSheet);
+            
+            // Xử lý Thay thế text tiêu đề
+            $this->replacePlaceholders($clonedSheet, [
+                '[THANG_NAM]' => $thangNamStr,
+                '[TEN_NHOM]' => $groupName
+            ]);
+
+            // Tìm marker [STT] ở cột A (mặc định)
+            $dataRowIndex = 5;
+            $foundMarker = false;
+            foreach ($clonedSheet->getRowIterator() as $row) {
+                $cell = $clonedSheet->getCell("A" . $row->getRowIndex());
+                if (trim($cell->getValue() ?? '') === '[STT]') {
+                    $dataRowIndex = $row->getRowIndex();
+                    $foundMarker = true;
+                    break;
+                }
+            }
+
+            $idx = 1;
+            $groupTotal = 0;
+            
+            if ($foundMarker) {
+                // Xoá marker hiện tại
+                $clonedSheet->setCellValue("A{$dataRowIndex}", '');
+                
+                foreach ($groupPosts as $post) {
+                    $lineTotal = floatval(str_replace(',', '', $post['total'] ?? 0));
+                    
+                    // Copy style của row mẫu xuống
+                    $clonedSheet->insertNewRowBefore($dataRowIndex + 1, 1);
+                    
+                    $clonedSheet->setCellValue("A{$dataRowIndex}", $idx++);
+                    $clonedSheet->setCellValue("B{$dataRowIndex}", $post['author_name']);
+                    $clonedSheet->setCellValue("C{$dataRowIndex}", $post['unit_name']);
+                    $clonedSheet->setCellValue("D{$dataRowIndex}", $post['title']);
+                    $clonedSheet->setCellValue("E{$dataRowIndex}", ''); 
+                    $clonedSheet->setCellValue("F{$dataRowIndex}", ''); 
+                    $clonedSheet->setCellValue("G{$dataRowIndex}", $lineTotal);
+                    
+                    $groupTotal += $lineTotal;
+                    $dataRowIndex++;
+                }
+                
+                // Điền tổng vào row [TONG] (Nếu có)
+                foreach ($clonedSheet->getRowIterator($dataRowIndex) as $row) {
+                    $cell = $clonedSheet->getCell("A" . $row->getRowIndex());
+                    if (strpos($cell->getValue() ?? '', '[TONG]') !== false) {
+                        $clonedSheet->setCellValue("A" . $row->getRowIndex(), 'Tổng cộng:');
+                        $clonedSheet->setCellValue("G" . $row->getRowIndex(), $groupTotal);
+                    }
+                    if (strpos($clonedSheet->getCell("G" . $row->getRowIndex())->getValue() ?? '', '[TONG]') !== false) {
+                        $clonedSheet->setCellValue("G" . $row->getRowIndex(), $groupTotal);
+                    }
+                }
+            }
+
+            if ($groupTotal > 0) {
+                $tongHopData[] = [
+                    'noidung' => 'Nhuận bút ' . $groupName,
+                    'sotien' => $groupTotal
+                ];
+                $totalAll += $groupTotal;
+            }
+        }
+
+        // Xoá Khuôn (Sheet index 1)
+        $spreadsheet->removeSheetByIndex(1);
+
+        // Xử lý Tổng hợp (Sheet 0)
+        $this->replacePlaceholders($sheet0, [
+            '[THANG_NAM]' => $thangNamStr,
+            '[TONG_NAM]' => "Tháng $month Năm $year",
+        ]);
+
+        $thRowIndex = 8;
+        $foundTH = false;
+        foreach ($sheet0->getRowIterator() as $row) {
+            $cell = $sheet0->getCell("A" . $row->getRowIndex());
+            if (trim($cell->getValue() ?? '') === '[STT]') {
+                $thRowIndex = $row->getRowIndex();
+                $foundTH = true;
+                break;
+            }
+        }
+
+        if ($foundTH) {
+            $sheet0->setCellValue("A{$thRowIndex}", '');
+            $idx = 1;
+            foreach ($tongHopData as $row) {
+                $sheet0->insertNewRowBefore($thRowIndex + 1, 1);
+                
+                $sheet0->setCellValue("A{$thRowIndex}", $idx++);
+                $sheet0->setCellValue("B{$thRowIndex}", $row['noidung']);
+                $sheet0->setCellValue("C{$thRowIndex}", $row['sotien']);
+                $thRowIndex++;
+            }
+            // Điền tổng chung
+            foreach ($sheet0->getRowIterator($thRowIndex) as $row) {
+                $colC = "C" . $row->getRowIndex();
+                if (strpos($sheet0->getCell($colC)->getValue() ?? '', '[TONG_CHUNG]') !== false) {
+                    $sheet0->setCellValue($colC, $totalAll);
+                }
+            }
+        }
+
+        return $this->downloadSpreadsheet($spreadsheet, $month, $year);
+    }
+
+    private function replacePlaceholders($sheet, $replacements)
+    {
+        foreach ($sheet->getRowIterator() as $row) {
+            foreach ($row->getCellIterator() as $cell) {
+                $val = $cell->getValue();
+                if (is_string($val)) {
+                    $newVal = strtr($val, $replacements);
+                    if ($val !== $newVal) {
+                        $cell->setValue($newVal);
+                    }
+                }
+            }
+        }
+    }
+
+    private function downloadSpreadsheet($spreadsheet, $month, $year)
+    {
+        if (request()->input('preview_mode') == 'true') {
+            $writer = new \PhpOffice\PhpSpreadsheet\Writer\Html($spreadsheet);
+            $writer->writeAllSheets();
+            $html = $writer->generateHTMLAll();
+            // Add some basic styling wrapper to make it center and look nice
+            $html = '<div style="background: #f3f4f6; min-height: 100vh; padding: 20px; font-family: sans-serif;"><div style="background: white; max-width: 1200px; margin: 0 auto; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); overflow: auto;">' . $html . '</div></div>';
+            return response($html)->header('Content-Type', 'text/html; charset=UTF-8');
+        }
+
         $filename = "NhuanBut_{$month}.{$year}_[" . date('Y-m-d_H.i.s') . "].xlsx";
         $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
         
-        // Fix BUG-09: Use StreamedResponse instead of exit
         return response()->streamDownload(function () use ($writer) {
             $writer->save('php://output');
         }, $filename, [
             'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
             'Cache-Control' => 'max-age=0'
         ]);
-    }
-
-    private function buildDetailSheet($sheet, $title, $posts, $type)
-    {
-        $sheet->setCellValue('A1', 'BẢNG THANH TOÁN TIỀN NHUẬN BÚT');
-        $sheet->setCellValue('A2', $title);
-        $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(12);
-
-        $headers = ['STT', 'Tác giả', 'Đơn vị', 'Nội dung tin/bài', 'Đơn giá', 'Chiết tính', 'Thành tiền'];
-        $sheet->fromArray($headers, NULL, 'A4');
-        $sheet->getStyle('A4:G4')->getFont()->setBold(true);
-        
-        $sheet->getColumnDimension('B')->setWidth(20);
-        $sheet->getColumnDimension('C')->setWidth(15);
-        $sheet->getColumnDimension('D')->setWidth(40);
-
-        $rowNum = 5;
-        $total = 0;
-        $totalCount = 0;
-
-        $idx = 1;
-        foreach ($posts as $post) {
-            $rateValue = ($type == 'image') ? 10000 : ($post->royaltyRate->amount ?? 0);
-            $multiplier = ($type == 'image') ? $post->image_count : ($post->royalty_multiplier ?? 1);
-            $lineTotal = $rateValue * $multiplier;
-            
-            // Lấy tên Tác giả (Người viết bài) hoặc Người chụp ảnh
-            $authorName = '';
-            if ($type == 'image') {
-                $authorName = $post->photographer ?: ($post->source_author ?: ($post->author->name ?? 'N/A'));
-            } else {
-                $authorName = $post->source_author ?: ($post->author->name ?? 'N/A');
-            }
-            
-            $sheet->setCellValue("A{$rowNum}", $idx++);
-            $sheet->setCellValue("B{$rowNum}", $authorName);
-            $sheet->setCellValue("C{$rowNum}", $post->author->unit_name ?? 'N/A');
-            $sheet->setCellValue("D{$rowNum}", $post->title);
-            $sheet->setCellValue("E{$rowNum}", $rateValue);
-            $sheet->setCellValue("F{$rowNum}", $multiplier);
-            $sheet->setCellValue("G{$rowNum}", $lineTotal);
-            
-            $total += $lineTotal;
-            $totalCount += $multiplier;
-            $rowNum++;
-        }
-
-        $sheet->setCellValue("D{$rowNum}", "Tổng cộng:");
-        $sheet->setCellValue("F{$rowNum}", $totalCount);
-        $sheet->setCellValue("G{$rowNum}", $total);
-        $sheet->getStyle("D{$rowNum}:G{$rowNum}")->getFont()->setBold(true);
     }
 }
 

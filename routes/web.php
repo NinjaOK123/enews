@@ -126,7 +126,8 @@ Route::prefix('admin')
              Route::get('/', [App\Http\Controllers\Admin\ReportController::class, 'index'])->name('index');
              Route::get('/export-csv', [App\Http\Controllers\Admin\ReportController::class, 'exportCsv'])->name('export-csv');
              Route::get('/royalty', [App\Http\Controllers\Admin\ReportController::class, 'royaltyIndex'])->name('royalty.index');
-             Route::get('/royalty/export', [App\Http\Controllers\Admin\ReportController::class, 'exportRoyaltyExcel'])->name('royalty.export');
+             Route::post('/royalty/export', [App\Http\Controllers\Admin\ReportController::class, 'exportRoyaltyExcel'])->name('royalty.export');
+             Route::post('/royalty/template', [App\Http\Controllers\Admin\ReportController::class, 'uploadTemplate'])->name('royalty.template');
          });
 
          // ADMIN: Quản lý Thông báo
