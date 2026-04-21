@@ -23,7 +23,8 @@ class PostController extends Controller
     {
         // Fix BUG-12: Only load active categories
         $categories = Category::where('is_active', true)->orderBy('name')->get();
-        return view('contributor.posts.create', compact('categories'));
+        $suggestedAuthors = \App\Models\User::whereIn('role', ['contributor', 'editor', 'admin'])->pluck('name');
+        return view('contributor.posts.create', compact('categories', 'suggestedAuthors'));
     }
 
     public function store(Request $request)
@@ -72,7 +73,8 @@ class PostController extends Controller
         // Fix BUG-12: Only load active categories
         $categories = Category::where('is_active', true)->orderBy('name')->get();
         $royaltyRates = \App\Models\RoyaltyRate::orderBy('group_name')->orderBy('name')->get();
-        return view('contributor.posts.create', compact('post', 'categories', 'royaltyRates'));
+        $suggestedAuthors = \App\Models\User::whereIn('role', ['contributor', 'editor', 'admin'])->pluck('name');
+        return view('contributor.posts.create', compact('post', 'categories', 'royaltyRates', 'suggestedAuthors'));
     }
 
     public function update(Request $request, Post $post)

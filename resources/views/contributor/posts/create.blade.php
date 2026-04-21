@@ -328,10 +328,21 @@
             </label>
             <input type="text" name="source_author" id="source_author"
                    x-model="authorVal"
+                   list="authorSuggestions"
+                   autocomplete="off"
                    placeholder="VD: Cẩm Thiều - TV"
                    class="w-full border border-gray-200 dark:border-zinc-800 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 dark:focus:ring-emerald-500/20 bg-white dark:bg-zinc-950/50 dark:text-zinc-100 transition">
             <p class="text-xs text-gray-400 dark:text-zinc-500 mt-1.5">Hiển thị in đậm cuối bài viết</p>
           </div>
+
+          {{-- Datalist for Author suggestions --}}
+          @if(isset($suggestedAuthors))
+          <datalist id="authorSuggestions">
+            @foreach($suggestedAuthors as $sName)
+              <option value="{{ $sName }}"></option>
+            @endforeach
+          </datalist>
+          @endif
 
           {{-- Người chụp ảnh --}}
           <div class="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-100 dark:border-zinc-800 shadow-sm p-5 transition-colors">
@@ -347,6 +358,8 @@
             </label>
             <input type="text" name="photographer" id="photographer"
                    x-model="photographerVal"
+                   list="authorSuggestions"
+                   autocomplete="off"
                    :readonly="sameAsAuthor"
                    :class="sameAsAuthor ? 'bg-gray-50 dark:bg-zinc-900/50 text-gray-400 dark:text-zinc-600 cursor-not-allowed border-gray-200 dark:border-zinc-800' : 'bg-white dark:bg-zinc-950/50 text-gray-900 dark:text-zinc-100 border-gray-200 dark:border-zinc-800'"
                    placeholder="VD: Nguyễn Văn A"
