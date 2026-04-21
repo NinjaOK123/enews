@@ -293,7 +293,7 @@
             {{-- Preview --}}
             <div id="thumbPreviewWrap" class="{{ (isset($post) && $post->thumbnail) ? '' : 'hidden' }} mb-3 relative group">
               <img id="thumbPreview"
-                   src="{{ (isset($post) && $post->thumbnail) ? asset('storage/' . $post->thumbnail) : '' }}"
+                   src="{{ (isset($post) && $post->thumbnail) ? $post->thumbnail_url : '' }}"
                    class="w-full h-44 object-cover rounded-xl border border-gray-200 dark:border-zinc-700 block">
               <button type="button" id="btnRemoveThumb"
                       class="absolute top-2 right-2 bg-white/90 dark:bg-zinc-800/90 hover:bg-red-50 dark:hover:bg-red-500/20 text-red-500 rounded-full w-7 h-7 flex items-center justify-center shadow text-xs border border-red-100 dark:border-red-500/30 opacity-0 group-hover:opacity-100 transition">✕</button>
