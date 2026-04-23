@@ -976,6 +976,20 @@ async function startPlagiarismCheck() {
             if (result.isPlagiarized) plagiarizedCount++;  // Tầng 3: Đếm các câu vi phạm thật sự (>20%)
             if (result.similarity > maxScore) maxScore = result.similarity; // Lưu điểm cao nhất
 
+            // Cập nhật real-time: vòng tròn độ phủ + điểm max hiện tại
+            const livePercent = Math.round((plagiarizedCount / sentences.length) * 100);
+            const liveCoverageEl = document.getElementById('plagScoreUi');
+            const liveMaxEl = document.getElementById('plagSimScoreUi');
+            if (liveCoverageEl) {
+                let liveColor = 'text-green-400';
+                if (livePercent > 5)  liveColor = 'text-yellow-400';
+                if (livePercent > 20) liveColor = 'text-orange-400';
+                if (livePercent > 35) liveColor = 'text-red-400';
+                liveCoverageEl.className = `text-5xl font-bold ${liveColor}`;
+                liveCoverageEl.textContent = `${livePercent}%`;
+            }
+            if (liveMaxEl) liveMaxEl.textContent = `${maxScore}%`;
+
             // Tầng 2: Lưu lại kết quả câu này để show Report Highlight (hiển thị mọi câu > 5%)
             if (result.similarity > 5) {
                 let sourcesList = result.sources.map(src => {
@@ -1019,8 +1033,7 @@ async function startPlagiarismCheck() {
             console.error("Lỗi khi check câu:", sentence, err);
         }
 
-        // Delay 1s giữa mỗi câu để tránh Rate Limit DuckDuckGo
-        await new Promise(r => setTimeout(r, 1000));
+        // Không cần delay — Serper API không có rate limit strict như DuckDuckGo
     }
 
     // Hoàn tất!
