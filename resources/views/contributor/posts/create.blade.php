@@ -976,19 +976,17 @@ async function startPlagiarismCheck() {
             if (result.isPlagiarized) plagiarizedCount++;  // Tầng 3: Đếm các câu vi phạm thật sự (>20%)
             if (result.similarity > maxScore) maxScore = result.similarity; // Lưu điểm cao nhất
 
-            // Cập nhật real-time: vòng tròn độ phủ + điểm max hiện tại
+            // Cập nhật real-time: điểm đạo văn live trong vòng tròn Progress (element đúng)
             const livePercent = Math.round((plagiarizedCount / sentences.length) * 100);
-            const liveCoverageEl = document.getElementById('plagScoreUi');
-            const liveMaxEl = document.getElementById('plagSimScoreUi');
-            if (liveCoverageEl) {
-                let liveColor = 'text-green-400';
+            const plagLiveScoreEl = document.getElementById('plagLiveScore');
+            if (plagLiveScoreEl) {
+                let liveColor = 'text-green-500';
                 if (livePercent > 5)  liveColor = 'text-yellow-400';
                 if (livePercent > 20) liveColor = 'text-orange-400';
-                if (livePercent > 35) liveColor = 'text-red-400';
-                liveCoverageEl.className = `text-5xl font-bold ${liveColor}`;
-                liveCoverageEl.textContent = `${livePercent}%`;
+                if (livePercent > 35) liveColor = 'text-red-500';
+                plagLiveScoreEl.className = `text-sm font-black ${liveColor} leading-none mt-1`;
+                plagLiveScoreEl.textContent = `${livePercent}%`;
             }
-            if (liveMaxEl) liveMaxEl.textContent = `${maxScore}%`;
 
             // Tầng 2: Lưu lại kết quả câu này để show Report Highlight (hiển thị mọi câu > 5%)
             if (result.similarity > 5) {
@@ -1155,7 +1153,10 @@ async function startPlagiarismCheck() {
             <div class="absolute inset-0 rounded-full border-[3px] border-indigo-600 border-t-transparent animate-spin ring-4 ring-indigo-50 dark:ring-indigo-500/10"></div>
             
             <div class="absolute inset-0 flex flex-col items-center justify-center bg-white dark:bg-zinc-900 rounded-full m-1 shadow-sm">
-                <span id="plagProgressPercent" class="text-xl font-bold text-indigo-600 dark:text-indigo-400">0%</span>
+                <span id="plagProgressPercent" class="text-base font-bold text-indigo-600 dark:text-indigo-400 leading-none">0%</span>
+                <span class="text-[9px] text-gray-400 dark:text-zinc-500 mt-0.5">quét</span>
+                <span id="plagLiveScore" class="text-sm font-black text-green-500 leading-none mt-1">0%</span>
+                <span class="text-[8px] text-gray-400 dark:text-zinc-500">ĐV</span>
             </div>
         </div>
         
