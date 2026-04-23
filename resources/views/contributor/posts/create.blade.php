@@ -974,8 +974,8 @@ async function startPlagiarismCheck() {
             totalScore += result.similarity;
             if (result.isPlagiarized) plagiarizedCount++;
 
-            // Lưu lại kết quả câu này để show Report
-            if (result.similarity > 25) {
+            // Lưu lại kết quả câu này để show Report (hiển thị tất cả > 0%)
+            if (result.similarity > 0) {
                 let sourcesList = result.sources.map(src => {
                     if (src.is_internal) {
                         return `
@@ -997,11 +997,19 @@ async function startPlagiarismCheck() {
                     }
                 }).join('');
                 
+            const simPct = result.similarity;
+            const cardColor = simPct > 25
+                ? 'bg-red-50/50 dark:bg-red-900/10 border-red-200 dark:border-red-500/20'
+                : simPct > 10
+                    ? 'bg-orange-50/50 dark:bg-orange-900/10 border-orange-200 dark:border-orange-500/20'
+                    : 'bg-yellow-50/50 dark:bg-yellow-900/10 border-yellow-200 dark:border-yellow-500/20';
+            const badgeColor = simPct > 25 ? 'bg-red-600' : simPct > 10 ? 'bg-orange-500' : 'bg-yellow-500';
+
                 resultsHtml.push(`
-                    <div class="bg-red-50/50 dark:bg-red-900/10 border border-red-200 dark:border-red-500/20 rounded-xl p-5 mb-4">
+                    <div class="${cardColor} border rounded-xl p-5 mb-4">
                         <div class="flex justify-between items-start gap-4 mb-4">
                             <p class="text-gray-800 dark:text-zinc-200 font-medium text-sm leading-relaxed">"${result.sentence}"</p>
-                            <span class="bg-red-600 text-white px-3 py-1 rounded-full text-sm font-bold shrink-0">${result.similarity}% trùng lập</span>
+                            <span class="${badgeColor} text-white px-3 py-1 rounded-full text-sm font-bold shrink-0">${result.similarity}% trùng lặp</span>
                         </div>
                         <div>
                             <p class="text-[10px] text-gray-500 dark:text-zinc-400 font-bold uppercase tracking-wider mb-2">Nguồn phát hiện</p>
@@ -1011,14 +1019,13 @@ async function startPlagiarismCheck() {
                         </div>
                     </div>
                 `);
-            }
 
         } catch (err) {
             console.error("Lỗi khi check câu:", sentence, err);
         }
 
-        // Delay 1s giữa mỗi câu để tránh Rate Limit DuckDuckGo
-        await new Promise(r => setTimeout(r, 1000));
+        // Delay nhỏ giữa mỗi câu (200ms đủ cho Serper API)
+        await new Promise(r => setTimeout(r, 200));
     }
 
     // Hoàn tất!
@@ -1034,8 +1041,9 @@ async function startPlagiarismCheck() {
 
     // Xác định mức độ màu sắc
     let colorClass = 'text-green-600';
-    if (plagPercent > 10) colorClass = 'text-yellow-600';
-    if (plagPercent > 25) colorClass = 'text-red-600';
+    if (plagPercent > 5) colorClass = 'text-yellow-500';
+    if (plagPercent > 15) colorClass = 'text-orange-500';
+    if (plagPercent > 30) colorClass = 'text-red-600';
 
     document.getElementById('plagScoreUi').className = `text-5xl font-bold ${colorClass}`;
     document.getElementById('plagScoreUi').textContent = `${plagPercent}%`;
@@ -1052,7 +1060,7 @@ async function startPlagiarismCheck() {
                 <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-green-100 text-green-500 mb-3">
                     <i class="bi bi-shield-check text-2xl"></i>
                 </div>
-                <p class="text-gray-500 text-sm">Tuyệt vời! Không phát hiện câu nào có dấu hiệu sao chép (trùng khớp > 25%).</p>
+                <p class="text-gray-500 text-sm">Tuyệt vời! Không phát hiện bất kỳ câu nào có dấu hiệu trùng lặp nội dung.</p>
             </div>
         `;
     }
@@ -1202,7 +1210,7 @@ async function startPlagiarismCheck() {
             <h3 class="text-lg font-bold text-gray-900 dark:text-zinc-100 flex items-center gap-2">
                 Phân tích Chi tiết
             </h3>
-            <span class="text-xs text-gray-500 dark:text-zinc-400 bg-gray-100 dark:bg-zinc-800 px-2 py-1 rounded">Mức cảnh báo >25%</span>
+            <span class="text-xs text-gray-500 dark:text-zinc-400 bg-gray-100 dark:bg-zinc-800 px-2 py-1 rounded">Ghi nhận mọi mức tương đồng >0%</span>
         </div>
 
         <!-- Detailed Breakdown -->
@@ -1210,7 +1218,7 @@ async function startPlagiarismCheck() {
             <h3 class="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
                 <i class="bi bi-list-columns-reverse text-indigo-500"></i> Phân tích Chi tiết
             </h3>
-            <span class="text-xs bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 px-2 py-1 rounded font-medium">Hiển thị các khối vi phạm >25%</span>
+            <span class="text-xs bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 px-2 py-1 rounded font-medium">Hiển thị tất cả câu có trùng lặp</span>
         </div>
 
         <div id="plagDetailedResults" class="space-y-4 pb-6">
