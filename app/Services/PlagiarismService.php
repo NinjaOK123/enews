@@ -16,24 +16,54 @@ class PlagiarismService
         $urls = [];
         $queryEncoded = urlencode(Str::limit($query, 150, ''));
 
-        // 1. DuckDuckGo HTML Scraper (Miễn phí 100% - Ý tưởng từ cu-sanjay/Free-Turnitin)
+        // 1. Google Search via Serper.dev (Ưu tiên nhất cho tiếng Việt)
+        if (env('SERPER_API_KEY')) {
+            try {
+                $response = Http::withOptions(['verify' => false])
+                    ->withHeaders([
+                        'X-API-KEY' => env('SERPER_API_KEY'),
+                        'Content-Type' => 'application/json'
+                    ])
+                    ->timeout(10)
+                    ->post('https://google.serper.dev/search', [
+                        'q' => Str::limit($query, 200, '')
+                    ]);
+
+                if ($response->successful()) {
+                    $results = $response->json();
+                    if (isset($results['organic'])) {
+                        foreach ($results['organic'] as $organic) {
+                            if (isset($organic['link']) && str_starts_with($organic['link'], 'http')) {
+                                $urls[] = $organic['link'];
+                            }
+                        }
+                    }
+                }
+            } catch (\Exception $e) {
+                Log::warning("Serper Search Error: " . $e->getMessage());
+            }
+        }
+
+        // Nếu Serper tìm được URL, trả về luôn không cần các nguồn phụ
+        if (count($urls) > 0) {
+            return array_slice(array_unique($urls), 0, 10);
+        }
+
+        // 2. DuckDuckGo HTML Scraper (Fallback nếu không có SERPER KEY)
         try {
             $ddgQuery = urlencode(Str::limit($query, 200, ''));
             $ddgUrl = "https://html.duckduckgo.com/html/?q={$ddgQuery}";
             
             $response = Http::withOptions(['verify' => false])->withHeaders([
-                'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
-            ])
-            ->timeout(8)
-            ->get($ddgUrl);
+                'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'
+            ])->timeout(8)->get($ddgUrl);
 
             if ($response->successful()) {
                 $html = $response->body();
-                // Tìm kiếm các đường dẫn web từ kết quả DuckDuckGo
                 if (preg_match_all('/uddg=([^"&]+)/i', $html, $matches)) {
                     foreach ($matches[1] as $encodedUrl) {
                         try {
-                            $decodedUrl = urldecode(urldecode($encodedUrl)); // Có thể cần decode 2 lần
+                            $decodedUrl = urldecode(urldecode($encodedUrl)); // Có thể decode
                             if (str_starts_with($decodedUrl, 'http') && !str_contains($decodedUrl, 'duckduckgo.com')) {
                                 $urls[] = $decodedUrl;
                             }
@@ -41,15 +71,9 @@ class PlagiarismService
                     }
                 }
             }
-        } catch (\Exception $e) {
-            Log::warning("DuckDuckGo Search Error: " . $e->getMessage());
-        }
+        } catch (\Exception $e) { }
 
-        // Lấy top 8 từ DuckDuckGo
-        $urls = array_unique($urls);
-        $urls = array_slice($urls, 0, 8);
-
-        // 2. CrossRef API (for academic/articles)
+        // 3. CrossRef API (for academic/articles)
         try {
             $crossRefUrl = "https://api.crossref.org/works?query={$queryEncoded}&rows=5";
             $response = Http::withOptions(['verify' => false])->timeout(5)->get($crossRefUrl);
@@ -64,9 +88,7 @@ class PlagiarismService
                     }
                 }
             }
-        } catch (\Exception $e) {
-            Log::warning("CrossRef Search Error: " . $e->getMessage());
-        }
+        } catch (\Exception $e) { }
 
         // Loại bỏ trùng lặp và lấy max 10 links
         return array_slice(array_unique($urls), 0, 10);
