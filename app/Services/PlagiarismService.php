@@ -16,45 +16,43 @@ class PlagiarismService
         $urls = [];
         $queryEncoded = urlencode(Str::limit($query, 150, ''));
 
-        // 1. Serper.dev (Google Search API)
+        // 1. DuckDuckGo HTML Scraper (Miễn phí 100% - Ý tưởng từ cu-sanjay/Free-Turnitin)
         try {
-            $apiKey = env('SERPER_API_KEY');
-            if (!empty($apiKey)) {
-                $response = Http::withHeaders([
-                    'X-API-KEY' => $apiKey,
-                    'Content-Type' => 'application/json'
-                ])
-                ->timeout(5)
-                ->post('https://google.serper.dev/search', [
-                    'q' => Str::limit($query, 100, ''), // Google might not allow queries too long
-                    'gl' => 'vn', // Lấy kết quả tiếng Việt
-                    'hl' => 'vi'
-                ]);
+            $ddgQuery = urlencode(Str::limit($query, 200, ''));
+            $ddgUrl = "https://html.duckduckgo.com/html/?q={$ddgQuery}";
+            
+            $response = Http::withOptions(['verify' => false])->withHeaders([
+                'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+            ])
+            ->timeout(8)
+            ->get($ddgUrl);
 
-                if ($response->successful()) {
-                    $data = $response->json();
-                    if (isset($data['organic']) && is_array($data['organic'])) {
-                        foreach ($data['organic'] as $result) {
-                            if (isset($result['link'])) {
-                                $urls[] = $result['link'];
+            if ($response->successful()) {
+                $html = $response->body();
+                // Tìm kiếm các đường dẫn web từ kết quả DuckDuckGo
+                if (preg_match_all('/uddg=([^"&]+)/i', $html, $matches)) {
+                    foreach ($matches[1] as $encodedUrl) {
+                        try {
+                            $decodedUrl = urldecode(urldecode($encodedUrl)); // Có thể cần decode 2 lần
+                            if (str_starts_with($decodedUrl, 'http') && !str_contains($decodedUrl, 'duckduckgo.com')) {
+                                $urls[] = $decodedUrl;
                             }
-                        }
+                        } catch (\Exception $e) { }
                     }
                 }
-            } else {
-                Log::warning("Serper API Key chưa được cài đặt trong .env");
             }
         } catch (\Exception $e) {
-            Log::warning("Serper Search Error: " . $e->getMessage());
+            Log::warning("DuckDuckGo Search Error: " . $e->getMessage());
         }
 
-        // Lấy top 8 từ Serper
+        // Lấy top 8 từ DuckDuckGo
+        $urls = array_unique($urls);
         $urls = array_slice($urls, 0, 8);
 
         // 2. CrossRef API (for academic/articles)
         try {
             $crossRefUrl = "https://api.crossref.org/works?query={$queryEncoded}&rows=5";
-            $response = Http::timeout(5)->get($crossRefUrl);
+            $response = Http::withOptions(['verify' => false])->timeout(5)->get($crossRefUrl);
             
             if ($response->successful()) {
                 $data = $response->json();
@@ -80,7 +78,7 @@ class PlagiarismService
     public function fetchPageContent(string $url): string
     {
         try {
-            $response = Http::withHeaders([
+            $response = Http::withOptions(['verify' => false])->withHeaders([
                 'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
                 'Accept' => 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
                 'Accept-Language' => 'en-US,en;q=0.5',
@@ -234,11 +232,11 @@ class PlagiarismService
             $ngramSim = $this->nGramSimilarity($sentence, $strippedContent, 5);
             $similarity = max($cosineSim, $ngramSim);
 
-            if ($similarity > 0.25) { // Trùng > 25% nội bộ cũng xử lý
+            if ($similarity > 0) { // Ghi nhận mọi tỷ lệ trùng lặp
                 $urls[] = [
                     'url' => route('post.show', $post->slug) . '?internal=true', // Đánh dấu URL nội bộ
                     'title' => $post->title,
-                    'similarity' => round($similarity * 100),
+                    'similarity' => ceil($similarity * 100),
                     'is_internal' => true
                 ];
             }

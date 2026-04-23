@@ -1080,9 +1080,9 @@ async function startPlagiarismCheck() {
         </div>
         <div>
           <h3 class="text-lg font-bold text-gray-900 dark:text-zinc-100 leading-tight flex items-center gap-2">
-            Turnitin <span class="bg-indigo-100 text-indigo-700 dark:bg-indigo-500/20 dark:text-indigo-300 text-[10px] uppercase font-bold px-2 py-0.5 rounded-full">Free Edition</span>
+            Turnitin <span class="bg-indigo-100 text-indigo-700 dark:bg-indigo-500/20 dark:text-indigo-300 text-[10px] uppercase font-bold px-2 py-0.5 rounded-full">Miễn Phí</span>
           </h3>
-          <p class="text-xs text-gray-500 dark:text-zinc-400 font-mono tracking-tight mt-0.5">ALGORITHM: N-GRAM & COSINE SIMILARITY</p>
+          <p class="text-xs text-gray-500 dark:text-zinc-400 font-mono tracking-tight mt-0.5">THUẬT TOÁN: N-GRAM & COSINE SIMILARITY</p>
         </div>
       </div>
       <button type="button" onclick="closePlagiarismModal()" class="text-gray-400 dark:text-zinc-500 hover:text-gray-600 dark:hover:text-zinc-300 bg-gray-50 hover:bg-gray-100 dark:bg-zinc-800 dark:hover:bg-zinc-700 p-2 rounded-xl transition">

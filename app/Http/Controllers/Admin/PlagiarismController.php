@@ -50,8 +50,8 @@ class PlagiarismController extends Controller
                 
                 $similarity = max($cosineSim, $ngramSim);
 
-                if ($similarity > 0.25) { // Cảnh báo Đạo văn nếu trùng > 25%
-                    $simPercent = round($similarity * 100);
+                if ($similarity > 0) { // Ghi nhận mọi tỷ lệ trùng lặp (không bỏ qua dù chỉ 0.1%)
+                    $simPercent = ceil($similarity * 100); // Ít nhất là 1% nếu có trùng
                     $matchedSources[] = [
                         'url' => $url,
                         'title' => 'External Web Source',

@@ -23,10 +23,7 @@
                     <input type="hidden" name="edited_data" :value="JSON.stringify(posts)">
                 </form>
 
-                <button type="button" @click="$dispatch('open-template-modal')"
-                   class="inline-flex items-center justify-center gap-2 px-6 py-2.5 bg-zinc-800 dark:bg-zinc-700 hover:bg-zinc-900 dark:hover:bg-zinc-600 text-white text-sm font-semibold rounded-lg shadow-sm focus:ring-2 focus:ring-zinc-800 focus:ring-offset-2 dark:focus:ring-offset-zinc-900 transition-all">
-                    <i class="bi bi-upload"></i> Tải lên File Mẫu
-                </button>
+                <!-- Tải lên File Mẫu button removed because generation is now hardcoded correctly -->
                 <button type="submit" onclick="document.getElementById('exportForm').target='_blank'; document.getElementById('preview_input').value='true';" form="exportForm"
                    class="inline-flex items-center justify-center gap-2 px-6 py-2.5 border-2 border-emerald-600 dark:border-emerald-500 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 text-sm font-semibold rounded-lg shadow-sm focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 dark:focus:ring-offset-zinc-900 transition-all">
                     <i class="bi bi-eye"></i> Xem Trước (Excel Code)

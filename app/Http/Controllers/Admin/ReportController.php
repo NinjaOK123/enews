@@ -388,46 +388,108 @@ class ReportController extends Controller
         }
 
         // TỔNG HỢP SHEET (FALLBACK)
-        $sheet0->setCellValue('A3', 'BẢNG KÊ ĐỀ NGHỊ THANH TOÁN TIỀN NHUẬN BÚT');
-        $sheet0->setCellValue('A5', $month == 'all' ? "Năm {$year}" : "Tháng {$month} Năm {$year}");
-        $sheet0->getStyle('A3')->getFont()->setBold(true)->setSize(14);
-        
-        $sheet0->setCellValue('A8', 'STT');
-        $sheet0->setCellValue('B8', 'Nội dung');
-        $sheet0->setCellValue('C8', 'Số tiền');
-        $sheet0->getStyle('A8:C8')->getFont()->setBold(true);
-        $sheet0->getColumnDimension('B')->setWidth(40);
-        $sheet0->getColumnDimension('C')->setWidth(15);
+        // Set column widths
+        $sheet0->getColumnDimension('A')->setWidth(8);
+        $sheet0->getColumnDimension('B')->setWidth(50);
+        $sheet0->getColumnDimension('C')->setWidth(20);
 
-        $rowNum = 9;
+        $sheet0->setCellValue('A2', 'BẢNG KÊ ĐỀ NGHỊ THANH TOÁN TIỀN NHUẬN BÚT');
+        $sheet0->setCellValue('A3', 'TRANG TIN SINH VIÊN');
+        $sheet0->setCellValue('A4', $month == 'all' ? "Năm {$year}" : "Tháng {$month} Năm {$year}");
+        
+        $sheet0->getStyle('A2:A3')->getFont()->setBold(true)->setSize(14);
+        $sheet0->getStyle('A4')->getFont()->setItalic(true)->setSize(12);
+        $sheet0->getStyle('A2:A4')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+
+        $sheet0->mergeCells('A2:C2');
+        $sheet0->mergeCells('A3:C3');
+        $sheet0->mergeCells('A4:C4');
+        
+        $sheet0->setCellValue('A7', 'STT');
+        $sheet0->setCellValue('B7', 'Nội dung');
+        $sheet0->setCellValue('C7', 'Số tiền (VNĐ)');
+        
+        $headerStyle = [
+            'font' => ['bold' => true],
+            'alignment' => [
+                'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
+                'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER,
+            ],
+            'borders' => [
+                'allBorders' => ['borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN]
+            ]
+        ];
+        $sheet0->getStyle('A7:C7')->applyFromArray($headerStyle);
+        $sheet0->getStyle('A7:C7')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('FFF0F0F0');
+
+        $rowNum = 8;
         foreach ($tongHopData as $idx => $row) {
             $sheet0->setCellValue("A{$rowNum}", $idx + 1);
             $sheet0->setCellValue("B{$rowNum}", $row['noidung']);
             $sheet0->setCellValue("C{$rowNum}", $row['sotien']);
+            
+            $sheet0->getStyle("A{$rowNum}")->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+            $sheet0->getStyle("C{$rowNum}")->getNumberFormat()->setFormatCode('#,##0');
             $rowNum++;
         }
         
         $sheet0->setCellValue("B{$rowNum}", "Tổng cộng:");
         $sheet0->setCellValue("C{$rowNum}", $totalAll);
         $sheet0->getStyle("B{$rowNum}:C{$rowNum}")->getFont()->setBold(true);
+        $sheet0->getStyle("C{$rowNum}")->getNumberFormat()->setFormatCode('#,##0');
+        
+        $sheet0->getStyle("A8:C{$rowNum}")->getBorders()->getAllBorders()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
+
+        // Chữ ký
+        $rowNum += 3;
+        $sheet0->setCellValue("A{$rowNum}", "Người lập bảng");
+        $sheet0->setCellValue("C{$rowNum}", "Thủ trưởng đơn vị");
+        $sheet0->getStyle("A{$rowNum}:C{$rowNum}")->getFont()->setBold(true);
+        $sheet0->getStyle("A{$rowNum}")->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+        $sheet0->getStyle("C{$rowNum}")->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
 
         return $this->downloadSpreadsheet($spreadsheet, $month, $year);
     }
 
     private function buildFallbackDetailSheet($sheet, $title, $posts)
     {
-        $sheet->setCellValue('A1', 'BẢNG THANH TOÁN TIỀN NHUẬN BÚT');
-        $sheet->setCellValue('A2', $title);
-        $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(12);
-
-        $headers = ['STT', 'Tác giả', 'Đơn vị', 'Nội dung tin/bài', 'Thành tiền'];
-        $sheet->fromArray($headers, NULL, 'A4');
-        $sheet->getStyle('A4:E4')->getFont()->setBold(true);
-        
-        $sheet->getColumnDimension('B')->setWidth(20);
+        // Set column widths to match analysis
+        $sheet->getColumnDimension('A')->setWidth(5);
+        $sheet->getColumnDimension('B')->setWidth(25);
         $sheet->getColumnDimension('C')->setWidth(15);
         $sheet->getColumnDimension('D')->setWidth(40);
-        $sheet->getColumnDimension('E')->setWidth(15);
+        $sheet->getColumnDimension('E')->setWidth(12);
+        $sheet->getColumnDimension('F')->setWidth(10);
+        $sheet->getColumnDimension('G')->setWidth(15);
+        $sheet->getColumnDimension('H')->setWidth(15);
+
+        // Titles
+        $sheet->setCellValue('A1', 'BẢNG THANH TOÁN TIỀN NHUẬN BÚT TRANG TIN SINH VIÊN');
+        $sheet->setCellValue('A2', $title);
+        $sheet->mergeCells('A1:H1');
+        $sheet->mergeCells('A2:H2');
+        
+        $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(14);
+        $sheet->getStyle('A2')->getFont()->setItalic(true)->setBold(true)->setSize(12);
+        $sheet->getStyle('A1:A2')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+
+        // Headers
+        $headers = ['STT', 'Tác giả', 'Đơn vị', 'Nội dung tin/bài', 'Đơn giá', 'Chiết tính', 'Thành tiền', 'Ký nhận'];
+        $sheet->fromArray($headers, NULL, 'A4');
+        
+        $headerStyle = [
+            'font' => ['bold' => true],
+            'alignment' => [
+                'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
+                'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER,
+                'wrapText' => true
+            ],
+            'borders' => [
+                'allBorders' => ['borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN]
+            ]
+        ];
+        $sheet->getStyle('A4:H4')->applyFromArray($headerStyle);
+        $sheet->getStyle('A4:H4')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('FFF0F0F0');
 
         $rowNum = 5;
         $idx = 1;
@@ -439,13 +501,48 @@ class ReportController extends Controller
             $sheet->setCellValue("C{$rowNum}", $post['unit_name']);
             $sheet->setCellValue("D{$rowNum}", $post['title']);
             $sheet->setCellValue("E{$rowNum}", $lineTotal);
+            $sheet->setCellValue("F{$rowNum}", 1);
+            $sheet->setCellValue("G{$rowNum}", $lineTotal);
+            $sheet->setCellValue("H{$rowNum}", '');
+            
+            // Text wrap for long titles
+            $sheet->getStyle("D{$rowNum}")->getAlignment()->setWrapText(true);
+            $sheet->getStyle("A{$rowNum}")->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+            $sheet->getStyle("F{$rowNum}")->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+            
+            // Format numbers
+            $sheet->getStyle("E{$rowNum}")->getNumberFormat()->setFormatCode('#,##0');
+            $sheet->getStyle("G{$rowNum}")->getNumberFormat()->setFormatCode('#,##0');
+            
             $total += $lineTotal;
             $rowNum++;
         }
         
-        $sheet->setCellValue("D{$rowNum}", 'Tổng cộng:');
-        $sheet->setCellValue("E{$rowNum}", $total);
-        $sheet->getStyle("A{$rowNum}:E{$rowNum}")->getFont()->setBold(true);
+        // Sum row
+        $sheet->mergeCells("A{$rowNum}:F{$rowNum}");
+        $sheet->setCellValue("A{$rowNum}", 'Tổng cộng:');
+        $sheet->getStyle("A{$rowNum}")->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT);
+        $sheet->setCellValue("G{$rowNum}", $total);
+        $sheet->getStyle("A{$rowNum}:G{$rowNum}")->getFont()->setBold(true);
+        $sheet->getStyle("G{$rowNum}")->getNumberFormat()->setFormatCode('#,##0');
+        
+        $sheet->getStyle("A5:H{$rowNum}")->getBorders()->getAllBorders()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
+
+        // Signatures
+        $rowNum += 3;
+        $sheet->setCellValue("A{$rowNum}", "Người đề nghị thanh toán");
+        $sheet->mergeCells("A{$rowNum}:B{$rowNum}");
+        
+        $sheet->setCellValue("C{$rowNum}", "Thư viện");
+        
+        $sheet->setCellValue("E{$rowNum}", "Kế toán trưởng");
+        $sheet->mergeCells("E{$rowNum}:F{$rowNum}");
+        
+        $sheet->setCellValue("G{$rowNum}", "Thủ trưởng đơn vị");
+        $sheet->mergeCells("G{$rowNum}:H{$rowNum}");
+        
+        $sheet->getStyle("A{$rowNum}:H{$rowNum}")->getFont()->setBold(true);
+        $sheet->getStyle("A{$rowNum}:H{$rowNum}")->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
     }
 
     private function exportFromTemplate($month, $year, $groupedByRate, $templatePath)
