@@ -434,6 +434,55 @@ class PostController extends Controller
             return $tableHtml . "\n";
         }
 
+        // Image (ảnh nhúng trong Word)
+        if ($element instanceof \PhpOffice\PhpWord\Element\Image) {
+            try {
+                $imgStyle = $element->getStyle();
+                $width  = method_exists($imgStyle, 'getWidth')  ? $imgStyle->getWidth()  : null;
+                $height = method_exists($imgStyle, 'getHeight') ? $imgStyle->getHeight() : null;
+
+                // Lấy binary data của ảnh từ file Word
+                $imgSource = $element->getImageStringData(true); // base64 encoded
+                if (!$imgSource) return '';
+
+                $mimeType = $element->getImageType() ?? 'image/jpeg';
+                $ext = match ($mimeType) {
+                    'image/png'  => 'png',
+                    'image/gif'  => 'gif',
+                    'image/bmp'  => 'bmp',
+                    'image/webp' => 'webp',
+                    default      => 'jpg',
+                };
+
+                // Lưu ảnh vào storage
+                $userId   = auth()->id();
+                $fileName = uniqid('word_img_') . '.' . $ext;
+                $filePath = "media/{$userId}/{$fileName}";
+                $imgBinary = base64_decode($imgSource);
+                Storage::disk('public')->put($filePath, $imgBinary);
+
+                // Tạo Media record để quản lý trong thư viện
+                $media = \App\Models\Media::create([
+                    'user_id'   => $userId,
+                    'file_name' => $fileName,
+                    'file_path' => $filePath,
+                    'file_type' => $mimeType,
+                    'file_size' => strlen($imgBinary),
+                    'is_shared' => false,
+                ]);
+
+                $imgUrl = route('contributor.media.view', $media->id);
+                $styleAttr = '';
+                if ($width)  $styleAttr .= "width:{$width}px;";
+                if ($height) $styleAttr .= "height:{$height}px;";
+
+                return "<figure class=\"image\"><img src=\"{$imgUrl}\" style=\"{$styleAttr}max-width:100%;\" loading=\"lazy\" /></figure>\n";
+            } catch (\Exception $e) {
+                \Log::warning("Word import: failed to extract image — " . $e->getMessage());
+                return '';
+            }
+        }
+
         return '';
     }
 
