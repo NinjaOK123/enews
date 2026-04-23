@@ -45,13 +45,12 @@ class PlagiarismController extends Controller
             $content = $this->plagiarismService->fetchPageContent($url);
             
             if ($content && mb_strlen($content) > 100) {
-                $cosineSim = $this->plagiarismService->calculateSimilarity($sentence, $content);
-                $ngramSim = $this->plagiarismService->nGramSimilarity($sentence, $content, 5);
-                
-                $similarity = max($cosineSim, $ngramSim);
+                // Dùng chunk-based matching — tránh pha loãng vector khi so sánh câu
+                // ngắn với toàn trang web dài ngàn ký tự
+                $similarity = $this->plagiarismService->findBestChunkSimilarity($sentence, $content);
 
-                if ($similarity > 0) { // Ghi nhận mọi tỷ lệ trùng lặp (không bỏ qua dù chỉ 0.1%)
-                    $simPercent = ceil($similarity * 100); // Ít nhất là 1% nếu có trùng
+                if ($similarity > 0.05) { // Tầng 1: Lọc thô (chỉ giữ kết quả > 5% để đẩy về UI)
+                    $simPercent = ceil($similarity * 100);
                     $matchedSources[] = [
                         'url' => $url,
                         'title' => 'External Web Source',
@@ -73,7 +72,7 @@ class PlagiarismController extends Controller
             'sentence' => $sentence,
             'similarity' => (int) $maxSimilarity,
             'sources' => array_slice($matchedSources, 0, 5), // Trả về top 5 nguồn lặp nhiều nhất
-            'isPlagiarized' => $maxSimilarity > 0
+            'isPlagiarized' => $maxSimilarity >= 20 // Tầng 3: Báo động vi phạm thật sự
         ]);
     }
 }

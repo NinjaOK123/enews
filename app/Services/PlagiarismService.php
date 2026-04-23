@@ -19,18 +19,26 @@ class PlagiarismService
         // 1. Google Search via Serper.dev (Ưu tiên nhất cho tiếng Việt)
         if (env('SERPER_API_KEY')) {
             try {
-                $response = Http::withOptions(['verify' => false])
+                $response = Http::withOptions(['verify' => storage_path('cacert.pem')])
                     ->withHeaders([
                         'X-API-KEY' => env('SERPER_API_KEY'),
                         'Content-Type' => 'application/json'
                     ])
                     ->timeout(10)
                     ->post('https://google.serper.dev/search', [
-                        'q' => Str::limit($query, 200, '')
+                        'q' => Str::limit($query, 200, ''),
+                        'gl' => 'vn',
+                        'hl' => 'vi',
+                        'num' => 10
                     ]);
 
                 if ($response->successful()) {
                     $results = $response->json();
+                    Log::info('Serper Response', [
+                        'status' => $response->status(),
+                        'organic_count' => count($results['organic'] ?? []),
+                        'credits_remaining' => $response->header('X-RateLimit-Remaining'),
+                    ]);
                     if (isset($results['organic'])) {
                         foreach ($results['organic'] as $organic) {
                             if (isset($organic['link']) && str_starts_with($organic['link'], 'http')) {
@@ -38,9 +46,14 @@ class PlagiarismService
                             }
                         }
                     }
+                } else {
+                    Log::warning('Serper API returned non-200', [
+                        'status' => $response->status(),
+                        'body' => $response->body()
+                    ]);
                 }
             } catch (\Exception $e) {
-                Log::warning("Serper Search Error: " . $e->getMessage());
+                Log::error("Serper Search Error: " . $e->getMessage());
             }
         }
 
@@ -54,7 +67,7 @@ class PlagiarismService
             $ddgQuery = urlencode(Str::limit($query, 200, ''));
             $ddgUrl = "https://html.duckduckgo.com/html/?q={$ddgQuery}";
             
-            $response = Http::withOptions(['verify' => false])->withHeaders([
+            $response = Http::withOptions(['verify' => storage_path('cacert.pem')])->withHeaders([
                 'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'
             ])->timeout(8)->get($ddgUrl);
 
@@ -76,7 +89,7 @@ class PlagiarismService
         // 3. CrossRef API (for academic/articles)
         try {
             $crossRefUrl = "https://api.crossref.org/works?query={$queryEncoded}&rows=5";
-            $response = Http::withOptions(['verify' => false])->timeout(5)->get($crossRefUrl);
+            $response = Http::withOptions(['verify' => storage_path('cacert.pem')])->timeout(5)->get($crossRefUrl);
             
             if ($response->successful()) {
                 $data = $response->json();
@@ -100,7 +113,7 @@ class PlagiarismService
     public function fetchPageContent(string $url): string
     {
         try {
-            $response = Http::withOptions(['verify' => false])->withHeaders([
+            $response = Http::withOptions(['verify' => storage_path('cacert.pem')])->withHeaders([
                 'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
                 'Accept' => 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
                 'Accept-Language' => 'en-US,en;q=0.5',
@@ -124,7 +137,7 @@ class PlagiarismService
             $text = preg_replace('/\s+/u', ' ', $text);
             $text = trim($text);
 
-            return mb_substr($text, 0, 5000); // Lấy max 5000 chars
+            return mb_substr($text, 0, 8000); // Lấy max 8000 chars để đủ ngữ cảnh
 
         } catch (\Exception $e) {
             return '';
@@ -132,12 +145,68 @@ class PlagiarismService
     }
 
     /**
+     * Loại bỏ các Hư từ (Stopwords) tiếng Việt phổ biến để giảm False Positives
+     */
+    private function removeStopwords(string $text): string
+    {
+        $stopwords = [
+            'và', 'của', 'là', 'có', 'trong', 'được', 'cho', 'những', 'một', 'các', 'với', 'để', 
+            'không', 'như', 'khi', 'người', 'đến', 'này', 'đã', 'từ', 'vào', 'ra', 'đó', 'thì', 
+            'mà', 'theo', 'trên', 'tại', 'sẽ', 'nhưng', 'lại', 'rất', 'cũng', 'làm', 'phải', 
+            'về', 'những', 'điều', 'sự', 'bởi', 'do', 'nào', 'nữa'
+        ];
+
+        $words = preg_split('/\s+/u', mb_strtolower($text));
+        $filtered = array_filter($words, function($w) use ($stopwords) {
+            return !in_array($w, $stopwords) && mb_strlen($w) > 1; // Bỏ stopword và các từ đơn lẻ 1 ký tự
+        });
+
+        return implode(' ', $filtered);
+    }
+
+    /**
+     * So sánh câu với TỪNG CHUNK nhỏ của nội dung trang (chunk-based matching).
+     * Đây là kỹ thuật Turnitin sử dụng — tránh tình trạng vector bị pha loãng
+     * khi so sánh 1 câu ngắn với toàn bộ 8000 ký tự của trang.
+     */
+    public function findBestChunkSimilarity(string $sentence, string $pageContent, int $chunkSize = 250, int $step = 80): float
+    {
+        if (mb_strlen($pageContent) < 20) return 0;
+
+        $words = preg_split('/\s+/u', $pageContent, -1, PREG_SPLIT_NO_EMPTY);
+        $totalWords = count($words);
+        $chunkWordSize = 40; // ~250 chars ≈ 40 từ
+        $stepSize = 12;      // bước trượt 12 từ
+
+        $maxSim = 0;
+
+        for ($i = 0; $i < $totalWords - $chunkWordSize; $i += $stepSize) {
+            $chunk = implode(' ', array_slice($words, $i, $chunkWordSize));
+            $cosineSim = $this->calculateSimilarity($sentence, $chunk);
+            $ngramSim = $this->nGramSimilarity($sentence, $chunk, 3); // n=3 for short chunks
+            $sim = max($cosineSim, $ngramSim);
+            if ($sim > $maxSim) {
+                $maxSim = $sim;
+            }
+            // Early exit nếu đã tìm được match cao
+            if ($maxSim > 0.85) break;
+        }
+
+        return $maxSim;
+    }
+
+    /**
      * Cosine Similarity
      */
     public function calculateSimilarity(string $text1, string $text2): float
     {
-        $words1 = preg_split('/\s+/u', mb_strtolower($text1));
-        $words2 = preg_split('/\s+/u', mb_strtolower($text2));
+        $clean1 = $this->removeStopwords($text1);
+        $clean2 = $this->removeStopwords($text2);
+
+        $words1 = preg_split('/\s+/u', $clean1, -1, PREG_SPLIT_NO_EMPTY);
+        $words2 = preg_split('/\s+/u', $clean2, -1, PREG_SPLIT_NO_EMPTY);
+
+        if (empty($words1) || empty($words2)) return 0;
 
         $allWords = array_unique(array_merge($words1, $words2));
 
@@ -173,8 +242,10 @@ class PlagiarismService
     public function nGramSimilarity(string $text1, string $text2, int $n = 5): float
     {
         $createNGrams = function ($text) use ($n) {
-            // Remove punctuation and get words
+            // Loại bỏ dấu câu và stopwords
             $text = preg_replace('/[^\p{L}\p{N}\s]/u', '', mb_strtolower($text));
+            $text = $this->removeStopwords($text);
+            
             $words = preg_split('/\s+/u', $text, -1, PREG_SPLIT_NO_EMPTY);
             
             $ngrams = [];
@@ -250,9 +321,8 @@ class PlagiarismService
             // Xoá khoảng trắng thừa
             $strippedContent = preg_replace('/\s+/u', ' ', $strippedContent);
 
-            $cosineSim = $this->calculateSimilarity($sentence, $strippedContent);
-            $ngramSim = $this->nGramSimilarity($sentence, $strippedContent, 5);
-            $similarity = max($cosineSim, $ngramSim);
+            // Dùng chunk-based để tránh pha loãng vector khi so với toàn bài nội bộ
+            $similarity = $this->findBestChunkSimilarity($sentence, $strippedContent);
 
             if ($similarity > 0) { // Ghi nhận mọi tỷ lệ trùng lặp
                 $urls[] = [

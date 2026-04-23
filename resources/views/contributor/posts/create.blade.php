@@ -973,11 +973,11 @@ async function startPlagiarismCheck() {
             const result = await response.json();
             
             totalScore += result.similarity;
-            if (result.similarity > 0) plagiarizedCount++;  // Đếm mọi câu có similarity > 0%
+            if (result.isPlagiarized) plagiarizedCount++;  // Tầng 3: Đếm các câu vi phạm thật sự (>20%)
             if (result.similarity > maxScore) maxScore = result.similarity; // Lưu điểm cao nhất
 
-            // Lưu lại kết quả câu này để show Report (hiển thị mọi câu > 0%)
-            if (result.similarity > 0) {
+            // Tầng 2: Lưu lại kết quả câu này để show Report Highlight (hiển thị mọi câu > 5%)
+            if (result.similarity > 5) {
                 let sourcesList = result.sources.map(src => {
                     if (src.is_internal) {
                         return `
@@ -1031,21 +1031,25 @@ async function startPlagiarismCheck() {
     document.getElementById('plagiarismProgressScreen').classList.add('hidden');
     document.getElementById('plagiarismReportScreen').classList.remove('hidden');
 
-    // Tỷ lệ đạo văn = % câu bị trùng lặp (so sánh số câu có similarity > 0 / tổng câu)
+    // Tỷ lệ độ phủ (Coverage) = % câu bị trùng lặp nặng (Tầng 3)
     const plagPercent = Math.round((plagiarizedCount / sentences.length) * 100);
-    // Mức tương đồng = điểm cao nhất tìm thấy (câu bị copy nhiều nhất)
+    // Mức tương đồng = điểm cao nhất tìm thấy trong bài
     const topScore = maxScore;
+    const displayScore = Math.max(plagPercent, topScore);
 
-    // Xác định màu cảnh báo theo mức độ
+    // Xác định màu cảnh báo theo điểm hiển thị chính
     let colorClass = 'text-green-500';
-    if (plagPercent > 5)  colorClass = 'text-yellow-500';
-    if (plagPercent > 20) colorClass = 'text-orange-500';
-    if (plagPercent > 35) colorClass = 'text-red-500';
+    if (displayScore > 10) colorClass = 'text-yellow-500';
+    if (displayScore > 25) colorClass = 'text-orange-500';
+    if (displayScore > 45) colorClass = 'text-red-500';
 
     document.getElementById('plagScoreUi').className = `text-5xl font-bold ${colorClass}`;
-    document.getElementById('plagScoreUi').textContent = `${plagPercent}%`;
+    document.getElementById('plagScoreUi').textContent = `${displayScore}%`;
     // Hiển thị điểm tương đồng cao nhất (câu trùng nhất)
     document.getElementById('plagSimScoreUi').textContent = `${topScore}%`;
+
+    const statusText = displayScore >= 45 ? 'Nguy cơ cao' : (displayScore >= 25 ? 'Cẩn thận' : 'An toàn');
+    document.getElementById('plagStatusUi').textContent = statusText;
     
     document.getElementById('plagTotalSentences').textContent = sentences.length;
     document.getElementById('plagViolatedSentences').textContent = plagiarizedCount;
@@ -1058,7 +1062,7 @@ async function startPlagiarismCheck() {
                 <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-green-100 text-green-500 mb-3">
                     <i class="bi bi-shield-check text-2xl"></i>
                 </div>
-                <p class="text-gray-500 text-sm">Tuyệt vời! Không phát hiện câu nào có dấu hiệu sao chép với nguồn bên ngoài.</p>
+                <p class="text-gray-500 text-sm">Tuyệt vời! Không phát hiện câu nào có dấu hiệu sao chép đáng kể (> 5%).</p>
             </div>
         `;
     }
