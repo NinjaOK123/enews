@@ -963,7 +963,7 @@ async function startPlagiarismCheck() {
             formData.append('sentence', sentence);
             formData.append('_token', '{{ csrf_token() }}');
 
-            const response = await fetch('/plagiarism-check', {
+            const response = await fetch('{{ route("admin.plagiarism.check") }}', {
                 method: 'POST',
                 body: formData
             });
