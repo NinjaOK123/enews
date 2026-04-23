@@ -73,7 +73,7 @@ class PlagiarismController extends Controller
             'sentence' => $sentence,
             'similarity' => (int) $maxSimilarity,
             'sources' => array_slice($matchedSources, 0, 5), // Trả về top 5 nguồn lặp nhiều nhất
-            'isPlagiarized' => $maxSimilarity > 25
+            'isPlagiarized' => $maxSimilarity > 0
         ]);
     }
 }
