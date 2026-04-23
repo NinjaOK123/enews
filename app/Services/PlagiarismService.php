@@ -59,7 +59,7 @@ class PlagiarismService
 
         // Nếu Serper tìm được URL, trả về luôn không cần các nguồn phụ
         if (count($urls) > 0) {
-            return array_slice(array_unique($urls), 0, 10);
+            return array_slice(array_unique($urls), 0, 5); // Giới hạn 5 URL — đủ chính xác, đỡ nhanh
         }
 
         // 2. DuckDuckGo HTML Scraper (Fallback nếu không có SERPER KEY)
@@ -118,7 +118,7 @@ class PlagiarismService
                 'Accept' => 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
                 'Accept-Language' => 'en-US,en;q=0.5',
             ])
-            ->timeout(8) // timeout max 8s
+            ->timeout(4) // timeout 4s: đủ để tải trang nhanh, không chờ trang chậm vô ích
             ->get($url);
 
             if (!$response->successful()) {
