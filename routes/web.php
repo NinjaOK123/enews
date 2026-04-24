@@ -18,6 +18,8 @@ Route::get('/tim-kiem', [SearchController::class, 'index'])->name('search');
 Route::get('/chuyen-muc/{slug}', [CategoryController::class, 'show'])->name('category');
 Route::get('/bai-viet/{post:slug}', [PostController::class, 'show'])->name('post.show');
 
+
+
 // ─── Trang tĩnh ─────────────────────────────────────────────────
 Route::get('/gioi-thieu',         [PageController::class, 'gioiThieu'])->name('about');
 Route::get('/quy-dinh',           [PageController::class, 'quyDinh'])->name('rules');

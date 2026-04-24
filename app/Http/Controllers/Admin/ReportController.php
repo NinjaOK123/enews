@@ -12,6 +12,17 @@ use Carbon\Carbon;
 
 class ReportController extends Controller
 {
+    private const EDITORS_DEFAULT = [
+        ['name' => 'Ngô Thị Kim Duyên', 'role' => 'Trưởng Ban', 'amount' => 300000],
+        ['name' => 'Nguyễn Thị Hồng Loan', 'role' => 'Phó Trưởng Ban', 'amount' => 250000],
+        ['name' => 'Nguyễn Ngọc Anh Thư', 'role' => 'Biên tập viên', 'amount' => 150000],
+        ['name' => 'Trần Tùng Chinh', 'role' => 'Biên tập viên', 'amount' => 150000],
+        ['name' => 'Huỳnh Phước Hải', 'role' => 'Biên tập viên', 'amount' => 150000],
+        ['name' => 'Lê Thiện Mỹ', 'role' => 'Biên tập viên', 'amount' => 150000],
+        ['name' => 'Huỳnh Thị Cam', 'role' => 'Biên tập viên', 'amount' => 150000],
+        ['name' => 'Trịnh Thanh Thảo', 'role' => 'Thành viên tổ chuyên gia giúp việc', 'amount' => 100000],
+    ];
+
     /**
      * Display the reports and statistics.
      */
@@ -292,14 +303,55 @@ class ReportController extends Controller
             });
         }
         
-        $posts = $postsQuery->orderBy('published_at', 'desc')->get();
-
-        // Lọc danh sách Đơn vị từ user có bài viết
+        $results = [];
+        $rawPosts = $postsQuery->orderBy('published_at', 'desc')->get();
+        
+        foreach ($rawPosts as $p) {
+            $writingRate = $p->royaltyRate;
+            $writingAmount = ($writingRate->amount ?? 0) * ($p->royalty_multiplier ?? 1);
+            $photoAmount = ($p->image_count ?? 0) * 10000;
+            
+            // 1. Dòng cho bài viết
+            $results[] = (object)[
+                'id' => $p->id,
+                'title' => $p->title,
+                'slug' => $p->slug,
+                'author_name' => $p->source_author ?: ($p->author->name ?? 'N/A'),
+                'unit_name' => $p->author->unit_name ?? 'N/A',
+                'category_name' => $p->category->name ?? 'Tin',
+                'rate_name' => $writingRate->name ?? 'N/A',
+                'rate_group' => $writingRate->group_name ?? 'Khác',
+                'image_count' => 0,
+                'multiplier' => $p->royalty_multiplier ?? 1,
+                'unit_price' => $writingRate->amount ?? 0,
+                'royalty_total' => $writingAmount
+            ];
+            
+            // 2. Dòng cho ảnh (nếu có)
+            if ($photoAmount > 0) {
+                $results[] = (object)[
+                    'id' => $p->id . '_photo', // Unique ID for Alpine
+                    'title' => $p->title . ' (Ảnh)',
+                    'slug' => $p->slug,
+                    'author_name' => $p->photographer ?: ($p->source_author ?: ($p->author->name ?? 'N/A')),
+                    'unit_name' => $p->author->unit_name ?? 'N/A',
+                    'category_name' => $p->category->name ?? 'Tin',
+                    'rate_name' => 'Ảnh/Hình',
+                    'rate_group' => $writingRate->group_name ?? 'Khác',
+                    'image_count' => $p->image_count,
+                    'multiplier' => 1,
+                    'unit_price' => 10000,
+                    'royalty_total' => $photoAmount
+                ];
+            }
+        }
+        
+        $posts = collect($results);
         $units = User::whereNotNull('unit_name')->select('unit_name')->distinct()->pluck('unit_name');
-
         $totalRoyalty = $posts->sum('royalty_total');
+        $defaultEditors = self::EDITORS_DEFAULT;
 
-        return view('admin.reports.royalty', compact('posts', 'month', 'year', 'units', 'unitFilter', 'totalRoyalty'));
+        return view('admin.reports.royalty', compact('posts', 'month', 'year', 'units', 'unitFilter', 'totalRoyalty', 'defaultEditors'));
     }
 
     public function uploadTemplate(Request $request)
@@ -328,29 +380,61 @@ class ReportController extends Controller
             $posts = collect($postsList);
         } else {
             // Fallback nếu không truyền data từ form
-            $posts = Post::with(['author', 'royaltyRate'])
-                ->whereYear('published_at', $year)
-                ->where('status', 'published')
-                ->whereNotNull('royalty_rate_id');
+            $results = [];
+            foreach ($postsQuery->get() as $p) {
+                $writingRate = $p->royaltyRate;
+                $writingAmount = ($writingRate->amount ?? 0) * ($p->royalty_multiplier ?? 1);
+                $photoAmount = ($p->image_count ?? 0) * 10000;
                 
-            if ($month !== 'all') {
-                $posts->whereMonth('published_at', $month);
-            }
-                
-            $posts = $posts->get()->map(function($p) {
-                return [
+                // 1. Dòng cho bài viết
+                $results[] = [
                     'title' => $p->title,
                     'author_name' => $p->source_author ?: ($p->author->name ?? 'N/A'),
                     'unit_name' => $p->author->unit_name ?? 'N/A',
-                    'rate_name' => $p->royaltyRate->name ?? 'N/A',
-                    'rate_group' => $p->royaltyRate->group_name ?? 'Khác',
-                    'image_count' => $p->image_count,
-                    'total' => $p->royalty_total
+                    'category_name' => $p->category->name ?? 'Tin',
+                    'rate_name' => $writingRate->name ?? 'N/A',
+                    'rate_group' => $writingRate->group_name ?? 'Khác',
+                    'unit_price' => $writingRate->amount ?? 0,
+                    'multiplier' => $p->royalty_multiplier ?? 1,
+                    'image_count' => 0,
+                    'total' => $writingAmount
                 ];
-            });
+                
+                // 2. Dòng cho ảnh (nếu có)
+                if ($photoAmount > 0) {
+                    $results[] = [
+                        'title' => $p->title . ' (Ảnh)',
+                        'author_name' => $p->photographer ?: ($p->source_author ?: ($p->author->name ?? 'N/A')),
+                        'unit_name' => $p->author->unit_name ?? 'N/A',
+                        'category_name' => $p->category->name ?? 'Tin',
+                        'rate_name' => 'Ảnh/Hình',
+                        'rate_group' => $writingRate->group_name ?? 'Khác',
+                        'unit_price' => 10000,
+                        'multiplier' => 1,
+                        'image_count' => $p->image_count,
+                        'total' => $photoAmount
+                    ];
+                }
+            }
+            $posts = collect($results);
         }
 
-        $groupedByRate = $posts->groupBy('rate_group');
+        $groupedByRate = $posts->groupBy(function($post) {
+            if (($post['rate_group'] ?? '') === 'Ban Biên tập') {
+                return 'Ban Biên tập';
+            }
+            
+            $cat = $post['category_name'] ?? 'Khác';
+            $rate = $post['rate_name'] ?? '';
+            
+            $type = '(viết)';
+            if (mb_stripos($rate, 'hình') !== false || mb_stripos($rate, 'ảnh') !== false) {
+                $type = '(ảnh)';
+            }
+            
+            return $cat . $type;
+        });
+
         $templatePath = storage_path('app/templates/royalty_template.xlsx');
 
         if (file_exists($templatePath)) {
@@ -365,6 +449,25 @@ class ReportController extends Controller
         $sheetIndex = 1;
         $tongHopData = [];
         $totalAll = 0;
+
+        // 1. TẠO SHEET BAN BIÊN TẬP (ƯU TIÊN DỮ LIỆU TỪ FORM NẾU CÓ)
+        $sheetBBT = $spreadsheet->createSheet($sheetIndex++);
+        $sheetBBT->setTitle('Ban Biên tập');
+        
+        $bbtDataFromForm = $groupedByRate->get('Ban Biên tập');
+        if ($bbtDataFromForm) {
+            $sumBBT = $this->buildEditorialBoardSheetFromData($sheetBBT, $month, $year, $bbtDataFromForm);
+            // Xóa khỏi group để không lặp lại ở bước sau
+            $groupedByRate->forget('Ban Biên tập');
+        } else {
+            $sumBBT = $this->buildEditorialBoardSheet($sheetBBT, $month, $year);
+        }
+        
+        $tongHopData[] = [
+            'noidung' => 'Ban Biên tập',
+            'sotien' => $sumBBT
+        ];
+        $totalAll += $sumBBT;
 
         foreach ($groupedByRate as $groupName => $groupPosts) {
             $safeName = substr(str_replace(['/','\\','?','*','[',']'], '_', $groupName), 0, 25);
@@ -387,27 +490,66 @@ class ReportController extends Controller
             }
         }
 
-        // TỔNG HỢP SHEET (FALLBACK)
+        // TỔNG HỢP SHEET (C41-HD STYLE)
         // Set column widths
-        $sheet0->getColumnDimension('A')->setWidth(8);
+        $sheet0->getColumnDimension('A')->setWidth(10);
         $sheet0->getColumnDimension('B')->setWidth(50);
-        $sheet0->getColumnDimension('C')->setWidth(20);
+        $sheet0->getColumnDimension('C')->setWidth(25);
+        $sheet0->getColumnDimension('D')->setWidth(25);
 
-        $sheet0->setCellValue('A2', 'BẢNG KÊ ĐỀ NGHỊ THANH TOÁN TIỀN NHUẬN BÚT');
-        $sheet0->setCellValue('A3', 'TRANG TIN SINH VIÊN');
-        $sheet0->setCellValue('A4', $month == 'all' ? "Năm {$year}" : "Tháng {$month} Năm {$year}");
+        // Header Top Left
+        $sheet0->setCellValue('A1', 'Đơn vị : Trường Đại học An Giang');
+        $sheet0->setCellValue('A2', 'Bộ phận: Thư viện');
+        $sheet0->setCellValue('A3', 'Mã đơn vị SDNS: .........................');
         
-        $sheet0->getStyle('A2:A3')->getFont()->setBold(true)->setSize(14);
-        $sheet0->getStyle('A4')->getFont()->setItalic(true)->setSize(12);
-        $sheet0->getStyle('A2:A4')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+        // Header Top Right
+        $sheet0->setCellValue('C1', 'Mẫu số C41-HD');
+        $sheet0->setCellValue('C2', '(Ban hành kèm theo Thông tư số');
+        $sheet0->setCellValue('C3', '185/2010/TT-BTC)');
+        $sheet0->getStyle('C1:C3')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+        $sheet0->mergeCells('C1:D1');
+        $sheet0->mergeCells('C2:D2');
+        $sheet0->mergeCells('C3:D3');
 
-        $sheet0->mergeCells('A2:C2');
-        $sheet0->mergeCells('A3:C3');
-        $sheet0->mergeCells('A4:C4');
+        // Title
+        $sheet0->setCellValue('A5', 'BẢNG KÊ ĐỀ NGHỊ THANH TOÁN TIỀN NHUẬN BÚT');
+        $sheet0->setCellValue('A6', 'TRANG TIN SINH VIÊN');
+        $sheet0->setCellValue('A7', 'Ngày ... Tháng ... Năm ...');
         
-        $sheet0->setCellValue('A7', 'STT');
-        $sheet0->setCellValue('B7', 'Nội dung');
-        $sheet0->setCellValue('C7', 'Số tiền (VNĐ)');
+        $sheet0->getStyle('A5:A6')->getFont()->setBold(true)->setSize(14);
+        $sheet0->getStyle('A7')->getFont()->setItalic(true)->setSize(12);
+        
+        $sheet0->mergeCells('A5:D5');
+        $sheet0->mergeCells('A6:D6');
+        $sheet0->mergeCells('A7:D7');
+        $sheet0->getStyle('A5:D7')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+
+        // Nợ/Có
+        $sheet0->setCellValue('C10', 'Nợ:.........');
+        $sheet0->setCellValue('C11', 'Có:.........');
+        $sheet0->mergeCells('C10:D10');
+        $sheet0->mergeCells('C11:D11');
+
+        // Date Period Logic
+        if ($month == 'all') {
+            $startDateStr = "01/01/{$year}";
+            $endDateStr = "31/12/{$year}";
+        } else {
+            $startDateStr = "01/" . str_pad($month, 2, '0', STR_PAD_LEFT) . "/{$year}";
+            $lastDay = date('t', strtotime("{$year}-{$month}-01"));
+            $endDateStr = "{$lastDay}/" . str_pad($month, 2, '0', STR_PAD_LEFT) . "/{$year}";
+        }
+
+        // Info before table
+        $sheet0->setCellValue('A13', "Người đề nghị thanh toán: Lê Thiện Mỹ");
+        $sheet0->setCellValue('A14', "Nội dung công việc: Thanh toán chi phí Trang Báo sinh viên điện tử e-News");
+        $sheet0->setCellValue('A15', "Địa điểm tổ chức thực hiện: Thư viện");
+        $sheet0->setCellValue('A16', "Thời gian thực hiện: từ ngày {$startDateStr} đến ngày {$endDateStr}.");
+
+        // Headers
+        $sheet0->setCellValue('A18', 'STT');
+        $sheet0->setCellValue('B18', 'Nội dung');
+        $sheet0->setCellValue('C18', 'Số tiền (VNĐ)');
         
         $headerStyle = [
             'font' => ['bold' => true],
@@ -419,36 +561,236 @@ class ReportController extends Controller
                 'allBorders' => ['borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN]
             ]
         ];
-        $sheet0->getStyle('A7:C7')->applyFromArray($headerStyle);
-        $sheet0->getStyle('A7:C7')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('FFF0F0F0');
+        $sheet0->getStyle('A18:C18')->applyFromArray($headerStyle);
+        $sheet0->getStyle('A18:C18')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('FFF0F0F0');
 
-        $rowNum = 8;
+        $rowNum = 19;
         foreach ($tongHopData as $idx => $row) {
             $sheet0->setCellValue("A{$rowNum}", $idx + 1);
             $sheet0->setCellValue("B{$rowNum}", $row['noidung']);
             $sheet0->setCellValue("C{$rowNum}", $row['sotien']);
             
             $sheet0->getStyle("A{$rowNum}")->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
-            $sheet0->getStyle("C{$rowNum}")->getNumberFormat()->setFormatCode('#,##0');
+            $sheet0->getStyle("C{$rowNum}")->getNumberFormat()->setFormatCode('#,##0 "đ"');
             $rowNum++;
         }
         
         $sheet0->setCellValue("B{$rowNum}", "Tổng cộng:");
         $sheet0->setCellValue("C{$rowNum}", $totalAll);
         $sheet0->getStyle("B{$rowNum}:C{$rowNum}")->getFont()->setBold(true);
-        $sheet0->getStyle("C{$rowNum}")->getNumberFormat()->setFormatCode('#,##0');
+        $sheet0->getStyle("C{$rowNum}")->getNumberFormat()->setFormatCode('#,##0 "đ"');
         
-        $sheet0->getStyle("A8:C{$rowNum}")->getBorders()->getAllBorders()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
+        $sheet0->getStyle("A18:C{$rowNum}")->getBorders()->getAllBorders()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
+        
+        $rowNum++;
+        $footerStart = $rowNum;
+        $sheet0->mergeCells("A{$rowNum}:D{$rowNum}");
+        $sheet0->setCellValue("A{$rowNum}", "Số tiền đề nghị thanh toán (bằng chữ): " . $this->convertNumberToVietnameseWords($totalAll) . ".");
+        $sheet0->getStyle("A{$rowNum}")->getFont()->setItalic(true);
 
-        // Chữ ký
+        // Chữ ký (4 cột)
         $rowNum += 3;
-        $sheet0->setCellValue("A{$rowNum}", "Người lập bảng");
-        $sheet0->setCellValue("C{$rowNum}", "Thủ trưởng đơn vị");
-        $sheet0->getStyle("A{$rowNum}:C{$rowNum}")->getFont()->setBold(true);
-        $sheet0->getStyle("A{$rowNum}")->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
-        $sheet0->getStyle("C{$rowNum}")->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+        $sheet0->setCellValue("A{$rowNum}", "Người đề nghị thanh toán");
+        $sheet0->setCellValue("B{$rowNum}", "Thư viện");
+        $sheet0->setCellValue("C{$rowNum}", "Kế toán trưởng");
+        $sheet0->setCellValue("D{$rowNum}", "Thủ trưởng đơn vị");
+        
+        $sheet0->getStyle("A{$rowNum}:D{$rowNum}")->getFont()->setBold(true);
+        $sheet0->getStyle("A{$rowNum}:D{$rowNum}")->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+
+        $rowNum += 4;
+        $sheet0->setCellValue("A{$rowNum}", "Lê Thiện Mỹ");
+        $sheet0->setCellValue("B{$rowNum}", "Ngô Thị Kim Duyên");
+        $sheet0->getStyle("A{$rowNum}:B{$rowNum}")->getFont()->setBold(true);
+        $sheet0->getStyle("A{$rowNum}:B{$rowNum}")->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+
+        // Xóa viền chân trang cho sheet0
+        $sheet0->getStyle("A" . ($footerStart) . ":D{$rowNum}")->getBorders()->getAllBorders()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_NONE);
 
         return $this->downloadSpreadsheet($spreadsheet, $month, $year);
+    }
+
+    private function buildEditorialBoardSheet($sheet, $month, $year)
+    {
+        $thangNamStr = $month == 'all' ? "NĂM {$year}" : "THÁNG " . str_pad($month, 2, '0', STR_PAD_LEFT) . "/{$year}";
+        
+        $sheet->getColumnDimension('A')->setWidth(8);
+        $sheet->getColumnDimension('B')->setWidth(30);
+        $sheet->getColumnDimension('C')->setWidth(25);
+        $sheet->getColumnDimension('D')->setWidth(20);
+        $sheet->getColumnDimension('E')->setWidth(20);
+
+        $sheet->setCellValue('A1', 'BẢNG THANH TOÁN TIỀN ĐIỀU HÀNH TRANG TIN SINH VIÊN');
+        $sheet->setCellValue('A2', "{$thangNamStr} - Ban Biên tập");
+        $sheet->mergeCells('A1:E1');
+        $sheet->mergeCells('A2:E2');
+        
+        $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(14);
+        $sheet->getStyle('A2')->getFont()->setItalic(true)->setBold(true)->setSize(12);
+        $sheet->getStyle('A1:A2')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+
+        $headers = ['STT', 'Họ và tên', 'Nghiệp vụ', 'Thành tiền', 'Ký nhận'];
+        $sheet->fromArray($headers, NULL, 'A4');
+        
+        $headerStyle = [
+            'font' => ['bold' => true],
+            'alignment' => [
+                'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
+                'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER,
+            ],
+            'borders' => [
+                'allBorders' => ['borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN]
+            ]
+        ];
+        $sheet->getStyle('A4:E4')->applyFromArray($headerStyle);
+        $sheet->getStyle('A4:E4')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('FFF0F0F0');
+
+        $editors = self::EDITORS_DEFAULT;
+
+        $rowNum = 5;
+        $idx = 1;
+        $total = 0;
+
+        foreach ($editors as $ed) {
+            $sheet->setCellValue("A{$rowNum}", $idx++);
+            $sheet->setCellValue("B{$rowNum}", $ed['name']);
+            $sheet->setCellValue("C{$rowNum}", $ed['role']);
+            $sheet->setCellValue("D{$rowNum}", $ed['amount']);
+            $sheet->setCellValue("E{$rowNum}", '');
+            
+            $sheet->getStyle("A{$rowNum}")->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+            $sheet->getStyle("C{$rowNum}")->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+            $sheet->getStyle("D{$rowNum}")->getNumberFormat()->setFormatCode('#,##0 "đ"');
+            
+            $total += $ed['amount'];
+            $rowNum++;
+        }
+        
+        $sheet->mergeCells("A{$rowNum}:C{$rowNum}");
+        $sheet->setCellValue("A{$rowNum}", 'Tổng cộng:');
+        $sheet->getStyle("A{$rowNum}")->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT);
+        $sheet->setCellValue("D{$rowNum}", $total);
+        $sheet->getStyle("A{$rowNum}:D{$rowNum}")->getFont()->setBold(true);
+        $sheet->getStyle("D{$rowNum}")->getNumberFormat()->setFormatCode('#,##0 "đ"');
+        
+        // Vẽ viền cho bảng nội dung
+        $sheet->getStyle("A4:E{$rowNum}")->getBorders()->getAllBorders()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
+        
+        $rowNum++;
+        $footerStart = $rowNum;
+        $sheet->mergeCells("A{$rowNum}:E{$rowNum}");
+        $sheet->setCellValue("A{$rowNum}", "Số tiền bằng chữ: " . $this->convertNumberToVietnameseWords($total) . ".");
+        $sheet->getStyle("A{$rowNum}")->getFont()->setItalic(true);
+
+        $rowNum += 2;
+        $sheet->setCellValue("A{$rowNum}", "Người đề nghị thanh toán");
+        $sheet->setCellValue("B{$rowNum}", "Thư viện");
+        $sheet->setCellValue("D{$rowNum}", "Kế toán trưởng");
+        $sheet->setCellValue("E{$rowNum}", "Thủ trưởng đơn vị");
+        $sheet->getStyle("A{$rowNum}:E{$rowNum}")->getFont()->setBold(true);
+        $sheet->getStyle("A{$rowNum}:E{$rowNum}")->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+
+        $rowNum += 4;
+        $sheet->setCellValue("A{$rowNum}", "Lê Thiện Mỹ");
+        $sheet->setCellValue("B{$rowNum}", "Ngô Thị Kim Duyên");
+        $sheet->getStyle("A{$rowNum}:B{$rowNum}")->getFont()->setBold(true);
+        $sheet->getStyle("A{$rowNum}:B{$rowNum}")->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+
+        // Đảm bảo phần chân trang không có viền
+        $sheet->getStyle("A{$footerStart}:E{$rowNum}")->getBorders()->getAllBorders()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_NONE);
+
+        return $total;
+    }
+
+    private function buildEditorialBoardSheetFromData($sheet, $month, $year, $data)
+    {
+        $thangNamStr = $month == 'all' ? "NĂM {$year}" : "THÁNG " . str_pad($month, 2, '0', STR_PAD_LEFT) . "/{$year}";
+        
+        $sheet->getColumnDimension('A')->setWidth(8);
+        $sheet->getColumnDimension('B')->setWidth(30);
+        $sheet->getColumnDimension('C')->setWidth(25);
+        $sheet->getColumnDimension('D')->setWidth(20);
+        $sheet->getColumnDimension('E')->setWidth(20);
+
+        $sheet->setCellValue('A1', 'BẢNG THANH TOÁN TIỀN ĐIỀU HÀNH TRANG TIN SINH VIÊN');
+        $sheet->setCellValue('A2', "{$thangNamStr} - Ban Biên tập");
+        $sheet->mergeCells('A1:E1');
+        $sheet->mergeCells('A2:E2');
+        
+        $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(14);
+        $sheet->getStyle('A2')->getFont()->setItalic(true)->setBold(true)->setSize(12);
+        $sheet->getStyle('A1:A2')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+
+        $headers = ['STT', 'Họ và tên', 'Nghiệp vụ', 'Thành tiền', 'Ký nhận'];
+        $sheet->fromArray($headers, NULL, 'A4');
+        
+        $headerStyle = [
+            'font' => ['bold' => true],
+            'alignment' => [
+                'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
+                'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER,
+            ],
+            'borders' => [
+                'allBorders' => ['borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN]
+            ]
+        ];
+        $sheet->getStyle('A4:E4')->applyFromArray($headerStyle);
+        $sheet->getStyle('A4:E4')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('FFF0F0F0');
+
+        $rowNum = 5;
+        $idx = 1;
+        $total = 0;
+
+        foreach ($data as $ed) {
+            $amount = floatval(str_replace(',', '', $ed['total'] ?? 0));
+            $sheet->setCellValue("A{$rowNum}", $idx++);
+            $sheet->setCellValue("B{$rowNum}", $ed['author_name'] ?? '');
+            $sheet->setCellValue("C{$rowNum}", $ed['rate_name'] ?? '');
+            $sheet->setCellValue("D{$rowNum}", $amount);
+            $sheet->setCellValue("E{$rowNum}", '');
+            
+            $sheet->getStyle("A{$rowNum}")->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+            $sheet->getStyle("C{$rowNum}")->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+            $sheet->getStyle("D{$rowNum}")->getNumberFormat()->setFormatCode('#,##0 "đ"');
+            
+            $total += $amount;
+            $rowNum++;
+        }
+        
+        $sheet->mergeCells("A{$rowNum}:C{$rowNum}");
+        $sheet->setCellValue("A{$rowNum}", 'Tổng cộng:');
+        $sheet->getStyle("A{$rowNum}")->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT);
+        $sheet->setCellValue("D{$rowNum}", $total);
+        $sheet->getStyle("A{$rowNum}:D{$rowNum}")->getFont()->setBold(true);
+        $sheet->getStyle("D{$rowNum}")->getNumberFormat()->setFormatCode('#,##0 "đ"');
+        
+        // Vẽ viền cho bảng nội dung
+        $sheet->getStyle("A4:E{$rowNum}")->getBorders()->getAllBorders()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
+        
+        $rowNum++;
+        $footerStart = $rowNum;
+        $sheet->mergeCells("A{$rowNum}:E{$rowNum}");
+        $sheet->setCellValue("A{$rowNum}", "Số tiền bằng chữ: " . $this->convertNumberToVietnameseWords($total) . ".");
+        $sheet->getStyle("A{$rowNum}")->getFont()->setItalic(true);
+
+        $rowNum += 2;
+        $sheet->setCellValue("A{$rowNum}", "Người đề nghị thanh toán");
+        $sheet->setCellValue("B{$rowNum}", "Thư viện");
+        $sheet->setCellValue("D{$rowNum}", "Kế toán trưởng");
+        $sheet->setCellValue("E{$rowNum}", "Thủ trưởng đơn vị");
+        $sheet->getStyle("A{$rowNum}:E{$rowNum}")->getFont()->setBold(true);
+        $sheet->getStyle("A{$rowNum}:E{$rowNum}")->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+
+        $rowNum += 4;
+        $sheet->setCellValue("A{$rowNum}", "Lê Thiện Mỹ");
+        $sheet->setCellValue("B{$rowNum}", "Ngô Thị Kim Duyên");
+        $sheet->getStyle("A{$rowNum}:B{$rowNum}")->getFont()->setBold(true);
+        $sheet->getStyle("A{$rowNum}:B{$rowNum}")->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+
+        // Đảm bảo phần chân trang không có viền
+        $sheet->getStyle("A{$footerStart}:E{$rowNum}")->getBorders()->getAllBorders()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_NONE);
+
+        return $total;
     }
 
     private function buildFallbackDetailSheet($sheet, $title, $posts)
@@ -496,12 +838,24 @@ class ReportController extends Controller
         $total = 0;
         foreach ($posts as $post) {
             $lineTotal = floatval(str_replace(',', '', $post['total'] ?? 0));
+            $unitPrice = floatval(str_replace(',', '', $post['unit_price'] ?? 0));
+            $multiplier = floatval($post['multiplier'] ?? 1);
+            $imageCount = intval($post['image_count'] ?? 0);
+
             $sheet->setCellValue("A{$rowNum}", $idx++);
             $sheet->setCellValue("B{$rowNum}", $post['author_name']);
             $sheet->setCellValue("C{$rowNum}", $post['unit_name']);
             $sheet->setCellValue("D{$rowNum}", $post['title']);
-            $sheet->setCellValue("E{$rowNum}", $lineTotal);
-            $sheet->setCellValue("F{$rowNum}", 1);
+            $sheet->setCellValue("E{$rowNum}", $unitPrice);
+            
+            // Chiết tính: Nếu là ảnh thì ghi số lượng hình, nếu không ghi multiplier
+            if ($imageCount > 0) {
+                $countStr = $imageCount . ' hình';
+                $sheet->setCellValue("F{$rowNum}", $countStr);
+            } else {
+                $sheet->setCellValue("F{$rowNum}", $multiplier);
+            }
+
             $sheet->setCellValue("G{$rowNum}", $lineTotal);
             $sheet->setCellValue("H{$rowNum}", '');
             
@@ -528,6 +882,13 @@ class ReportController extends Controller
         
         $sheet->getStyle("A5:H{$rowNum}")->getBorders()->getAllBorders()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
 
+        $footerStart = $rowNum + 1;
+        $rowNum++;
+        $sheet->mergeCells("A{$rowNum}:H{$rowNum}");
+        $sheet->setCellValue("A{$rowNum}", "Số tiền bằng chữ: " . $this->convertNumberToVietnameseWords($total) . ".");
+        $sheet->getStyle("A{$rowNum}")->getFont()->setItalic(true);
+        $sheet->getStyle("A{$rowNum}:H{$rowNum}")->getBorders()->getAllBorders()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_NONE);
+
         // Signatures
         $rowNum += 3;
         $sheet->setCellValue("A{$rowNum}", "Người đề nghị thanh toán");
@@ -543,6 +904,16 @@ class ReportController extends Controller
         
         $sheet->getStyle("A{$rowNum}:H{$rowNum}")->getFont()->setBold(true);
         $sheet->getStyle("A{$rowNum}:H{$rowNum}")->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+
+        $rowNum += 4;
+        $sheet->setCellValue("A{$rowNum}", "Lê Thiện Mỹ");
+        $sheet->mergeCells("A{$rowNum}:B{$rowNum}");
+        $sheet->setCellValue("C{$rowNum}", "Ngô Thị Kim Duyên");
+        $sheet->getStyle("A{$rowNum}:C{$rowNum}")->getFont()->setBold(true);
+        $sheet->getStyle("A{$rowNum}:C{$rowNum}")->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+
+        // Đảm bảo phần chân trang không có viền
+        $sheet->getStyle("A{$footerStart}:H{$rowNum}")->getBorders()->getAllBorders()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_NONE);
     }
 
     private function exportFromTemplate($month, $year, $groupedByRate, $templatePath)
@@ -704,6 +1075,122 @@ class ReportController extends Controller
             'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
             'Cache-Control' => 'max-age=0'
         ]);
+    }
+    private function convertNumberToVietnameseWords($number)
+    {
+        $string = $this->doConvertNumberToVietnameseWords($number);
+        return mb_ucfirst(trim($string)) . ' đồng';
+    }
+
+    private function doConvertNumberToVietnameseWords($number)
+    {
+        $hyphen      = ' ';
+        $conjunction = ' ';
+        $separator   = ' ';
+        $negative    = 'âm ';
+        $decimal     = ' phẩy ';
+        $dictionary  = array(
+            0                   => 'không',
+            1                   => 'một',
+            2                   => 'hai',
+            3                   => 'ba',
+            4                   => 'bốn',
+            5                   => 'năm',
+            6                   => 'sáu',
+            7                   => 'bảy',
+            8                   => 'tám',
+            9                   => 'chín',
+            10                  => 'mười',
+            11                  => 'mười một',
+            12                  => 'mười hai',
+            13                  => 'mười ba',
+            14                  => 'mười bốn',
+            15                  => 'mười lăm',
+            16                  => 'mười sáu',
+            17                  => 'mười bảy',
+            18                  => 'mười tám',
+            19                  => 'mười chín',
+            20                  => 'hai mươi',
+            30                  => 'ba mươi',
+            40                  => 'bốn mươi',
+            50                  => 'năm mươi',
+            60                  => 'sáu mươi',
+            70                  => 'bảy mươi',
+            80                  => 'tám mươi',
+            90                  => 'chín mươi',
+            100                 => 'trăm',
+            1000                => 'nghìn',
+            1000000             => 'triệu',
+            1000000000          => 'tỷ',
+            1000000000000       => 'nghìn tỷ',
+            1000000000000000    => 'triệu tỷ',
+            1000000000000000000 => 'tỷ tỷ'
+        );
+
+        if (!is_numeric($number)) {
+            return false;
+        }
+
+        if ($number < 0) {
+            return $negative . $this->doConvertNumberToVietnameseWords(abs($number));
+        }
+
+        $string = $fraction = null;
+
+        if (strpos($number, '.') !== false) {
+            list($number, $fraction) = explode('.', $number);
+        }
+
+        switch (true) {
+            case $number < 21:
+                $string = $dictionary[$number];
+                break;
+            case $number < 100:
+                $tens   = ((int) ($number / 10)) * 10;
+                $units  = $number % 10;
+                $string = $dictionary[$tens];
+                if ($units) {
+                    $string .= $hyphen . ($units == 5 ? 'lăm' : ($units == 1 ? 'mốt' : $dictionary[$units]));
+                }
+                break;
+            case $number < 1000:
+                $hundreds  = $number / 100;
+                $remainder = $number % 100;
+                $string = $dictionary[(int) $hundreds] . ' ' . $dictionary[100];
+                if ($remainder) {
+                    $string .= $conjunction . ($remainder < 10 ? 'lẻ ' : '') . $this->doConvertNumberToVietnameseWords($remainder);
+                }
+                break;
+            default:
+                $baseUnit = pow(1000, floor(log($number, 1000)));
+                $numBaseUnits = (int) ($number / $baseUnit);
+                $remainder = $number % $baseUnit;
+                $string = $this->doConvertNumberToVietnameseWords($numBaseUnits) . ' ' . $dictionary[$baseUnit];
+                if ($remainder) {
+                    $string .= $remainder < 100 ? $conjunction . 'không trăm ' . ($remainder < 10 ? 'lẻ ' : '') : $separator;
+                    $string .= $this->doConvertNumberToVietnameseWords($remainder);
+                }
+                break;
+        }
+
+        if (null !== $fraction && is_numeric($fraction)) {
+            $string .= $decimal;
+            $words = array();
+            foreach (str_split((string) $fraction) as $number) {
+                $words[] = $dictionary[$number];
+            }
+            $string .= implode(' ', $words);
+        }
+
+        return $string;
+    }
+}
+
+if (!function_exists('mb_ucfirst')) {
+    function mb_ucfirst($string, $encoding = 'UTF-8') {
+        $firstChar = mb_substr($string, 0, 1, $encoding);
+        $then = mb_substr($string, 1, null, $encoding);
+        return mb_strtoupper($firstChar, $encoding) . $then;
     }
 }
 

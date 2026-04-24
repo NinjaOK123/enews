@@ -51,14 +51,19 @@
         <div class="flex-1 min-w-0 space-y-5">
 
           {{-- Tiêu đề --}}
-          <div class="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-100 dark:border-zinc-800 shadow-sm p-5 transition-colors relative group focus-within:border-emerald-500/50 dark:focus-within:border-emerald-500/50">
-            <label for="title" class="block text-xs font-semibold text-gray-500 dark:text-zinc-400 uppercase tracking-wider mb-2">
-              Tiêu đề bài viết <span class="text-red-500">*</span>
-            </label>
+          <div class="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-100 dark:border-zinc-800 shadow-sm p-6 transition-all relative group focus-within:border-indigo-500/50 dark:focus-within:border-indigo-500/50">
+            <div class="flex items-center justify-between mb-2">
+              <label for="title" class="block text-[10px] font-black text-gray-400 dark:text-zinc-500 uppercase tracking-[0.2em]">
+                Tiêu đề bài viết <span class="text-red-500">*</span>
+              </label>
+              <button type="button" onclick="suggestTitles(this)" class="group/btn relative overflow-hidden bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all hover:bg-indigo-600 hover:text-white dark:hover:bg-indigo-500 dark:hover:text-white flex items-center gap-2">
+                <i class="bi bi-stars"></i> Gợi ý tiêu đề
+              </button>
+            </div>
             <input type="text" id="title" name="title" required
                    value="{{ old('title', $post->title ?? '') }}"
-                   placeholder="Nhập tiêu đề hấp dẫn, rõ ràng..."
-                   class="w-full text-xl md:text-2xl font-bold text-gray-900 dark:text-zinc-100 border-0 outline-none placeholder:text-gray-300 dark:placeholder:text-zinc-600 bg-transparent ring-0 focus:ring-0 px-0 py-1 m-0 leading-normal">
+                   placeholder="Nhập tiêu đề hấp dẫn..."
+                   class="w-full text-2xl md:text-3xl font-black text-gray-900 dark:text-zinc-100 border-0 outline-none placeholder:text-gray-200 dark:placeholder:text-zinc-700 bg-transparent ring-0 focus:ring-0 px-0 py-1 m-0 leading-tight">
             @error('title')<p class="mt-2 text-xs text-red-500">{{ $message }}</p>@enderror
           </div>
 
@@ -80,29 +85,42 @@
           </div>
 
           {{-- Editor --}}
-          <div class="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-100 dark:border-zinc-800 shadow-sm transition-colors">
-            <div class="flex items-center justify-between px-5 py-3 border-b border-gray-100 dark:border-zinc-800 bg-gray-50/60 dark:bg-zinc-950/50 rounded-t-[15px]">
-              <span class="text-xs font-semibold text-gray-500 dark:text-zinc-400 uppercase tracking-wider">
-                Nội dung bài viết <span class="text-red-500">*</span>
-              </span>
-              <div class="flex items-center gap-2">
-                <button type="button" id="btnImportWord"
-                        class="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-500/10 hover:bg-blue-100 dark:hover:bg-blue-500/20 rounded-xl border border-blue-200 dark:border-blue-500/20 shadow-sm transition">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                  Import Word
+          <div class="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-100 dark:border-zinc-800 shadow-sm transition-colors overflow-hidden">
+            <div class="flex flex-wrap items-center justify-between px-5 py-3 border-b border-gray-100 dark:border-zinc-800 bg-gray-50/60 dark:bg-zinc-950/50">
+              <span class="text-[10px] font-black text-gray-400 dark:text-zinc-500 uppercase tracking-widest">Nội dung chính</span>
+              <div class="flex flex-wrap items-center gap-1.5 p-1 bg-white/50 dark:bg-zinc-900/50 rounded-xl border border-gray-200/50 dark:border-zinc-800/50">
+                
+                {{-- Word --}}
+                <button type="button" id="btnImportWord" class="px-3 py-1.5 text-[10px] font-black uppercase text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-500/10 rounded-lg transition-all flex items-center gap-1.5">
+                    <i class="bi bi-file-earmark-word"></i> Word
                 </button>
                 <input type="file" id="wordFileInput" accept=".docx,.doc" class="hidden">
+                <div class="w-px h-3 bg-gray-200 dark:bg-zinc-800 mx-0.5"></div>
 
-                <button type="button" id="btnAIGenerate" onclick="document.getElementById('aiPromptTarget').classList.toggle('hidden'); setTimeout(() => document.getElementById('aiPromptInput').focus(), 100);"
-                        class="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-500/10 hover:bg-purple-100 dark:hover:bg-purple-500/20 rounded-xl border border-purple-200 dark:border-purple-500/20 shadow-sm transition">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
-                  AI viết
-                </button>
+                {{-- AI Quick Actions --}}
+                <div class="flex items-center gap-1">
+                    <button type="button" onclick="aiQuickAction('outline', this)" class="px-3 py-1.5 text-[10px] font-black uppercase text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-500/10 rounded-lg transition-all flex items-center gap-1.5" title="Lên sườn bài">
+                        <i class="bi bi-list-task"></i> Sườn bài
+                    </button>
+                    <button type="button" onclick="aiQuickAction('expand', this)" class="px-3 py-1.5 text-[10px] font-black uppercase text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-500/10 rounded-lg transition-all flex items-center gap-1.5" title="Viết tiếp đoạn văn">
+                        <i class="bi bi-lightning-charge"></i> Viết tiếp
+                    </button>
+                    <button type="button" onclick="aiQuickAction('summary', this)" class="px-3 py-1.5 text-[10px] font-black uppercase text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-500/10 rounded-lg transition-all flex items-center gap-1.5" title="Tạo đoạn Sapo">
+                        <i class="bi bi-card-text"></i> Tóm tắt
+                    </button>
+                    <button type="button" onclick="aiQuickAction('image', this)" class="px-3 py-1.5 text-[10px] font-black uppercase text-pink-600 dark:text-pink-400 hover:bg-pink-50 dark:hover:bg-pink-500/10 rounded-lg transition-all flex items-center gap-1.5" title="Tạo ảnh AI minh hoạ">
+                        <i class="bi bi-image"></i> Tạo ảnh
+                    </button>
+                    <button type="button" onclick="document.getElementById('aiPromptTarget').classList.toggle('hidden')" class="w-7 h-7 flex items-center justify-center text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 rounded-lg transition-all" title="Mở hộp chat AI">
+                        <i class="bi bi-plus-circle-fill"></i>
+                    </button>
+                </div>
 
-                <button type="button" onclick="document.getElementById('mediaModal').classList.remove('hidden')"
-                        class="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-gray-700 dark:text-zinc-300 bg-white dark:bg-zinc-800 hover:bg-gray-100 dark:hover:bg-zinc-700 rounded-xl border border-gray-200 dark:border-zinc-700 shadow-sm transition">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                  Media
+                <div class="w-px h-3 bg-gray-200 dark:bg-zinc-800 mx-0.5"></div>
+
+                {{-- Media --}}
+                <button type="button" onclick="document.getElementById('mediaModal').classList.remove('hidden')" class="px-3 py-1.5 text-[10px] font-black uppercase text-gray-600 dark:text-zinc-400 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-lg transition-all flex items-center gap-1.5">
+                    <i class="bi bi-images text-indigo-400"></i> Media
                 </button>
               </div>
             </div>
@@ -570,34 +588,39 @@ document.addEventListener('paste', function(e) {
 });
 
 // Cute Toast Function
-function showCuteToast(type, title, msg) {
-    const toast = document.getElementById('cuteToast');
-    const icon = document.getElementById('cuteToastIcon');
-    const tTitle = document.getElementById('cuteToastTitle');
-    const tMsg = document.getElementById('cuteToastMsg');
-    
-    // Setup Icon & Colors
-    if (type === 'success') {
-        icon.innerHTML = '✨📝';
-        tTitle.className = 'font-bold text-emerald-600 text-sm mb-0.5';
-        toast.className = 'fixed top-24 right-5 z-[200] transform transition-all duration-500 flex items-center gap-4 bg-white px-5 py-4 rounded-[1.25rem] shadow-2xl shadow-green-900/10 border-b-4 border-emerald-400 translate-x-[150%] opacity-0';
-    } else {
-        icon.innerHTML = '😿💔';
-        tTitle.className = 'font-bold text-red-600 text-sm mb-0.5';
-        toast.className = 'fixed top-24 right-5 z-[200] transform transition-all duration-500 flex items-center gap-4 bg-white px-5 py-4 rounded-[1.25rem] shadow-2xl shadow-red-900/10 border-b-4 border-red-400 translate-x-[150%] opacity-0';
+function showCuteToast(type, title, message) {
+    const container = document.getElementById('cuteToastContainer');
+    if (!container) {
+        const div = document.createElement('div');
+        div.id = 'cuteToastContainer';
+        div.className = 'fixed bottom-5 right-5 z-[9999] flex flex-col gap-3 pointer-events-none';
+        document.body.appendChild(div);
     }
     
-    tTitle.textContent = title;
-    tMsg.textContent = msg;
+    const toast = document.createElement('div');
+    const colorClass = type === 'success' ? 'bg-emerald-500 shadow-emerald-200' : 'bg-rose-500 shadow-rose-200';
+    const icon = type === 'success' ? 'bi-check-circle-fill' : 'bi-exclamation-circle-fill';
     
-    // Float It In
-    requestAnimationFrame(() => {
-        setTimeout(() => toast.classList.remove('translate-x-[150%]', 'opacity-0'), 100);
-    });
+    toast.className = `transform translate-x-full transition-all duration-500 ease-out flex items-center gap-3 p-4 rounded-2xl text-white shadow-xl ${colorClass} pointer-events-auto min-w-[300px] border border-white/20`;
+    toast.innerHTML = `
+        <div class="flex-shrink-0 w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-lg">
+            <i class="bi ${icon}"></i>
+        </div>
+        <div class="flex-1">
+            <p class="text-sm font-bold">${title}</p>
+            <p class="text-[11px] opacity-90">${message}</p>
+        </div>
+    `;
     
-    // Fly It Out after 4 seconds
+    document.getElementById('cuteToastContainer').appendChild(toast);
+    
+    // Trigger animation
+    setTimeout(() => toast.classList.remove('translate-x-full'), 10);
+    
+    // Auto remove
     setTimeout(() => {
-        toast.classList.add('translate-x-[150%]', 'opacity-0');
+        toast.classList.add('translate-x-full', 'opacity-0');
+        setTimeout(() => toast.remove(), 500);
     }, 4000);
 }
 
@@ -1428,6 +1451,102 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 });
+
+async function suggestTitles(btn) {
+    const content = window.myEditor ? window.myEditor.getData() : '';
+    const currentTitle = document.getElementById('title').value;
+    
+    if (!content || content.length < 100) {
+        alert('Hãy viết một chút nội dung để AI có cơ sở gợi ý tiêu đề nhé!');
+        return;
+    }
+
+    const originalBtn = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<i class="bi bi-hourglass-split animate-spin"></i> Đang nghĩ...';
+
+    try {
+        const fd = new FormData();
+        fd.append('prompt', `Dựa trên bài viết sau, hãy gợi ý 3 tiêu đề hấp dẫn, đúng chất báo chí truyền thông. Trả về JSON { "suggestions": ["Title 1", "Title 2", "Title 3"] }. Nội dung bài: ${content.substring(0, 1000)}`);
+        fd.append('_token', document.querySelector('meta[name="csrf-token"]').content);
+
+        const res = await fetch("{{ route('ai.generate-post') }}", { method: 'POST', body: fd });
+        const data = await res.json();
+        
+        if (data.title) {
+            if (confirm(`Gợi ý: "${data.title}"\nBạn có muốn sử dụng tiêu đề này không?`)) {
+                document.getElementById('title').value = data.title;
+            }
+        }
+    } catch (e) {
+        console.error(e);
+        alert('Lỗi: ' + e.message);
+    }
+    btn.disabled = false;
+    btn.innerHTML = originalBtn;
+}
+
+async function aiQuickAction(action, btn) {
+    if (!window.myEditor) {
+        alert('Trình soạn thảo chưa được khởi tạo!');
+        return;
+    }
+    const title = document.getElementById('title').value;
+    const content = window.myEditor.getData();
+
+    let prompt = "";
+    if (action === 'outline') {
+        if (!title) { alert('Vui lòng nhập tiêu đề trước!'); return; }
+        prompt = `Tạo sườn bài (Outline) chi tiết với các thẻ <h2> và <p> cho chủ đề: ${title}. Đúng văn phong báo chí E-News.`;
+    } else if (action === 'expand') {
+        if (!content || content.length < 50) { alert('Hãy viết một đoạn ngắn để AI có thể viết tiếp!'); return; }
+        prompt = `Đọc nội dung bài viết và viết tiếp khoảng 2-3 đoạn văn mạch lạc, hấp dẫn, giữ đúng văn phong. Nội dung hiện tại: ${content.substring(content.length - 1000)}`;
+    } else if (action === 'summary') {
+        if (!content || content.length < 100) { alert('Nội dung quá ngắn để tóm tắt!'); return; }
+        prompt = `Hãy viết một đoạn Sapo (Tóm tắt) khoảng 2 câu cực kỳ thu hút cho bài báo sau. Nội dung: ${content.substring(0, 1500)}`;
+    } else if (action === 'image') {
+        if (!title && (!content || content.length < 50)) { alert('Vui lòng nhập tiêu đề hoặc nội dung để AI tạo ảnh minh hoạ!'); return; }
+        prompt = `Bài báo có tiêu đề: "${title}" và nội dung: "${content.substring(0, 1000)}". Hãy trả về một câu prompt tiếng Anh (mô tả cực chi tiết, bắt mắt, phong cách chân thực digital art) để vẽ một bức ảnh minh họa. Điền câu prompt tĩnh tiếng Anh vào trường "cover_image_prompt" trong kết quả trả về. KHÔNG cần viết lại nội dung, dùng trường "content" để chứa dummy text cũng được.`;
+    }
+
+    const originalText = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<i class="bi bi-hourglass-split animate-spin"></i> Chờ...';
+
+    try {
+        const fd = new FormData();
+        fd.append('prompt', prompt);
+        fd.append('_token', document.querySelector('meta[name="csrf-token"]').content);
+
+        const res = await fetch("{{ route('ai.generate-post') }}", { method: 'POST', body: fd });
+        const data = await res.json();
+        
+        if (!res.ok) throw new Error(data.error || 'Server error');
+        
+        if (action === 'image' && data.cover_image_prompt) {
+            const seed = Math.floor(Math.random() * 1000000);
+            const imageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(data.cover_image_prompt)}?width=800&height=500&nologo=true&seed=${seed}`;
+            const imgHtml = `<p><br></p><figure class="image"><img src="${imageUrl}" alt="AI Generated Image" /><figcaption>Ảnh minh họa tạo bởi AI: ${data.cover_image_prompt}</figcaption></figure><p><br></p>`;
+            window.myEditor.setData(content + imgHtml);
+            if (typeof showCuteToast === 'function') {
+                showCuteToast('success', 'Xong rồi! ✨', 'Ảnh AI đã chèn thành công!');
+            }
+        } else if (data.content) {
+            if (action === 'summary') {
+                window.myEditor.setData(`<strong>${data.content}</strong><br/>` + content);
+            } else {
+                window.myEditor.setData(content + `<br/>` + data.content);
+            }
+            if (typeof showCuteToast === 'function') {
+                showCuteToast('success', 'Xong rồi! ✨', 'AI đã xử lý yêu cầu của bạn.');
+            }
+        }
+    } catch (e) {
+        alert('Lỗi: ' + e.message);
+    }
+    btn.disabled = false;
+    btn.innerHTML = originalText;
+}
 </script>
 
 @endpush

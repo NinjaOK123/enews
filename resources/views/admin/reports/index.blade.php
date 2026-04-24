@@ -66,11 +66,6 @@
                                 <span class="w-8 h-8 rounded-lg bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 flex items-center justify-center shrink-0"><i class="bi bi-printer-fill"></i></span> In văn bản
                             </button>
                         </li>
-                        <li>
-                            <button onclick="exportPDF()" type="button" class="w-full text-left px-4 py-2 hover:bg-gray-50 dark:hover:bg-zinc-800 flex items-center gap-3 transition-colors outline-none cursor-pointer border-none">
-                                <span class="w-8 h-8 rounded-lg bg-red-100 dark:bg-red-500/10 text-red-600 dark:text-red-400 flex items-center justify-center shrink-0"><i class="bi bi-file-earmark-pdf-fill"></i></span> Xuất ra PDF
-                            </button>
-                        </li>
                         <div class="h-px w-full bg-gray-100 dark:bg-zinc-800 my-1 transition-colors"></div>
                         <li>
                             <a href="{{ route('admin.reports.export-csv', ['start_date' => request('start_date'), 'end_date' => request('end_date')]) }}" class="px-4 py-2 hover:bg-gray-50 dark:hover:bg-zinc-800 flex items-center gap-3 transition-colors no-underline">
@@ -256,28 +251,10 @@
 @endsection
 
 @section('scripts')
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
 
 <script>
-    function exportPDF() {
-        const element = document.getElementById('report-container');
-        const headerActions = document.querySelector('.header-actions');
-        if (headerActions) headerActions.style.display = 'none'; // Hide UI buttons during print
-        
-        var opt = {
-            margin:       10,
-            filename:     'bao_cao_he_thong_' + new Date().toISOString().slice(0,10) + '.pdf',
-            image:        { type: 'jpeg', quality: 0.98 },
-            html2canvas:  { scale: 2, useCORS: true },
-            jsPDF:        { unit: 'mm', format: 'a4', orientation: 'landscape' }
-        };
-
-        html2pdf().set(opt).from(element).save().then(() => {
-            if (headerActions) headerActions.style.display = ''; // Restore UI buttons
-        });
-    }
 
     document.addEventListener('DOMContentLoaded', function() {
         // Checking dark mode configuration

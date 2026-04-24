@@ -413,6 +413,120 @@
   from { transform: rotate(0deg); }
   to   { transform: rotate(360deg); }
 }
+
+/* ───────────────────────────────────────────
+   CẬP NHẬT GIAO DIỆN DARK MODE
+   ─────────────────────────────────────────── */
+.dark .profile-header-card {
+    background: #18181b; /* zinc-900 */
+    box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+}
+.dark .profile-tabs {
+    background: #18181b;
+    border-bottom: 1.5px solid #27272a; /* zinc-800 */
+    box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+}
+.dark .profile-tab {
+    color: #a1a1aa; /* zinc-400 */
+}
+.dark .profile-tab:hover {
+    background: #27272a; /* zinc-800 */
+    color: var(--primary, #4ade80);
+}
+.dark .profile-tab.active {
+    background: rgba(42, 122, 39, 0.15);
+    border-bottom-color: var(--primary, #4ade80);
+    color: var(--primary, #4ade80);
+}
+.dark .post-card-mini {
+    background: #18181b; /* zinc-900 */
+    box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+}
+.dark .collection-card {
+    background: #18181b; /* zinc-900 */
+    box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+}
+.dark .post-card-mini .mini-title, .dark .collection-name {
+    color: #f4f4f5; /* zinc-100 */
+}
+.dark .stat-item strong {
+    color: #f4f4f5; /* zinc-100 */
+}
+.dark .stat-item small {
+    color: #a1a1aa; /* zinc-400 */
+}
+.dark .profile-bio {
+    color: #a1a1aa; /* zinc-400 */
+}
+.dark .btn-edit-profile {
+    background: #27272a; /* zinc-800 */
+    color: #e4e4e7; /* zinc-200 */
+}
+.dark .btn-edit-profile:hover {
+    background: #3f3f46; /* zinc-700 */
+}
+.dark .btn-new-collection {
+    background: rgba(42, 122, 39, 0.1);
+    border-color: #166534; /* green-800 */
+    color: #4ade80; /* green-400 */
+}
+.dark .btn-new-collection:hover {
+    background: rgba(42, 122, 39, 0.2);
+}
+.dark .profile-pagination a, .dark .profile-pagination span {
+    background: #18181b; /* zinc-900 */
+    border-color: #27272a; /* zinc-800 */
+    color: #d4d4d8; /* zinc-300 */
+}
+.dark .profile-pagination a:hover {
+    background: rgba(42, 122, 39, 0.1);
+    border-color: var(--primary, #4ade80);
+    color: var(--primary, #4ade80);
+}
+.dark .profile-pagination .active-page {
+    background: var(--primary, #2a7a27);
+    border-color: var(--primary, #2a7a27);
+    color: #fff;
+}
+
+/* Các tuỳ chỉnh thêm cho dark mode */
+.dark h1 { color: #f4f4f5; }
+.dark .empty-tab { color: #71717a; }
+.dark .empty-tab p { color: #a1a1aa; }
+.dark .collection-cover-placeholder {
+    background: linear-gradient(135deg, #166534, #14532d);
+}
+
+/* Modals Override in Dark Mode */
+.dark [style*="background:#fff"],
+.dark [style*="background: #fff"],
+.dark .bg-white {
+    background-color: #18181b !important;
+    border-color: #27272a !important;
+    color: #e4e4e7 !important;
+}
+.dark .bg-white\/90 {
+    background-color: rgba(24, 24, 27, 0.9) !important;
+}
+.dark .text-gray-700, .dark .text-gray-900 { color: #e4e4e7 !important; }
+.dark .text-gray-600 { color: #d4d4d8 !important; }
+.dark .text-gray-500, .dark .text-gray-400 { color: #a1a1aa !important; }
+.dark .bg-gray-50, .dark .bg-gray-100 { background-color: #27272a !important; }
+.dark [style*="background:#f0f0f0"], .dark [style*="background:#e0e0e0"], .dark [style*="background:#f3f4f6"], .dark [style*="background:#e5e7eb"] {
+    background-color: #27272a !important;
+    color: #e4e4e7 !important;
+}
+.dark .bg-amber-50 { background-color: rgba(245, 158, 11, 0.1) !important; color: #fcd34d !important; border-color: #f59e0b !important; }
+.dark .border-gray-100, .dark .border-gray-200, .dark .border-gray-300 { border-color: #3f3f46 !important; }
+.dark input, .dark textarea {
+    background-color: #18181b !important;
+    color: #e4e4e7 !important;
+    border-color: #3f3f46 !important;
+}
+.dark input:focus, .dark textarea:focus {
+    border-color: var(--primary, #4ade80) !important;
+}
+
 </style>
 @endpush
 
@@ -925,43 +1039,43 @@
 
     {{-- Tab: Giới thiệu --}}
     <div class="tab-pane" id="tab-about">
-        <div style="background:#fff;border-radius:12px;padding:24px;box-shadow:0 2px 8px rgba(0,0,0,0.06);">
-            <div style="display:flex;flex-direction:column;gap:14px;">
+        <div class="bg-white dark:bg-zinc-900 rounded-xl p-6 shadow-sm border border-transparent dark:border-zinc-800">
+            <div class="flex flex-col gap-4">
                 <div class="flex items-center gap-3">
-                    <span style="font-size:1.3rem;">👤</span>
+                    <span class="text-xl">👤</span>
                     <div>
-                        <div style="font-size:.75rem;color:#999;font-weight:600;text-transform:uppercase;letter-spacing:.5px;">Họ tên</div>
-                        <div style="font-weight:600;color:#222;">{{ $user->name }}</div>
+                        <div class="text-xs text-gray-400 dark:text-zinc-500 font-semibold uppercase tracking-wide">Họ tên</div>
+                        <div class="font-semibold text-gray-900 dark:text-zinc-100">{{ $user->name }}</div>
                     </div>
                 </div>
                 <div class="flex items-center gap-3">
-                    <span style="font-size:1.3rem;">📧</span>
+                    <span class="text-xl">📧</span>
                     <div>
-                        <div style="font-size:.75rem;color:#999;font-weight:600;text-transform:uppercase;letter-spacing:.5px;">Email</div>
-                        <div style="font-weight:600;color:#222;">{{ $isOwnProfile ? $user->email : '***@***.***' }}</div>
+                        <div class="text-xs text-gray-400 dark:text-zinc-500 font-semibold uppercase tracking-wide">Email</div>
+                        <div class="font-semibold text-gray-900 dark:text-zinc-100">{{ $isOwnProfile ? $user->email : '***@***.***' }}</div>
                     </div>
                 </div>
                 <div class="flex items-center gap-3">
-                    <span style="font-size:1.3rem;">🎓</span>
+                    <span class="text-xl">🎓</span>
                     <div>
-                        <div style="font-size:.75rem;color:#999;font-weight:600;text-transform:uppercase;letter-spacing:.5px;">Vai trò</div>
-                        <div style="font-weight:600;color:#222;">{{ $user->roleLabel() }}</div>
+                        <div class="text-xs text-gray-400 dark:text-zinc-500 font-semibold uppercase tracking-wide">Vai trò</div>
+                        <div class="font-semibold text-gray-900 dark:text-zinc-100">{{ $user->roleLabel() }}</div>
                     </div>
                 </div>
                 @if($user->bio ?? false)
                 <div class="flex items-start gap-3">
-                    <span style="font-size:1.3rem;">📝</span>
+                    <span class="text-xl mt-1">📝</span>
                     <div>
-                        <div style="font-size:.75rem;color:#999;font-weight:600;text-transform:uppercase;letter-spacing:.5px;">Giới thiệu</div>
-                        <div style="color:#444;">{{ $user->bio }}</div>
+                        <div class="text-xs text-gray-400 dark:text-zinc-500 font-semibold uppercase tracking-wide mb-1">Giới thiệu</div>
+                        <div class="text-gray-700 dark:text-zinc-300">{{ $user->bio }}</div>
                     </div>
                 </div>
                 @endif
                 <div class="flex items-center gap-3">
-                    <span style="font-size:1.3rem;">📅</span>
+                    <span class="text-xl">📅</span>
                     <div>
-                        <div style="font-size:.75rem;color:#999;font-weight:600;text-transform:uppercase;letter-spacing:.5px;">Tham gia từ</div>
-                        <div style="font-weight:600;color:#222;">{{ $user->created_at->format('d/m/Y') }}</div>
+                        <div class="text-xs text-gray-400 dark:text-zinc-500 font-semibold uppercase tracking-wide">Tham gia từ</div>
+                        <div class="font-semibold text-gray-900 dark:text-zinc-100">{{ $user->created_at->format('d/m/Y') }}</div>
                     </div>
                 </div>
             </div>

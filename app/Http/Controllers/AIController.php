@@ -34,7 +34,15 @@ class AIController extends Controller
 
         try {
             $topic = $request->input('prompt');
-            $result = $service->writeArticle($topic);
+            
+            // Lấy 3 bài viết mới nhất đã xuất bản làm mẫu cho AI học văn phong
+            $examples = \App\Models\Post::where('status', 'published')
+                ->latest('published_at')
+                ->take(3)
+                ->get(['title', 'content'])
+                ->toArray();
+
+            $result = $service->writeArticle($topic, $examples);
 
             $content = $result['content'];
             $providerMatch = current(explode(' ', $result['provider'])); // VD: "Groq" từ "Groq (Llama-3.3)"

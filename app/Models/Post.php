@@ -19,7 +19,7 @@ class Post extends Model
         'title', 'slug', 'excerpt', 'content', 'thumbnail',
         'author_id', 'category_id', 'status', 'published_at', 'view_count',
         'is_featured', 'meta_desc', 'meta_key', 'source_author',
-        'royalty_rate_id', 'royalty_multiplier', 'image_count', 'royalty_total'
+        'royalty_rate_id', 'royalty_multiplier', 'image_count', 'royalty_total', 'photographer'
     ];
 
     protected $casts = [

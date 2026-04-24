@@ -49,18 +49,37 @@ class AIWriterService
         }
     }
 
-    public function writeArticle(string $topic)
+    public function writeArticle(string $topic, array $examples = [])
     {
         if (empty($this->providers)) {
             throw new Exception('Chưa cấu hình bất kỳ AI Provider nào (Thiếu API Key). Vui lòng liên hệ Quản trị viên.');
         }
 
-        $systemPrompt = "Bạn là một nhà báo và biên tập viên chuyên nghiệp của trang tin điện tử E-News trực thuộc Trường Đại học An Giang (VNUHCM). "
-            . "Nhiệm vụ của bạn là viết một bài báo truyền thông sắc bén, hấp dẫn, mạch lạc bằng Tiếng Việt dựa trên chủ đề yêu cầu. "
-            . "BẮT BUỘC trả về kết quả dưới dạng JSON hợp lệ. BẮT BUỘC escape các ký tự đặc biệt như ngoặc kép (\"), xuống dòng (thay vì xuống dòng thực tế, hãy dùng \\n) để tránh lỗi parse JSON. Cấu trúc JSON bắt buộc: "
-            . '{ "title": "[Tiêu đề bài viết khoảng 10-15 chữ]", "content": "[Nội dung bài viết dùng thẻ <h2>, <p>, <strong>... ĐẶC BIỆT: Hãy chèn ít nhất 1 thẻ <img src=\"https://image.pollinations.ai/prompt/[từ khóa tiếng anh mô tả ảnh sinh động]?width=800&height=450&nologo=true\" alt=\"Mô tả ảnh\"> vào đầu hoặc giữa bài viết để làm ảnh minh họa. KHÔNG dùng <html><body>]", "cover_image_prompt": "[1-2 từ khóa Tiếng Anh ngắn gọn mô tả ảnh bìa bài viết, vd: university campus]" }';
+        $exampleContext = "";
+        if (!empty($examples)) {
+            $exampleContext = "\n--- DƯỚI ĐÂY LÀ CÁC BÀI VIẾT MẪU CỦA TOÀ SOẠN ĐỂ BẠN HỌC TẬP VĂN PHONG ---\n";
+            foreach ($examples as $index => $ex) {
+                $exampleContext .= "MẪU " . ($index + 1) . ":\nTiêu đề: " . ($ex['title'] ?? '') . "\nNội dung: " . mb_substr(strip_tags($ex['content'] ?? ''), 0, 500) . "...\n\n";
+            }
+        }
 
-        $userPrompt = "Chủ đề: {$topic}";
+        // Tự động nhận diện Task
+        $isOutline = mb_stripos($topic, 'sườn bài') !== false || mb_stripos($topic, 'outline') !== false;
+        $isSummary = mb_stripos($topic, 'tóm tắt') !== false || mb_stripos($topic, 'sapo') !== false;
+        $isTitleOnly = mb_stripos($topic, 'tiêu đề') !== false && mb_stripos($topic, 'gợi ý') !== false;
+
+        $taskInstruction = "Viết bài viết đầy đủ.";
+        if ($isOutline) $taskInstruction = "Chỉ tập trung lên sườn bài (các thẻ h2, h3) kèm mô tả ngắn cho mỗi mục.";
+        if ($isSummary) $taskInstruction = "Chỉ viết 1 đoạn văn tóm tắt cực kỳ hấp dẫn.";
+        if ($isTitleOnly) $taskInstruction = "Chỉ gợi ý tiêu đề sắc bén nhất.";
+
+        $systemPrompt = "Bạn là một nhà biên tập viên chuyên nghiệp của E-News (Đại học An Giang). Nhiệm vụ: {$taskInstruction}. "
+            . "HÃY HỌC TẬP VĂN PHONG, CÁCH ĐẶT TIÊU ĐỀ VÀ CÁCH DÙNG TỪ TỪ CÁC BÀI MẪU DƯỚI ĐÂY (NẾU CÓ):"
+            . $exampleContext
+            . "\n\nBẮT BUỘC trả về kết quả dưới dạng JSON hợp lệ. Cấu trúc JSON: "
+            . '{ "title": "[Gợi ý tiêu đề cho bài viết]", "content": "[Nội dung chính hoặc sườn bài/tóm tắt bằng HTML. Nếu là bài viết đầy đủ, hãy chèn ít nhất 1 ảnh minh họa từ Pollinations AI vào bài]", "cover_image_prompt": "[1-2 keywords mô tả ảnh bìa]" }';
+
+        $userPrompt = "Yêu cầu chi tiết: {$topic}";
 
         $lastError = '';
 
@@ -122,7 +141,7 @@ class AIWriterService
 
     private function callGemini($provider, $system, $user)
     {
-        $response = Http::timeout(60)->post(
+        $response = Http::withOptions(['verify' => false])->timeout(60)->post(
             "{$provider['url']}?key={$provider['key']}",
             [
                 'contents' => [
@@ -169,7 +188,7 @@ class AIWriterService
             $payload['response_format'] = ['type' => 'json_object'];
         }
 
-        $response = Http::withHeaders([
+        $response = Http::withOptions(['verify' => false])->withHeaders([
             'Authorization' => 'Bearer ' . $provider['key'],
         ])->timeout(60)->post($provider['url'], $payload);
 

@@ -83,7 +83,7 @@ class AuthController extends Controller
         $redirectUri = config('services.google.redirect');
 
         try {
-            $tokenResponse = Http::asForm()->post('https://oauth2.googleapis.com/token', [
+            $tokenResponse = Http::withoutVerifying()->asForm()->post('https://oauth2.googleapis.com/token', [
                 'code' => $code,
                 'client_id' => $clientId,
                 'client_secret' => $clientSecret,
@@ -92,17 +92,17 @@ class AuthController extends Controller
             ]);
 
             if (!$tokenResponse->successful()) {
-                throw new \Exception('Token exchange failed');
+                throw new \Exception('Token exchange failed: ' . $tokenResponse->body());
             }
 
             $tokens = $tokenResponse->json();
             $accessToken = $tokens['access_token'];
 
-            $userResponse = Http::withToken($accessToken)
+            $userResponse = Http::withoutVerifying()->withToken($accessToken)
                 ->get('https://www.googleapis.com/oauth2/v3/userinfo');
 
             if (!$userResponse->successful()) {
-                throw new \Exception('Userinfo request failed');
+                throw new \Exception('Userinfo request failed: ' . $userResponse->body());
             }
 
             $googleUser = $userResponse->json();
@@ -151,7 +151,7 @@ class AuthController extends Controller
                 ->with('success', 'Chao mung ' . ($googleUser['name'] ?? '') . '!');
         } catch (\Exception $e) {
             return redirect()->route('login')
-                ->with('error', 'Da xay ra loi khi dang nhap Google. Vui long thu lai.');
+                ->with('error', 'Lỗi Google ID: ' . $e->getMessage());
         }
     }
 
