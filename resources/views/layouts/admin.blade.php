@@ -121,10 +121,10 @@
                     $navItems[] = ['route'=>route('admin.reports.royalty.index'),'is'=>'admin.reports.royalty.*','icon'=>'bi-wallet2','label'=>'Nhuận bút'];
 
                 // Section Title (Xét Duyệt)
-                if(in_array($role,['admin']))
+                if(in_array($role,['admin','editor']))
                     $navItems[] = ['type' => 'header', 'label' => 'XÉT DUYỆT'];
 
-                if($role==='admin')
+                if(in_array($role,['admin','editor']))
                     $navItems[] = ['route'=>route('admin.notifications.index'),'is'=>'admin.notifications.*','icon'=>'bi-bell','label'=>'Thông báo'];
                 
                 if($role==='admin') {

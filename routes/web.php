@@ -110,6 +110,22 @@ Route::prefix('admin')
              Route::delete('/{media}', [App\Http\Controllers\Admin\MediaController::class, 'destroy'])->name('destroy');
              Route::get('/{media}/view', [App\Http\Controllers\Admin\MediaController::class, 'show'])->name('show');
          });
+
+         // ADMIN & EDITOR: Quản lý Thông báo
+         Route::group(['prefix' => 'notifications', 'as' => 'notifications.'], function () {
+             Route::get('/',                                    [\App\Http\Controllers\Admin\NotificationController::class, 'index'])->name('index');
+             Route::get('/create',                             [\App\Http\Controllers\Admin\NotificationController::class, 'create'])->name('create');
+             Route::post('/',                                  [\App\Http\Controllers\Admin\NotificationController::class, 'store'])->name('store');
+             Route::get('/{notification}/edit',                [\App\Http\Controllers\Admin\NotificationController::class, 'edit'])->name('edit');
+             Route::put('/{notification}',                     [\App\Http\Controllers\Admin\NotificationController::class, 'update'])->name('update');
+             Route::delete('/{notification}',                  [\App\Http\Controllers\Admin\NotificationController::class, 'destroy'])->name('destroy');
+             Route::post('/{notification}/send',               [\App\Http\Controllers\Admin\NotificationController::class, 'send'])->name('send');
+         });
+
+         // ADMIN & EDITOR: Quản lý Banner Cuộc thi
+         Route::post('banners/update-order', [\App\Http\Controllers\Admin\BannerController::class, 'updateOrder'])->name('banners.update-order');
+         Route::post('banners/{banner}/toggle-active', [\App\Http\Controllers\Admin\BannerController::class, 'toggleActive'])->name('banners.toggle-active');
+         Route::resource('banners', \App\Http\Controllers\Admin\BannerController::class)->except(['show']);
      });
 
 // ─── Only Admin Routes ──────────────────────────────────────────
@@ -132,16 +148,7 @@ Route::prefix('admin')
              Route::post('/royalty/template', [App\Http\Controllers\Admin\ReportController::class, 'uploadTemplate'])->name('royalty.template');
          });
 
-         // ADMIN: Quản lý Thông báo
-         Route::group(['prefix' => 'notifications', 'as' => 'notifications.'], function () {
-             Route::get('/',                                    [\App\Http\Controllers\Admin\NotificationController::class, 'index'])->name('index');
-             Route::get('/create',                             [\App\Http\Controllers\Admin\NotificationController::class, 'create'])->name('create');
-             Route::post('/',                                  [\App\Http\Controllers\Admin\NotificationController::class, 'store'])->name('store');
-             Route::get('/{notification}/edit',                [\App\Http\Controllers\Admin\NotificationController::class, 'edit'])->name('edit');
-             Route::put('/{notification}',                     [\App\Http\Controllers\Admin\NotificationController::class, 'update'])->name('update');
-             Route::delete('/{notification}',                  [\App\Http\Controllers\Admin\NotificationController::class, 'destroy'])->name('destroy');
-             Route::post('/{notification}/send',               [\App\Http\Controllers\Admin\NotificationController::class, 'send'])->name('send');
-         });
+
 
          // ADMIN: Quản lý Bình luận
          Route::group(['prefix' => 'comments', 'as' => 'comments.'], function () {
@@ -151,10 +158,7 @@ Route::prefix('admin')
              Route::delete('/{comment}',                        [\App\Http\Controllers\Admin\CommentController::class, 'destroy'])->name('destroy');
          });
 
-          // ADMIN: Quản lý Banner Cuộc thi
-          Route::post('banners/update-order', [\App\Http\Controllers\Admin\BannerController::class, 'updateOrder'])->name('banners.update-order');
-          Route::post('banners/{banner}/toggle-active', [\App\Http\Controllers\Admin\BannerController::class, 'toggleActive'])->name('banners.toggle-active');
-          Route::resource('banners', \App\Http\Controllers\Admin\BannerController::class)->except(['show']);
+
 
           // ADMIN: Cộng tác viên
           Route::group(['prefix' => 'cong-tac-vien', 'as' => 'contributor.'], function () {
