@@ -1,4 +1,4 @@
-const CACHE_NAME = 'enews-cache-v1';
+const CACHE_NAME = 'enews-cache-v2';
 
 // Các URL tài nguyên cốt lõi cần được cache sẵn để giao diện không bị giật lag khi rớt mạng
 const CORE_ASSETS = [
@@ -49,16 +49,14 @@ self.addEventListener('fetch', event => {
         return;
     }
 
-    const isHtmlRequest = event.request.headers.get('accept').includes('text/html');
+    // Fix for checking HTML mode stably
+    const isHtmlRequest = event.request.mode === 'navigate' || (event.request.headers.get('accept') && event.request.headers.get('accept').includes('text/html'));
 
     if (isHtmlRequest) {
         // [CHIẾN LƯỢC 1 cho Bài viết / Trang web]: Network First, fallback to Cache. 
-        // Luôn cố gắng tải trang mới nhất từ mạng. Nếu mất mạng, kiểm tra xem nó đã có trong Cache chưa.
-        // Nếu chưa từng đọc (chưa hề có trong Cache), trả về trang Lỗi Mất mạng (/offline).
         event.respondWith(
             fetch(event.request)
                 .then(response => {
-                    // Cập nhật trang này vào bộ đệm để đọc offline lần sau
                     const respClone = response.clone();
                     caches.open(CACHE_NAME).then(cache => cache.put(event.request, respClone));
                     return response;
@@ -69,7 +67,14 @@ self.addEventListener('fetch', event => {
                     if (cachedResponse) return cachedResponse;
                     
                     // Chưa từng cache -> Load trang offline
-                    return caches.match('/offline');
+                    const fallback = await caches.match('/offline');
+                    if (fallback) return fallback;
+
+                    // Cuối cùng nếu xui quá ko lấy dc offline.blade.php tự chế fallback
+                    return new Response("<h1>Ngoại tuyến</h1><p>Vui lòng kết nối lại mạng!</p>", {
+                        status: 503,
+                        headers: { 'Content-Type': 'text/html; charset=utf-8' }
+                    });
                 })
         );
     } else {
