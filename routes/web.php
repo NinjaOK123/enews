@@ -18,6 +18,8 @@ Route::get('/tim-kiem', [SearchController::class, 'index'])->name('search');
 Route::get('/chuyen-muc/{slug}', [CategoryController::class, 'show'])->name('category');
 Route::get('/bai-viet/{post:slug}', [PostController::class, 'show'])->name('post.show');
 
+// PWA Offline Fallback Route
+Route::view('/offline', 'offline')->name('offline');
 
 
 // ─── Trang tĩnh ─────────────────────────────────────────────────

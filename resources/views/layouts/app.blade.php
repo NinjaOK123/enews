@@ -4,6 +4,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="csrf-token" content="{{ csrf_token() }}">
+  
+  {{-- PWA Manifest & App Config --}}
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#2a7a27">
+  
   <meta name="description" content="@yield('meta_description', 'Trang Tin Điện Tử - Trang báo Sinh viên Đại học An Giang')">
   <title>@yield('title', 'Trang chủ') — Trang báo Sinh viên Đại học An Giang</title>
 
@@ -1014,6 +1019,19 @@ document.addEventListener('DOMContentLoaded', () => { toggleAdvSearch(); });
     });
   </script>
   
+  {{-- PWA Service Worker Registration --}}
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js').then(reg => {
+          console.log('PWA ServiceWorker registered successfully!');
+        }).catch(err => {
+          console.error('PWA ServiceWorker registration failed: ', err);
+        });
+      });
+    }
+  </script>
+
   @livewireScripts
 </body>
 </html>

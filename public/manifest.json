@@ -1,0 +1,22 @@
+{
+  "name": "e-News Đại học An Giang",
+  "short_name": "e-News AGU",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#2a7a27",
+  "description": "Trang báo điện tử Sinh viên Trường Đại học An Giang - VNU-HCM. Đọc tin tức, bài viết hoạt động học tập, phong trào.",
+  "icons": [
+    {
+      "src": "/images/logo.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/images/logo.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "lang": "vi"
+}
