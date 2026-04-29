@@ -924,6 +924,17 @@ function resetPlagiarismScreens() {
     document.getElementById('plagiarismStartScreen').classList.remove('hidden');
     document.getElementById('plagiarismProgressScreen').classList.add('hidden');
     document.getElementById('plagiarismReportScreen').classList.add('hidden');
+    document.getElementById('btnMinimizePlagiarism').classList.add('hidden'); // Hide minimize on start
+}
+
+function minimizePlagiarismModal() {
+    document.getElementById('plagiarismModal').classList.add('hidden');
+    document.getElementById('plagiarismWidget').classList.remove('hidden');
+}
+
+function restorePlagiarismModal() {
+    document.getElementById('plagiarismWidget').classList.add('hidden');
+    document.getElementById('plagiarismModal').classList.remove('hidden');
 }
 
 async function startPlagiarismCheck() {
@@ -962,9 +973,23 @@ async function startPlagiarismCheck() {
     // 3. Chuẩn bị UI
     document.getElementById('plagiarismStartScreen').classList.add('hidden');
     document.getElementById('plagiarismProgressScreen').classList.remove('hidden');
+    document.getElementById('btnMinimizePlagiarism').classList.remove('hidden'); // Allow minimize now
+    
     const progressBar = document.getElementById('plagProgressBar');
     const progressText = document.getElementById('plagProgressText');
     const currentSentenceEl = document.getElementById('plagCurrentSentence');
+    const widgetProgress = document.getElementById('widgetProgress');
+    const widgetTitle = document.getElementById('widgetTitle');
+    const widgetSpin = document.getElementById('widgetSpin');
+    const widgetIcon = document.getElementById('widgetIcon');
+    
+    // Reset widget state
+    widgetTitle.textContent = 'Đang quét đạo văn...';
+    widgetTitle.className = 'text-sm font-bold text-gray-900 dark:text-zinc-100 truncate';
+    widgetProgress.classList.remove('bg-green-500');
+    widgetProgress.classList.add('bg-indigo-500');
+    widgetSpin.classList.remove('hidden');
+    widgetIcon.innerHTML = '<i class="bi bi-shield-check text-lg"></i>';
     
     let plagiarizedCount = 0;
     let maxScore = 0;         // Điểm tương đồng cao nhất tìm thấy
@@ -980,6 +1005,9 @@ async function startPlagiarismCheck() {
         progressBar.style.width = percent + '%';
         progressText.textContent = `Đang quét: ${i+1}/${sentences.length} câu (${percent}%)`;
         currentSentenceEl.textContent = sentence.substring(0, 60) + '...';
+        
+        // Cập nhật Widget
+        widgetProgress.style.width = percent + '%';
 
         try {
             const formData = new FormData();
@@ -1100,6 +1128,26 @@ async function startPlagiarismCheck() {
             </div>
         `;
     }
+
+    // Update Widget State
+    widgetTitle.textContent = '✅ Đã quét xong. Bấm xem!';
+    widgetTitle.className = 'text-sm font-bold text-green-600 dark:text-green-400 truncate animate-pulse';
+    widgetProgress.classList.remove('bg-indigo-500');
+    widgetProgress.classList.add('bg-green-500');
+    widgetSpin.classList.add('hidden');
+    widgetIcon.innerHTML = '<i class="bi bi-check2-all text-xl text-green-500"></i>';
+
+    // Play Ting Audio
+    try {
+        const audio = new Audio("data:audio/wav;base64,UklGRtAAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YagAAAAK/wEABQAF/wb/Bv8L/xT/IQAsAEMAVwBlAGoAZwBcAEkAJAAOAAH/8v7Q/qr+jf6G/oT+f/59/n3+e/5//of+mf62/tb+9f4LACH+Sv5z/pv+vv7X/vL+AwAOABgAHwAfABgADwAH/wP/7f7M/q7+lv6C/nL+Y/5b/lj+Wf5p/n3+mf63/tj+9f4IAAwADgAQABcAHwAkACQAIAAYAA8ACAAB//T+6v7i/tX+v/6o/pT+gP5t/mH+WP5Z/mP+cv6H/pz+tv7R/vP+AwAKABIAHgAoAC8ALgAoAB4AEAAD//H+0/66/pz+g/5q/lf+Sf5A/kH+Sv5g/nn+kv6x/tT+9/4LAAMK//D+4/7q/gAA9P7e/vb+///8/wcAAQAFAAAAAA==");
+        audio.volume = 0.5;
+        audio.play().catch(e => console.log('Audio play error:', e));
+    } catch(e) {}
+
+    // Show Notification If Minimized
+    if (document.getElementById('plagiarismModal').classList.contains('hidden')) {
+        showCuteToast('success', 'Turnitin đã quét xong!', 'Bấm vào thông báo dưới góc phải để xem Báo cáo Trùng lặp.');
+    }
 }
 </script>
 
@@ -1129,9 +1177,14 @@ async function startPlagiarismCheck() {
           <p class="text-xs text-gray-500 dark:text-zinc-400 font-mono tracking-tight mt-0.5">THUẬT TOÁN: N-GRAM & COSINE SIMILARITY</p>
         </div>
       </div>
-      <button type="button" onclick="closePlagiarismModal()" class="text-gray-400 dark:text-zinc-500 hover:text-gray-600 dark:hover:text-zinc-300 bg-gray-50 hover:bg-gray-100 dark:bg-zinc-800 dark:hover:bg-zinc-700 p-2 rounded-xl transition">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-      </button>
+      <div class="flex items-center gap-2">
+          <button type="button" id="btnMinimizePlagiarism" onclick="minimizePlagiarismModal()" class="text-gray-400 dark:text-zinc-500 hover:text-indigo-600 dark:hover:text-indigo-400 bg-gray-50 hover:bg-indigo-50 dark:bg-zinc-800 dark:hover:bg-indigo-500/20 px-3 py-2 rounded-xl transition flex items-center gap-2 text-sm font-semibold">
+            <i class="bi bi-arrows-angle-contract"></i> Thu nhỏ
+          </button>
+          <button type="button" onclick="closePlagiarismModal()" class="text-gray-400 dark:text-zinc-500 hover:text-gray-600 dark:hover:text-zinc-300 bg-gray-50 hover:bg-gray-100 dark:bg-zinc-800 dark:hover:bg-zinc-700 p-2 rounded-xl transition">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+          </button>
+      </div>
     </div>
 
     <!-- Body -->
@@ -1268,6 +1321,24 @@ async function startPlagiarismCheck() {
 
     </div>
   </div>
+</div>
+
+{{-- ============================== --}}
+{{-- PLAGIARISM FLOATING WIDGET --}}
+{{-- ============================== --}}
+<div id="plagiarismWidget" onclick="restorePlagiarismModal()" class="hidden fixed bottom-6 right-6 z-[90] bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-2xl shadow-2xl p-4 cursor-pointer hover:scale-105 transition-transform duration-300 flex items-center gap-4 w-72">
+    <div class="relative w-10 h-10 shrink-0">
+        <div id="widgetSpin" class="absolute inset-0 rounded-full border-[3px] border-indigo-600 border-t-transparent animate-spin"></div>
+        <div id="widgetIcon" class="absolute inset-0 flex items-center justify-center text-indigo-500">
+            <i class="bi bi-shield-check text-lg"></i>
+        </div>
+    </div>
+    <div class="flex-1 min-w-0">
+        <p id="widgetTitle" class="text-sm font-bold text-gray-900 dark:text-zinc-100 truncate">Đang quét đạo văn...</p>
+        <div class="w-full bg-gray-100 dark:bg-zinc-800 rounded-full h-1.5 mt-1.5 overflow-hidden">
+            <div id="widgetProgress" class="bg-indigo-500 h-full rounded-full transition-all duration-300" style="width: 0%"></div>
+        </div>
+    </div>
 </div>
 
 {{-- ============================== --}}

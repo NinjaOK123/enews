@@ -37,11 +37,22 @@ class PostPolicy
      */
     public function update(User $user, Post $post): bool
     {
-        // Fix BUG-07: Allow admin and editor to update/approve
-        if (in_array($user->role, ['admin', 'editor'])) {
+        // Admin có toàn quyền sửa
+        if ($user->role === 'admin') {
             return true;
         }
 
+        // Bài đã duyệt (published) thì chỉ có admin mới được sửa. Editor hay Tác giả đều bị chặn.
+        if ($post->status === 'published') {
+            return false;
+        }
+
+        // Editor có quyền sửa các bài đang chờ duyệt (pending) hoặc bản nháp của người khác
+        if ($user->role === 'editor') {
+            return true;
+        }
+
+        // Tác giả chỉ được sửa bài của mình khi đang nháp hoặc bị từ chối
         return $post->author_id === $user->id && in_array($post->status, ['draft', 'rejected']);
     }
 

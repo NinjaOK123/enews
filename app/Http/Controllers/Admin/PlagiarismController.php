@@ -39,27 +39,27 @@ class PlagiarismController extends Controller
             }
         }
 
-        // 2. Quét mạng (Google Serper)
-        $urls = $this->plagiarismService->searchWeb($sentence);
-        foreach ($urls as $url) {
-            $content = $this->plagiarismService->fetchPageContent($url);
-            
-            if ($content && mb_strlen($content) > 100) {
-                // Dùng chunk-based matching — tránh pha loãng vector khi so sánh câu
-                // ngắn với toàn trang web dài ngàn ký tự
-                $similarity = $this->plagiarismService->findBestChunkSimilarity($sentence, $content);
+        // 2. Quét mạng (Google Serper) - CHỈ KHI kết quả nội bộ không đủ cao (ví dụ: < 20%)
+        if ($maxSimilarity < 20) {
+            $urls = $this->plagiarismService->searchWeb($sentence);
+            foreach ($urls as $url) {
+                $content = $this->plagiarismService->fetchPageContent($url);
+                
+                if ($content && mb_strlen($content) > 100) {
+                    $similarity = $this->plagiarismService->findBestChunkSimilarity($sentence, $content);
 
-                if ($similarity > 0.05) { // Tầng 1: Lọc thô (chỉ giữ kết quả > 5% để đẩy về UI)
-                    $simPercent = ceil($similarity * 100);
-                    $matchedSources[] = [
-                        'url' => $url,
-                        'title' => 'External Web Source',
-                        'similarity' => $simPercent,
-                        'is_internal' => false
-                    ];
-                    
-                    if ($simPercent > $maxSimilarity) {
-                        $maxSimilarity = $simPercent;
+                    if ($similarity > 0.05) { 
+                        $simPercent = ceil($similarity * 100);
+                        $matchedSources[] = [
+                            'url' => $url,
+                            'title' => 'External Web Source',
+                            'similarity' => $simPercent,
+                            'is_internal' => false
+                        ];
+                        
+                        if ($simPercent > $maxSimilarity) {
+                            $maxSimilarity = $simPercent;
+                        }
                     }
                 }
             }

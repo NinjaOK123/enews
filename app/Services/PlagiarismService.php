@@ -270,70 +270,108 @@ class PlagiarismService
     }
 
     /**
-     * Tìm kiếm nội bộ trong DB các bài viết của ENews để tìm các câu văn trùng khớp.
-     * Sử dụng LIKE với các từ khóa dài/hiếm.
+     * Tìm kiếm nội bộ siêu nhanh bằng Inverted Index + Winnowing Fingerprints
      */
     public function searchInternal(string $sentence): array
     {
         $urls = [];
+        $winnowingService = new \App\Services\Plagiarism\WinnowingService();
         
-        // 1. Phân tách và lấy các từ có độ dài trên 4 ký tự (bỏ qua hư từ "và", "là", "thì", "mà", "của")
-        $words = preg_split('/[\s,\.\!\?]+/', mb_strtolower($sentence));
-        $longWords = array_filter($words, function($w) {
-            return mb_strlen($w) >= 5;
-        });
-
-        // Nếu không có từ dài, lấy luôn những từ vừa
-        if (empty($longWords)) {
-            $longWords = array_filter($words, function($w) {
-                return mb_strlen($w) >= 3;
-            });
+        // 1. Tạo fingerprints cho câu truy vấn
+        $queryFingerprints = $winnowingService->getFingerprints($sentence);
+        
+        if (empty($queryFingerprints)) {
+            return [];
         }
 
-        // Lấy 3 từ khoá dài nhất để search
-        usort($longWords, function($a, $b) {
-            return mb_strlen($b) - mb_strlen($a);
-        });
-        $keywords = array_slice($longWords, 0, 3);
+        // Lấy danh sách các hash values (đảm bảo unique để tính coverage chính xác)
+        $queryHashes = array_unique(array_values($queryFingerprints));
+        $querySize = count($queryHashes);
 
-        if (empty($keywords)) {
-            return []; // Câu văn toàn số hoặc ký tự vô nghĩa
+        if ($querySize === 0) {
+            return [];
         }
 
-        // 2. Query cơ sở dữ liệu `posts` xem có bài nào chứa các cụm này không
-        $query = \App\Models\Post::where('status', 'published')
-            ->select('slug', 'content', 'title', 'id');
-            
-        // Tìm kiếm kết hợp: Các bài viết phải chứa ít nhất 1-2 từ khoá khó
-        $query->where(function($q) use ($keywords) {
-            foreach ($keywords as $kw) {
-                $q->orWhere('content', 'like', "%{$kw}%");
-            }
-        });
+        // 2. Tra cứu Inverted Index: Lấy ra các tài liệu chứa nhiều mã băm trùng nhất
+        // Dùng COUNT(DISTINCT f.hash_value) để tránh bị đếm lặp nếu document có nhiều câu trùng hash
+        $candidates = \Illuminate\Support\Facades\DB::table('plagiarism_fingerprints as f')
+            ->join('plagiarism_documents as d', 'f.document_id', '=', 'd.id')
+            ->whereIn('f.hash_value', $queryHashes)
+            ->select('d.id', 'd.post_id', 'd.title', 'd.external_url', 'd.total_fingerprints', \Illuminate\Support\Facades\DB::raw('COUNT(DISTINCT f.hash_value) as match_count'))
+            ->groupBy('d.id', 'd.post_id', 'd.title', 'd.external_url', 'd.total_fingerprints')
+            ->orderByDesc('match_count')
+            ->limit(5)
+            ->get();
 
-        // Giới hạn max 20 bài viết nội bộ có chứa các từ hiếm
-        $posts = $query->limit(20)->get();
+        foreach ($candidates as $doc) {
+            // Tính % trùng lặp dựa trên lượng vân tay trùng khớp chia cho tổng vân tay của câu truy vấn
+            // Dùng min(1.0, ...) để khóa cứng tối đa 100%
+            $coverage = min(1.0, $doc->match_count / $querySize);
 
-        foreach ($posts as $post) {
-            $strippedContent = strip_tags($post->content);
-            $strippedContent = html_entity_decode($strippedContent, ENT_QUOTES | ENT_HTML5, 'UTF-8');
-            
-            // Xoá khoảng trắng thừa
-            $strippedContent = preg_replace('/\s+/u', ' ', $strippedContent);
+            if ($coverage > 0.05) { // Chỉ lấy những bài có khả năng copy trên 5%
+                $url = $doc->post_id 
+                        ? route('post.show', \App\Models\Post::find($doc->post_id)?->slug ?? '') . '?internal=true'
+                        : $doc->external_url;
 
-            // Dùng chunk-based để tránh pha loãng vector khi so với toàn bài nội bộ
-            $similarity = $this->findBestChunkSimilarity($sentence, $strippedContent);
-
-            if ($similarity > 0) { // Ghi nhận mọi tỷ lệ trùng lặp
                 $urls[] = [
-                    'url' => route('post.show', $post->slug) . '?internal=true', // Đánh dấu URL nội bộ
-                    'title' => $post->title,
-                    'similarity' => ceil($similarity * 100),
-                    'is_internal' => true
+                    'url' => $url,
+                    'title' => $doc->title,
+                    'similarity' => (int) ceil($coverage * 100),
+                    'is_internal' => !empty($doc->post_id)
                 ];
             }
         }
 
         return $urls;
+    }
+
+    /**
+     * Băm và lưu Fingerprint của một bài Post vào cơ sở dữ liệu
+     */
+    public function indexDocument(int $postId, string $title, string $content)
+    {
+        $winnowingService = new \App\Services\Plagiarism\WinnowingService();
+        $fingerprints = $winnowingService->getFingerprints($content);
+        
+        if (empty($fingerprints)) return;
+
+        \Illuminate\Support\Facades\DB::beginTransaction();
+        try {
+            // Delete old index if exists
+            $oldDoc = \Illuminate\Support\Facades\DB::table('plagiarism_documents')->where('post_id', $postId)->first();
+            if ($oldDoc) {
+                // Cascading will delete related fingerprints
+                \Illuminate\Support\Facades\DB::table('plagiarism_documents')->where('id', $oldDoc->id)->delete();
+            }
+
+            // Insert new document
+            $docId = \Illuminate\Support\Facades\DB::table('plagiarism_documents')->insertGetId([
+                'post_id' => $postId,
+                'title' => \Illuminate\Support\Str::limit($title, 250),
+                'total_fingerprints' => count($fingerprints),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+
+            // Prepare bulk insert for fingerprints
+            $insertData = [];
+            foreach ($fingerprints as $position => $hash) {
+                $insertData[] = [
+                    'document_id' => $docId,
+                    'hash_value' => $hash,
+                    'position' => $position
+                ];
+            }
+
+            // Insert chunk by chunk (1000 items each) to prevent SQL string length errors
+            foreach (array_chunk($insertData, 1000) as $chunk) {
+                \Illuminate\Support\Facades\DB::table('plagiarism_fingerprints')->insert($chunk);
+            }
+
+            \Illuminate\Support\Facades\DB::commit();
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\DB::rollBack();
+            Log::error("Failed to index document {$postId}: " . $e->getMessage());
+        }
     }
 }
