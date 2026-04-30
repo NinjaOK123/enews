@@ -934,11 +934,12 @@ function loadMedia(url, containerId) {
     fetch(url).then(r => r.json()).then(data => {
         if(!data || !data.length) { c.innerHTML = '<p class="col-span-full text-center text-sm text-gray-400 py-8">Không có file nào.</p>'; return; }
         c.innerHTML = data.map(m => `
-            <div class="rounded-xl overflow-hidden border border-gray-100 hover:border-green-300 cursor-pointer group transition" onclick="insertMediaToEditor('${m.url}','${m.file_type}')">
-                ${m.file_type === 'image'
-                    ? `<img src="${m.url}" class="w-full h-24 object-cover">`
-                    : `<div class="w-full h-24 bg-gray-800 flex items-center justify-center text-white text-2xl">▶</div>`}
-                <p class="text-xs text-gray-500 truncate px-2 py-1">${m.file_name}</p>
+            <div class="rounded-xl overflow-hidden border border-zinc-200 dark:border-zinc-700 hover:border-emerald-400 dark:hover:border-emerald-500 cursor-pointer group transition-all shadow-sm hover:shadow-md bg-white dark:bg-zinc-800 relative" onclick="insertMediaToEditor('${m.url}','${m.file_type}')">
+                ${m.file_type && m.file_type.startsWith('image')
+                    ? `<img src="${m.url}" class="w-full h-24 object-cover transition-transform duration-300 group-hover:scale-105">`
+                    : `<div class="w-full h-24 bg-zinc-800 dark:bg-zinc-900 flex items-center justify-center text-zinc-400 dark:text-zinc-500 group-hover:text-white transition-colors text-3xl"><i class="bi bi-play-circle-fill"></i></div>`}
+                <div class="absolute inset-0 bg-black/0 group-hover:bg-black/10 dark:group-hover:bg-black/20 transition-colors pointer-events-none"></div>
+                <p class="text-[11px] text-zinc-600 dark:text-zinc-400 truncate px-2.5 py-1.5 border-t border-zinc-100 dark:border-zinc-700 font-medium relative z-10 bg-white dark:bg-zinc-800">${m.file_name}</p>
             </div>`).join('');
     }).catch(() => c.innerHTML = '<p class="col-span-full text-center text-sm text-red-400 py-8">Lỗi tải dữ liệu.</p>');
 }
