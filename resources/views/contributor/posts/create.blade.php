@@ -644,6 +644,23 @@ ClassicEditor.create(document.querySelector('#editor'), {
     image: {
         toolbar: [ 'imageStyle:inline', 'imageStyle:block', 'imageStyle:side', '|', 'toggleImageCaption', 'imageTextAlternative' ]
     },
+    mediaEmbed: {
+        previewsInData: true,
+        extraProviders: [
+            {
+                name: 'custom-video',
+                url: [
+                    /^.*\.(mp4|webm|ogg)(\?.*)?$/i
+                ],
+                html: match => {
+                    const url = match[0];
+                    return `<div style="position:relative; width:100%; max-width:100%; margin: 1em auto;">
+                        <video controls style="width:100%; max-width:100%; border-radius: 8px;" src="${url}"></video>
+                    </div>`;
+                }
+            }
+        ]
+    },
     language: 'vi',
     ckfinder: { uploadUrl: uploadMediaUrl + '?_token={{ csrf_token() }}' }
 }).then(e => { window.myEditor = e; }).catch(console.error);
@@ -869,11 +886,15 @@ window.addEventListener('paste', function(e) {
 
 function insertMediaToEditor(url, type) {
     if(!myEditor) return;
-    const html = type === 'image'
-        ? `<figure class="image"><img src="${url}" alt="media"></figure>`
-        : `<figure class="media"><video controls src="${url}"></video></figure>`;
-    const view = myEditor.data.processor.toView(html);
-    myEditor.model.insertContent(myEditor.data.toModel(view), myEditor.model.document.selection);
+    
+    if (type === 'image' || (type && type.startsWith('image/'))) {
+        const html = `<figure class="image"><img src="${url}" alt="media"></figure>`;
+        const view = myEditor.data.processor.toView(html);
+        myEditor.model.insertContent(myEditor.data.toModel(view), myEditor.model.document.selection);
+    } else {
+        myEditor.execute('mediaEmbed', url);
+    }
+    
     document.getElementById('mediaModal').classList.add('hidden');
 }
 
