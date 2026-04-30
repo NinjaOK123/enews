@@ -393,20 +393,25 @@
                                      x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
                                      x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
                                      @click.self="deleteOpen = false">
-                                    <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl w-full max-w-sm shadow-2xl p-6 text-center overflow-hidden">
-                                        <div class="w-16 h-16 rounded-full bg-red-50 dark:bg-red-500/10 flex items-center justify-center mx-auto mb-5 relative">
-                                            <div class="absolute inset-0 rounded-full bg-red-100 dark:bg-red-500/20 animate-ping opacity-20"></div>
-                                            <i class="bi bi-exclamation-triangle-fill text-3xl text-red-500"></i>
-                                        </div>
-                                        <h3 class="text-xl font-bold text-zinc-900 dark:text-zinc-100 mb-2">Xác nhận xoá file</h3>
-                                        <p class="text-sm text-zinc-500 dark:text-zinc-400 mb-6 leading-relaxed">Bạn có chắc muốn xoá file này vĩnh viễn không? Hành động này có thể làm <span class="text-red-500 font-medium">lỗi ảnh trong các bài viết</span> đang sử dụng.</p>
+                                    <div class="bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 rounded-3xl w-full max-w-sm shadow-2xl overflow-hidden transform transition-all relative">
+                                        <button type="button" @click="deleteOpen = false" class="absolute top-4 right-4 w-8 h-8 flex items-center justify-center bg-zinc-50 dark:bg-zinc-800/50 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-400 dark:text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300 rounded-full transition-colors z-10"><i class="bi bi-x-lg text-sm"></i></button>
                                         
-                                        <form action="{{ route('admin.media.destroy', $item) }}" method="POST" class="flex justify-center gap-3 w-full">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="button" @click="deleteOpen = false" class="px-5 py-2.5 text-sm font-semibold text-zinc-600 dark:text-zinc-400 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 rounded-xl transition-all focus:ring-2 focus:ring-zinc-200 dark:focus:ring-zinc-700 focus:outline-none w-1/2">Huỷ bỏ</button>
-                                            <button type="submit" class="px-5 py-2.5 text-sm font-semibold text-white hover:bg-red-700 bg-gradient-to-r from-red-500 to-red-600 rounded-xl transition-all shadow-sm shadow-red-200 dark:shadow-none focus:ring-2 focus:ring-red-200 focus:outline-none w-1/2">Có, xoá ngay</button>
-                                        </form>
+                                        <div class="p-6 sm:p-8 flex flex-col items-center text-center">
+                                            <div class="flex items-center justify-center w-16 h-16 bg-rose-50 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400 rounded-2xl mb-5 shadow-inner border border-rose-100 dark:border-rose-500/20 transform rotate-3">
+                                                <i class="bi bi-trash3-fill text-2xl -rotate-3"></i>
+                                            </div>
+                                            <h3 class="text-xl font-extrabold text-zinc-900 dark:text-zinc-100 mb-2 tracking-tight">Xoá vĩnh viễn?</h3>
+                                            <p class="text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed mb-6">
+                                                Bạn đang xoá <strong>{{ Str::limit($item->file_name, 20) }}</strong>.<br>Hành động này không thể hoàn tác và có thể làm lỗi hiển thị trên các bài viết đang sử dụng.
+                                            </p>
+                                            
+                                            <form action="{{ route('admin.media.destroy', $item) }}" method="POST" class="flex gap-3 w-full">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="button" @click="deleteOpen = false" class="flex-1 px-4 py-3 text-sm font-semibold text-zinc-700 dark:text-zinc-300 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 rounded-xl transition-colors focus:outline-none">Huỷ bỏ</button>
+                                                <button type="submit" class="flex-1 px-4 py-3 text-sm font-semibold text-white bg-rose-600 hover:bg-rose-700 rounded-xl transition-all shadow-md shadow-rose-500/20 dark:shadow-none focus:outline-none active:scale-[0.98]">Có, Xoá ngay</button>
+                                            </form>
+                                        </div>
                                     </div>
                                 </div>
                             </template>
