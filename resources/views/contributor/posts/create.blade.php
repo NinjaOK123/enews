@@ -650,7 +650,8 @@ ClassicEditor.create(document.querySelector('#editor'), {
             {
                 name: 'custom-video',
                 url: [
-                    /^.*\.(mp4|webm|ogg)(\?.*)?$/i
+                    /^.*\.(mp4|webm|ogg)(\?.*)?$/i,
+                    /\/media\/\d+\/view/i
                 ],
                 html: match => {
                     const url = match[0];
@@ -663,49 +664,7 @@ ClassicEditor.create(document.querySelector('#editor'), {
     },
     language: 'vi',
     ckfinder: { uploadUrl: uploadMediaUrl + '?_token={{ csrf_token() }}' }
-}).then(e => { 
-    window.myEditor = e; 
-    
-    // Inject Custom Video/Media button into CKEditor toolbar
-    try {
-        const toolbar = e.ui.view.toolbar.element;
-        const mediaBtnWrap = document.createElement('div');
-        mediaBtnWrap.className = 'ck ck-toolbar__item';
-        
-        const mediaBtn = document.createElement('button');
-        mediaBtn.setAttribute('type', 'button');
-        mediaBtn.className = 'ck ck-button ck-off';
-        mediaBtn.title = 'Thư viện Media (Tải video/ảnh)';
-        // SVG icon with emerald tint
-        mediaBtn.innerHTML = '<svg viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg" class="ck ck-icon" style="color: #10b981;"><path d="M4.5 4A1.5 1.5 0 0 0 3 5.5v9A1.5 1.5 0 0 0 4.5 16h11a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 15.5 4h-11zM2 5.5C2 4.12 3.12 3 4.5 3h11C16.88 3 18 4.12 18 5.5v9c0 1.38-1.12 2.5-2.5 2.5h-11C3.12 17 2 15.88 2 14.5v-9zm7.5 7.97V6.53a.5.5 0 0 1 .79-.4l3.5 2.47a.5.5 0 0 1 0 .82l-3.5 2.47a.5.5 0 0 1-.79-.4z"/></svg>';
-        
-        mediaBtn.addEventListener('mouseenter', () => mediaBtn.classList.add('ck-on'));
-        mediaBtn.addEventListener('mouseleave', () => mediaBtn.classList.remove('ck-on'));
-        mediaBtn.onclick = function(event) {
-            event.preventDefault();
-            document.getElementById('mediaModal').classList.remove('hidden');
-            loadMedia("{{ route('contributor.media.personal') }}", 'personalMediaList');
-        };
-        
-        mediaBtnWrap.appendChild(mediaBtn);
-        
-        // Find the toolbar items container
-        const itemsContainer = toolbar.querySelector('.ck-toolbar__items');
-        if (itemsContainer) {
-            // Try to insert it before the undo button group or just append
-            const allItems = itemsContainer.children;
-            let inserted = false;
-            for(let i=0; i<allItems.length; i++) {
-                if(allItems[i].innerHTML.includes('mediaEmbed')) {
-                    itemsContainer.insertBefore(mediaBtnWrap, allItems[i].nextSibling);
-                    inserted = true;
-                    break;
-                }
-            }
-            if(!inserted) itemsContainer.appendChild(mediaBtnWrap);
-        }
-    } catch(err) { console.warn(err); }
-}).catch(console.error);
+}).then(e => { window.myEditor = e; }).catch(console.error);
 
 
 // Thumbnail drag-drop preview
@@ -976,14 +935,52 @@ function loadMedia(url, containerId) {
     fetch(url).then(r => r.json()).then(data => {
         if(!data || !data.length) { c.innerHTML = '<p class="col-span-full text-center text-sm text-gray-400 py-8">Không có file nào.</p>'; return; }
         c.innerHTML = data.map(m => `
-            <div class="rounded-xl overflow-hidden border border-zinc-200 dark:border-zinc-700 hover:border-emerald-400 dark:hover:border-emerald-500 cursor-pointer group transition-all shadow-sm hover:shadow-md bg-white dark:bg-zinc-800 relative" onclick="insertMediaToEditor('${m.url}','${m.file_type}')">
+            <div class="rounded-xl overflow-hidden border border-zinc-200 dark:border-zinc-700 hover:border-emerald-400 dark:hover:border-emerald-500 group transition-all shadow-sm hover:shadow-md bg-white dark:bg-zinc-800 relative">
                 ${m.file_type && m.file_type.startsWith('image')
                     ? `<img src="${m.url}" class="w-full h-24 object-cover transition-transform duration-300 group-hover:scale-105">`
-                    : `<div class="w-full h-24 bg-zinc-800 dark:bg-zinc-900 flex items-center justify-center text-zinc-400 dark:text-zinc-500 group-hover:text-white transition-colors text-3xl"><i class="bi bi-play-circle-fill"></i></div>`}
-                <div class="absolute inset-0 bg-black/0 group-hover:bg-black/10 dark:group-hover:bg-black/20 transition-colors pointer-events-none"></div>
+                    : `<div class="w-full h-24 bg-zinc-800 dark:bg-zinc-900 flex items-center justify-center text-zinc-400 dark:text-zinc-500 transition-colors text-3xl"><i class="bi bi-play-circle-fill"></i></div>`}
+                
+                <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-center items-center gap-2 backdrop-blur-[2px]">
+                    <button type="button" onclick="insertMediaToEditor('${m.url}','${m.file_type}')" class="px-3 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg text-xs font-bold shadow-sm flex items-center gap-1 transition-transform hover:scale-105 active:scale-95">
+                        <i class="bi bi-box-arrow-in-down-right"></i> Chèn
+                    </button>
+                    <div class="flex gap-2">
+                        <a href="${m.url}" target="_blank" class="w-7 h-7 flex items-center justify-center bg-zinc-700 hover:bg-zinc-600 text-white rounded-full text-xs shadow-sm transition-transform hover:scale-110 active:scale-95" title="Xem">
+                            <i class="bi bi-eye"></i>
+                        </a>
+                        <button type="button" onclick="deleteMedia(${m.id})" class="w-7 h-7 flex items-center justify-center bg-rose-600 hover:bg-rose-700 text-white rounded-full text-xs shadow-sm transition-transform hover:scale-110 active:scale-95" title="Xoá">
+                            <i class="bi bi-trash3"></i>
+                        </button>
+                    </div>
+                </div>
+
                 <p class="text-[11px] text-zinc-600 dark:text-zinc-400 truncate px-2.5 py-1.5 border-t border-zinc-100 dark:border-zinc-700 font-medium relative z-10 bg-white dark:bg-zinc-800">${m.file_name}</p>
             </div>`).join('');
     }).catch(() => c.innerHTML = '<p class="col-span-full text-center text-sm text-red-400 py-8">Lỗi tải dữ liệu.</p>');
+}
+
+function deleteMedia(id) {
+    if (!confirm('Bạn có chắc chắn muốn xoá file này? Thao tác này không thể hoàn tác.')) return;
+    
+    fetch('/contributor/media/' + id, {
+        method: 'DELETE',
+        headers: {
+            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+            'Accept': 'application/json'
+        }
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            // Tải lại danh sách
+            loadMedia("{{ route('contributor.media.personal') }}", 'personalMediaList');
+        } else {
+            alert(data.message || 'Lỗi khi xoá file.');
+        }
+    })
+    .catch(err => {
+        alert('Lỗi kết nối. Vui lòng thử lại.');
+    });
 }
 
 // Confirm submit custom modal

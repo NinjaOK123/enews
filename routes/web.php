@@ -202,6 +202,7 @@ Route::prefix('contributor')
          Route::get('/media/personal', [App\Http\Controllers\Contributor\MediaController::class, 'getPersonalMedia'])->name('media.personal');
          Route::get('/media/shared', [App\Http\Controllers\Contributor\MediaController::class, 'getSharedMedia'])->name('media.shared');
          Route::get('/media/{media}/view', [App\Http\Controllers\Contributor\MediaController::class, 'show'])->name('media.view');
+         Route::delete('/media/{media}', [App\Http\Controllers\Contributor\MediaController::class, 'destroy'])->name('media.destroy');
      });
 
 // AI endpoints

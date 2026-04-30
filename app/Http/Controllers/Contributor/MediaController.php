@@ -60,4 +60,24 @@ class MediaController extends Controller
         });
         return response()->json($media);
     }
+
+    public function destroy(Media $media)
+    {
+        if ($media->user_id !== auth()->id()) {
+            return response()->json(['success' => false, 'message' => 'Bạn không có quyền xoá file này.'], 403);
+        }
+
+        $storagePath = (string) $media->file_path;
+        if (str_starts_with($storagePath, '/storage/')) {
+            $storagePath = str_replace('/storage/', '', $storagePath);
+        }
+        
+        if (Storage::disk('public')->exists($storagePath)) {
+            Storage::disk('public')->delete($storagePath);
+        }
+
+        $media->delete();
+
+        return response()->json(['success' => true, 'message' => 'Đã xoá file thành công.']);
+    }
 }
