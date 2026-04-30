@@ -236,13 +236,21 @@ class Post extends Model
         }
 
         // Ưu tiên đường dẫn cũ (images/...) load thẳng bằng asset() ở máy local
-        // Vì toàn bộ 17GB ảnh đã được nhét vào thư mục public/images
+        // Vì toàn bộ 17GB ảnh đã được nhét vào thư mục public/images, nhưng nếu thiếu trên local thì trỏ về server thật
         if (str_starts_with($thumb, 'images/') || str_starts_with($thumb, '/images/')) {
-            return asset(ltrim($thumb, '/'));
+            $localPath = ltrim($thumb, '/');
+            if (file_exists(public_path($localPath))) {
+                return asset($localPath);
+            }
+            return 'https://enews.agu.edu.vn/' . $localPath;
         }
 
         // Ảnh mới định dạng upload vào Laravel storage (storage/app/public/...)
-        return asset('storage/' . $thumb);
+        if (file_exists(storage_path('app/public/' . $thumb))) {
+            return asset('storage/' . $thumb);
+        }
+        
+        return 'https://enews.agu.edu.vn/storage/' . $thumb;
     }
 
     /**
@@ -268,8 +276,20 @@ class Post extends Model
 
         // Bước 2: Bọc toàn bộ các thẻ img src="images..." hoặc src="storage..." qua hàm asset() của Laravel
         // Điều này đảm bảo ảnh luôn đúng đường dẫn bất kể chạy trên localhost (subfolder) hay hosting thật
+        // Trừ khi ở dưới local mà thiếu ảnh thì fallback về server thật
         return preg_replace_callback('/src=["\']\/?((?:images|storage)\/[^"\']+)["\']/i', function($matches) {
-            return 'src="' . asset($matches[1]) . '"';
+            $path = $matches[1];
+            
+            if (str_starts_with($path, 'storage/')) {
+                $checkPath = storage_path('app/public/' . substr($path, 8));
+            } else {
+                $checkPath = public_path($path);
+            }
+
+            if (file_exists($checkPath)) {
+                return 'src="' . asset($path) . '"';
+            }
+            return 'src="https://enews.agu.edu.vn/' . $path . '"';
         }, $value);
     }
 
