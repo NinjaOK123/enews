@@ -29,8 +29,11 @@ class MediaController extends Controller
                 abort(404);
             }
             
-            // Trả về file resource
-            return response()->file($path);
+            // Trả về file resource với header rõ ràng
+            return response()->file($path, [
+                'Content-Type' => $media->file_type ?? 'application/octet-stream',
+                'Content-Disposition' => 'inline; filename="' . $media->file_name . '"'
+            ]);
         }
 
         // Nếu file thuộc người khác và không shared, trả về 403

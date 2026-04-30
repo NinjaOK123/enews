@@ -953,19 +953,21 @@ function loadMedia(url, containerId) {
         if(!data || !data.length) { c.innerHTML = '<p class="col-span-full text-center text-sm text-gray-400 py-8">Không có file nào.</p>'; return; }
         c.innerHTML = data.map(m => `
             <div class="rounded-xl overflow-hidden border border-zinc-200 dark:border-zinc-700 hover:border-emerald-400 dark:hover:border-emerald-500 group transition-all shadow-sm hover:shadow-md bg-white dark:bg-zinc-800 relative">
-                ${m.file_type && m.file_type.startsWith('image')
-                    ? `<img src="${m.url}" class="w-full h-24 object-cover transition-transform duration-300 group-hover:scale-105">`
-                    : `<div class="w-full h-24 bg-zinc-800 dark:bg-zinc-900 flex items-center justify-center text-zinc-400 dark:text-zinc-500 transition-colors text-3xl"><i class="bi bi-play-circle-fill"></i></div>`}
+                <div class="cursor-pointer" onclick="window.open('${m.url}', '_blank')">
+                    ${m.file_type && m.file_type.startsWith('image')
+                        ? `<img src="${m.url}" class="w-full h-24 object-cover transition-transform duration-300 group-hover:scale-105">`
+                        : `<div class="w-full h-24 bg-zinc-800 dark:bg-zinc-900 flex items-center justify-center text-zinc-400 dark:text-zinc-500 transition-colors text-3xl"><i class="bi bi-play-circle-fill"></i></div>`}
+                </div>
                 
-                <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-center items-center gap-2 backdrop-blur-[2px]">
-                    <button type="button" onclick="insertMediaToEditor('${m.url}','${m.file_type}')" class="px-3 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg text-xs font-bold shadow-sm flex items-center gap-1 transition-transform hover:scale-105 active:scale-95">
+                <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-center items-center gap-2 backdrop-blur-[2px] pointer-events-none group-hover:pointer-events-auto">
+                    <button type="button" onclick="event.stopPropagation(); insertMediaToEditor('${m.url}','${m.file_type}')" class="px-3 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg text-xs font-bold shadow-sm flex items-center gap-1 transition-transform hover:scale-105 active:scale-95">
                         <i class="bi bi-box-arrow-in-down-right"></i> Chèn
                     </button>
                     <div class="flex gap-2">
-                        <a href="${m.url}" target="_blank" class="w-7 h-7 flex items-center justify-center bg-zinc-700 hover:bg-zinc-600 text-white rounded-full text-xs shadow-sm transition-transform hover:scale-110 active:scale-95" title="Xem">
+                        <button type="button" onclick="event.stopPropagation(); window.open('${m.url}', '_blank')" class="w-7 h-7 flex items-center justify-center bg-zinc-700 hover:bg-zinc-600 text-white rounded-full text-xs shadow-sm transition-transform hover:scale-110 active:scale-95" title="Xem">
                             <i class="bi bi-eye"></i>
-                        </a>
-                        <button type="button" onclick="deleteMedia(${m.id})" class="w-7 h-7 flex items-center justify-center bg-rose-600 hover:bg-rose-700 text-white rounded-full text-xs shadow-sm transition-transform hover:scale-110 active:scale-95" title="Xoá">
+                        </button>
+                        <button type="button" onclick="event.stopPropagation(); deleteMedia(${m.id})" class="w-7 h-7 flex items-center justify-center bg-rose-600 hover:bg-rose-700 text-white rounded-full text-xs shadow-sm transition-transform hover:scale-110 active:scale-95" title="Xoá">
                             <i class="bi bi-trash3"></i>
                         </button>
                     </div>
