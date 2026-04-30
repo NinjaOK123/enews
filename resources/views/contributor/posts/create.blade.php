@@ -534,16 +534,12 @@
           <div class="w-16 h-16 bg-white dark:bg-zinc-800 shadow-sm border border-gray-100 dark:border-zinc-700 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
              <svg class="w-8 h-8 text-emerald-500 dark:text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
           </div>
-          <div class="text-center px-4">
+          <div class="text-center px-4" id="mediaUploadText">
              <p class="text-sm font-bold text-gray-700 dark:text-zinc-300 mb-1">Click hoặc kéo thả file vào đây</p>
              <p class="text-xs text-gray-400 dark:text-zinc-500">Hỗ trợ JPG, PNG, WEBP, MP4 (Tối đa 20MB)</p>
           </div>
         </label>
         <input type="file" id="mediaUploadInput" accept="image/*,video/*" class="hidden">
-        <button type="button" id="btnUploadMediaFile"
-                class="mt-4 w-full py-3 bg-emerald-600 hover:bg-emerald-700 dark:bg-emerald-500 text-white text-sm font-bold rounded-xl shadow-lg shadow-emerald-200 dark:shadow-none transition-transform active:scale-[0.98]">
-          Bắt đầu tải lên
-        </button>
         <div id="uploadResult" class="mt-3 text-sm text-center"></div>
       </div>
 
@@ -805,35 +801,45 @@ dropZone.addEventListener('drop', function(e) {
 
 fi.addEventListener('change', function() {
     if (this.files && this.files.length > 0) {
-        uploadText.innerHTML = `<span class="text-green-600 font-medium tracking-tight whitespace-normal break-all line-clamp-2 px-4 shadow-sm">Đã chọn: ${this.files[0].name}</span>`;
-    } else {
-        uploadText.innerHTML = 'Click hoặc kéo thả file ảnh/video vào đây';
-    }
-});
-
-// Upload media
-document.getElementById('btnUploadMediaFile').addEventListener('click', function() {
-    if(!fi.files.length) { alert('Vui lòng chọn 1 file trước khi tải lên!'); return; }
-    
-    // Đổi trạng thái nút
-    const originalText = this.innerHTML;
-    this.disabled = true;
-    this.innerHTML = '<i class="bi bi-hourglass-split animate-spin me-2"></i> Đang tải...';
-    
-    const fd = new FormData(); fd.append('upload', fi.files[0]); fd.append('_token', '{{ csrf_token() }}');
-    fetch(uploadMediaUrl, { method:'POST', body:fd })
-    .then(r => r.json()).then(data => {
-        this.disabled = false; this.innerHTML = originalText;
-        if(data.url) {
-            document.getElementById('uploadResult').innerHTML = `<p class="text-green-600 text-xs mt-2">✅ Upload thành công!</p>`;
-            insertMediaToEditor(data.url, data.type);
-            fi.value = ''; // Reset input
+        uploadText.innerHTML = `<span class="text-emerald-600 dark:text-emerald-400 font-medium tracking-tight whitespace-normal break-all line-clamp-2 px-4">⏳ Đang tải lên: ${this.files[0].name}...</span>`;
+        
+        // Show loading state
+        const uploadResult = document.getElementById('uploadResult');
+        uploadResult.innerHTML = `<p class="text-emerald-500 text-xs mt-2 animate-pulse">Đang đẩy lên máy chủ...</p>`;
+        
+        // Start upload automatically
+        const fd = new FormData(); 
+        fd.append('upload', this.files[0]); 
+        fd.append('_token', '{{ csrf_token() }}');
+        
+        fetch(uploadMediaUrl, { method:'POST', body:fd })
+        .then(r => r.json()).then(data => {
+            if(data.url) {
+                uploadResult.innerHTML = `<p class="text-emerald-600 dark:text-emerald-400 font-bold text-xs mt-2">✅ Upload thành công!</p>`;
+                insertMediaToEditor(data.url, data.type);
+                setTimeout(() => {
+                    uploadResult.innerHTML = '';
+                    fi.value = ''; // Reset input
+                    fi.dispatchEvent(new Event('change'));
+                }, 2000);
+            } else { 
+                alert('Upload thất bại: ' + (data.error?.message || 'Không rõ lỗi'));
+                uploadResult.innerHTML = ''; 
+                fi.value = '';
+                fi.dispatchEvent(new Event('change'));
+            }
+        }).catch(() => {
+            alert('Upload thất bại, mã mạng lỗi'); 
+            uploadResult.innerHTML = '';
+            fi.value = '';
             fi.dispatchEvent(new Event('change'));
-        } else { alert('Upload thất bại: ' + (data.error?.message || 'Không rõ lỗi')); }
-    }).catch(() => {
-        this.disabled = false; this.innerHTML = originalText;
-        alert('Upload thất bại, mã mạng lỗi'); 
-    });
+        });
+    } else {
+        uploadText.innerHTML = `
+             <p class="text-sm font-bold text-gray-700 dark:text-zinc-300 mb-1">Click hoặc kéo thả file vào đây</p>
+             <p class="text-xs text-gray-400 dark:text-zinc-500">Hỗ trợ JPG, PNG, WEBP, MP4 (Tối đa 20MB)</p>
+        `;
+    }
 });
 
 // Paste event cho Media Modal
