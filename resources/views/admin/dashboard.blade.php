@@ -300,6 +300,7 @@
                 <tr class="border-b border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-zinc-900/50">
                     <th class="px-6 py-3 text-[11px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest sticky top-0">Tiêu đề</th>
                     <th class="px-6 py-3 text-[11px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest sticky top-0">Chuyên mục</th>
+                    <th class="px-6 py-3 text-[11px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest sticky top-0">Tác giả</th>
                     <th class="px-6 py-3 text-[11px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest sticky top-0">Người đăng</th>
                     <th class="px-6 py-3 text-[11px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest sticky top-0">Ngày tạo</th>
                     <th class="px-6 py-3 text-[11px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest sticky top-0">Trạng thái</th>
@@ -314,6 +315,9 @@
                     </td>
                     <td class="px-6 py-4 text-[13px] text-zinc-500 dark:text-zinc-400">
                         {{ $post->category->name ?? 'Không phân loại' }}
+                    </td>
+                    <td class="px-6 py-4 text-[13px] text-zinc-500 dark:text-zinc-400">
+                        {{ $post->source_author ?? 'Không có' }}
                     </td>
                     <td class="px-6 py-4 text-[13px] text-zinc-500 dark:text-zinc-400">
                         {{ $post->author->name ?? 'Ẩn danh' }}
@@ -338,7 +342,7 @@
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="6" class="px-6 py-8 text-center text-[13px] text-zinc-500 dark:text-zinc-400 font-medium">
+                    <td colspan="7" class="px-6 py-8 text-center text-[13px] text-zinc-500 dark:text-zinc-400 font-medium">
                         Chưa có bài viết nào trong hệ thống.
                     </td>
                 </tr>

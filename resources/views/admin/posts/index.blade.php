@@ -98,6 +98,7 @@
                     <tr>
                         <th class="px-6 py-5 text-center">Tiêu đề</th>
                         <th class="px-6 py-5 text-center">Chuyên mục</th>
+                        <th class="px-6 py-5 text-center">Tác giả</th>
                         <th class="px-6 py-5 text-center">Người đăng</th>
                         <th class="px-6 py-5 text-center">Trạng thái</th>
                         <th class="px-6 py-5 text-center">Hiện Slider</th>
@@ -115,6 +116,13 @@
                             <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-zinc-300 text-[11px] font-bold tracking-wide transition-colors">
                                 <i class="bi bi-tag-fill text-gray-400 dark:text-zinc-500"></i> {{ $post->category->name ?? 'Không có' }}
                             </span>
+                        </td>
+                        <td class="px-6 py-5 align-top text-center">
+                            @if($post->source_author)
+                                <span class="font-medium text-gray-800 dark:text-zinc-200 text-[13px]">{{ $post->source_author }}</span>
+                            @else
+                                <span class="text-gray-400 dark:text-zinc-500 text-[12px] italic">Không có</span>
+                            @endif
                         </td>
                         <td class="px-6 py-5 align-top">
                             <div class="flex items-center gap-2.5">
@@ -212,7 +220,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="6" class="px-6 py-16 text-center text-gray-500 dark:text-zinc-400">
+                        <td colspan="7" class="px-6 py-16 text-center text-gray-500 dark:text-zinc-400">
                             <div class="flex flex-col items-center justify-center gap-3">
                                 <div class="w-16 h-16 rounded-full bg-gray-50 dark:bg-zinc-800 flex items-center justify-center">
                                     <i class="bi bi-journal-x text-3xl text-gray-400 dark:text-zinc-600"></i>

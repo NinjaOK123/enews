@@ -314,10 +314,10 @@
           <div x-data="{ open: false }" class="relative">
             <button @click="open = !open; $event.stopPropagation(); if(open) loadNotifications()"
                     @click.outside="open = false"
-                    class="relative flex items-center justify-center w-9 h-9 rounded-lg text-gray-500 hover:bg-gray-100 transition-colors duration-200">
-              <i class="bi bi-bell text-lg" id="bellIcon"></i>
+                    class="relative flex items-center justify-center w-10 h-10 rounded-full bg-gray-50 hover:bg-gray-100 text-gray-600 border border-gray-200/50 shadow-sm transition-all duration-200 active:scale-95">
+              <i class="bi bi-bell-fill text-[18px]" id="bellIcon"></i>
               <span id="notifBadge"
-                    class="hidden absolute top-0.5 right-0.5 min-w-[18px] h-[18px] px-1 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center leading-none border-2 border-white"></span>
+                    class="hidden absolute -top-1 -right-1 min-w-[20px] h-[20px] px-1.5 bg-red-500 text-white text-[10px] font-extrabold rounded-full flex items-center justify-center leading-none border-2 border-white shadow-sm"></span>
             </button>
 
             {{-- Notification panel --}}
