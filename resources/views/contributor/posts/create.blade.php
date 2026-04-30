@@ -511,33 +511,40 @@
 <div id="mediaModal" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-4">
   <div class="absolute inset-0 bg-black/50 dark:bg-zinc-900/80 backdrop-blur-sm" onclick="document.getElementById('mediaModal').classList.add('hidden')"></div>
   <div class="relative bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-2xl shadow-2xl w-full max-w-3xl max-h-[85vh] flex flex-col overflow-hidden transition-colors">
-    <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-zinc-800 bg-gray-50/60 dark:bg-zinc-950/50">
-      <h3 class="font-bold text-gray-800 dark:text-zinc-100">🖼️ Media Library</h3>
+    <div class="flex items-center justify-between px-6 py-5 border-b border-gray-100 dark:border-zinc-800/60 bg-gradient-to-r from-emerald-50/50 to-teal-50/50 dark:from-emerald-950/20 dark:to-teal-950/20">
+      <h3 class="text-lg font-extrabold text-gray-800 dark:text-zinc-100 flex items-center gap-2">
+         <span class="p-2 bg-emerald-100 dark:bg-emerald-500/20 rounded-xl text-emerald-600 dark:text-emerald-400 leading-none">🖼️</span> Media Library
+      </h3>
       <button type="button" onclick="document.getElementById('mediaModal').classList.add('hidden')"
-              class="text-gray-400 dark:text-zinc-500 hover:text-gray-700 dark:hover:text-zinc-300 w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-zinc-800 transition text-lg">✕</button>
+              class="text-gray-400 dark:text-zinc-500 hover:text-red-500 dark:hover:text-red-400 w-8 h-8 flex items-center justify-center rounded-full hover:bg-red-50 dark:hover:bg-red-500/10 transition text-lg">✕</button>
     </div>
 
     {{-- Tabs --}}
-    <div class="flex border-b border-gray-100 dark:border-zinc-800 px-6">
-      <button type="button" class="media-tab-btn active-tab px-4 py-3 text-sm font-semibold border-b-2 -mb-px transition dark:text-zinc-300" data-tab="upload">📤 Tải lên</button>
-      <button type="button" class="media-tab-btn px-4 py-3 text-sm font-medium text-gray-500 dark:text-zinc-500 border-b-2 border-transparent -mb-px hover:text-gray-700 dark:hover:text-zinc-300 transition" data-tab="library" id="library-tab">📁 Của tôi</button>
-      <button type="button" class="media-tab-btn px-4 py-3 text-sm font-medium text-gray-500 dark:text-zinc-500 border-b-2 border-transparent -mb-px hover:text-gray-700 dark:hover:text-zinc-300 transition" data-tab="shared" id="shared-tab">🌐 Shared</button>
+    <div class="flex px-6 pt-4 pb-3 space-x-2 border-b border-gray-100 dark:border-zinc-800/60 bg-white dark:bg-zinc-900">
+      <button type="button" class="media-tab-btn active-tab text-sm" data-tab="upload">📤 Tải lên</button>
+      <button type="button" class="media-tab-btn text-sm" data-tab="library" id="library-tab">📁 Của tôi</button>
+      <button type="button" class="media-tab-btn text-sm" data-tab="shared" id="shared-tab">🌐 Shared</button>
     </div>
 
     <div class="flex-1 overflow-y-auto p-6 bg-white dark:bg-zinc-900">
       {{-- Upload Tab --}}
       <div id="tab-upload" class="media-tab-pane">
         <label for="mediaUploadInput" id="mediaDropZone"
-               class="flex flex-col items-center gap-3 h-40 border-2 border-dashed border-gray-200 dark:border-zinc-700 bg-gray-50/50 dark:bg-zinc-950/50 hover:bg-green-50/30 dark:hover:bg-green-500/5 hover:border-green-400 dark:hover:border-green-500/50 rounded-2xl cursor-pointer transition justify-center w-full relative">
-          <svg class="w-10 h-10 text-gray-300 dark:text-zinc-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
-          <span class="text-sm text-gray-400 dark:text-zinc-500 text-center px-4" id="mediaUploadText">Click hoặc kéo thả file ảnh/video vào đây</span>
+               class="flex flex-col items-center justify-center gap-4 py-12 border-2 border-dashed border-emerald-200 dark:border-zinc-700 bg-emerald-50/30 dark:bg-zinc-900/50 hover:bg-emerald-50 dark:hover:bg-emerald-500/10 hover:border-emerald-400 dark:hover:border-emerald-500/50 rounded-2xl cursor-pointer transition-all duration-300 group">
+          <div class="w-16 h-16 bg-white dark:bg-zinc-800 shadow-sm border border-gray-100 dark:border-zinc-700 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+             <svg class="w-8 h-8 text-emerald-500 dark:text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
+          </div>
+          <div class="text-center px-4">
+             <p class="text-sm font-bold text-gray-700 dark:text-zinc-300 mb-1">Click hoặc kéo thả file vào đây</p>
+             <p class="text-xs text-gray-400 dark:text-zinc-500">Hỗ trợ JPG, PNG, WEBP, MP4 (Tối đa 10MB)</p>
+          </div>
         </label>
         <input type="file" id="mediaUploadInput" accept="image/*,video/*" class="hidden">
         <button type="button" id="btnUploadMediaFile"
-                class="mt-3 w-full py-2.5 bg-green-600 hover:bg-green-700 dark:bg-green-600 text-white text-sm font-bold rounded-xl transition">
-          Tải lên
+                class="mt-4 w-full py-3 bg-emerald-600 hover:bg-emerald-700 dark:bg-emerald-500 text-white text-sm font-bold rounded-xl shadow-lg shadow-emerald-200 dark:shadow-none transition-transform active:scale-[0.98]">
+          Bắt đầu tải lên
         </button>
-        <div id="uploadResult" class="mt-3 text-sm"></div>
+        <div id="uploadResult" class="mt-3 text-sm text-center"></div>
       </div>
 
       {{-- Library Tab --}}
@@ -571,13 +578,34 @@
   .ck.ck-toolbar { border: 0 !important; border-bottom: 1px solid #f3f4f6 !important; background: #fafafa !important; }
   .ck.ck-editor { border: 0 !important; }
   .ck.ck-editor__main>.ck-editor__editable:not(.ck-focused) { border: 0 !important; }
-  .media-tab-btn.active-tab { color: #16a34a; border-color: #16a34a; }
+
+  /* Media Tabs */
+  .media-tab-btn {
+      border-radius: 9999px;
+      padding: 0.5rem 1rem;
+      font-weight: 600;
+      color: #6b7280;
+      transition: all 0.2s;
+  }
+  html.dark .media-tab-btn { color: #a1a1aa; }
+  .media-tab-btn:hover { background-color: #f3f4f6; color: #374151; }
+  html.dark .media-tab-btn:hover { background-color: #27272a; color: #d4d4d8; }
   
+  .media-tab-btn.active-tab { 
+      background-color: #ecfdf5; 
+      color: #059669; 
+      border: none !important;
+  }
+  html.dark .media-tab-btn.active-tab { 
+      background-color: rgba(16, 185, 129, 0.2); 
+      color: #34d399; 
+  }
+  
+  /* Dark mode CKEditor overrides */
   html.dark .ck-editor__editable { background: #18181b !important; color: #f4f4f5 !important; }
   html.dark .ck.ck-toolbar { border-bottom: 1px solid #27272a !important; background: #09090b !important; }
   html.dark .ck.ck-button { color: #d4d4d8 !important; }
   html.dark .ck.ck-button:hover, html.dark .ck.ck-button.ck-on { background: #27272a !important; color: #fff !important; }
-  html.dark .media-tab-btn.active-tab { color: #10b981; border-color: #10b981; }
 </style>
 @endsection
 
