@@ -39,9 +39,23 @@
                         </div>
                     </div>
 
-                    <div class="bg-white dark:bg-zinc-900/50 rounded-lg border border-zinc-100 dark:border-white/5 p-4 mt-2">
-                        <p class="text-[13px] font-semibold text-zinc-800 dark:text-zinc-200 mb-1">Bản lưu Rev #{{ $revision->revision_number ?? ($revisions->count() - $index) }}</p>
-                        <p class="text-[13px] text-zinc-600 dark:text-zinc-400">Nội dung đã được cập nhật và lưu vào cơ sở dữ liệu.</p>
+                    <div class="bg-white dark:bg-zinc-900/50 rounded-lg border border-zinc-100 dark:border-white/5 p-4 mt-2" x-data="{ expanded: false }">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-[13px] font-semibold text-zinc-800 dark:text-zinc-200 mb-0.5">Bản lưu Rev #{{ $revision->revision_number ?? ($revisions->count() - $index) }}</p>
+                                <p class="text-[12px] text-zinc-500 dark:text-zinc-400">Nội dung đã được cập nhật và lưu vào cơ sở dữ liệu.</p>
+                            </div>
+                            <button @click="expanded = !expanded" class="text-[12px] font-medium px-3 py-1.5 rounded-md bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 hover:bg-emerald-50 dark:hover:bg-emerald-500/10 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors border border-transparent hover:border-emerald-200 dark:hover:border-emerald-500/30">
+                                <span x-show="!expanded"><i class="bi bi-eye me-1"></i> Xem bản lưu</span>
+                                <span x-show="expanded" x-cloak><i class="bi bi-eye-slash me-1"></i> Ẩn nội dung</span>
+                            </button>
+                        </div>
+                        
+                        <div x-show="expanded" x-cloak class="mt-4 pt-4 border-t border-zinc-100 dark:border-white/5">
+                            <div class="prose prose-sm dark:prose-invert max-w-none text-[13px] text-zinc-700 dark:text-zinc-300 bg-zinc-50 dark:bg-zinc-900/50 p-4 rounded-lg border border-zinc-100 dark:border-white/5 max-h-[400px] overflow-y-auto custom-scrollbar">
+                                {!! $revision->content ?? '<p class="italic text-zinc-400">Bản lưu này không có nội dung.</p>' !!}
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
