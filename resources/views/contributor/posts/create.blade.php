@@ -818,38 +818,71 @@ dropZone.addEventListener('drop', function(e) {
 
 fi.addEventListener('change', function() {
     if (this.files && this.files.length > 0) {
-        uploadText.innerHTML = `<span class="text-emerald-600 dark:text-emerald-400 font-medium tracking-tight whitespace-normal break-all line-clamp-2 px-4">⏳ Đang tải lên: ${this.files[0].name}...</span>`;
+        const file = this.files[0];
+        const maxFileSize = 20 * 1024 * 1024; // 20MB
         
-        // Show loading state
+        if (file.size > maxFileSize) {
+            uploadText.innerHTML = `
+                <div class="text-rose-500 px-4 py-2">
+                    <i class="bi bi-exclamation-octagon-fill text-3xl mb-2 block animate-bounce"></i>
+                    <p class="text-sm font-bold mb-1">File quá lớn!</p>
+                    <p class="text-xs">Video/Ảnh của bạn vượt quá giới hạn 20MB.</p>
+                </div>
+            `;
+            const uploadResult = document.getElementById('uploadResult');
+            if(uploadResult) uploadResult.innerHTML = '';
+            setTimeout(() => { fi.value = ''; fi.dispatchEvent(new Event('change')); }, 3500);
+            return;
+        }
+
+        uploadText.innerHTML = `
+            <div class="text-emerald-600 dark:text-emerald-400 px-4">
+                <i class="bi bi-cloud-arrow-up-fill text-3xl mb-2 block animate-pulse"></i>
+                <p class="text-sm font-bold mb-1">Đang đẩy lên máy chủ...</p>
+                <p class="text-xs break-all line-clamp-1">${file.name}</p>
+            </div>
+        `;
         const uploadResult = document.getElementById('uploadResult');
-        uploadResult.innerHTML = `<p class="text-emerald-500 text-xs mt-2 animate-pulse">Đang đẩy lên máy chủ...</p>`;
+        if(uploadResult) uploadResult.innerHTML = '';
         
-        // Start upload automatically
         const fd = new FormData(); 
-        fd.append('upload', this.files[0]); 
+        fd.append('upload', file); 
         fd.append('_token', '{{ csrf_token() }}');
         
         fetch(uploadMediaUrl, { method:'POST', body:fd })
-        .then(r => r.json()).then(data => {
+        .then(async r => {
+            if (!r.ok) {
+                if (r.status === 413) throw new Error("File vượt quá 20MB (Lỗi máy chủ).");
+                const errData = await r.json().catch(() => null);
+                throw new Error(errData?.error?.message || errData?.message || "Lỗi máy chủ.");
+            }
+            return r.json();
+        })
+        .then(data => {
             if(data.url) {
-                uploadResult.innerHTML = `<p class="text-emerald-600 dark:text-emerald-400 font-bold text-xs mt-2">✅ Upload thành công!</p>`;
+                uploadText.innerHTML = `
+                    <div class="text-emerald-500 px-4">
+                        <i class="bi bi-check-circle-fill text-3xl mb-2 block"></i>
+                        <p class="text-sm font-bold">Tải lên thành công!</p>
+                    </div>
+                `;
                 insertMediaToEditor(data.url, data.type);
                 setTimeout(() => {
-                    uploadResult.innerHTML = '';
                     fi.value = ''; // Reset input
                     fi.dispatchEvent(new Event('change'));
                 }, 2000);
             } else { 
-                alert('Upload thất bại: ' + (data.error?.message || 'Không rõ lỗi'));
-                uploadResult.innerHTML = ''; 
-                fi.value = '';
-                fi.dispatchEvent(new Event('change'));
+                throw new Error(data.error?.message || 'Không rõ lỗi');
             }
-        }).catch(() => {
-            alert('Upload thất bại, mã mạng lỗi'); 
-            uploadResult.innerHTML = '';
-            fi.value = '';
-            fi.dispatchEvent(new Event('change'));
+        }).catch((err) => {
+            uploadText.innerHTML = `
+                <div class="text-rose-500 px-4">
+                    <i class="bi bi-x-circle-fill text-3xl mb-2 block"></i>
+                    <p class="text-sm font-bold mb-1">Tải lên thất bại</p>
+                    <p class="text-xs break-words">${err.message}</p>
+                </div>
+            `;
+            setTimeout(() => { fi.value = ''; fi.dispatchEvent(new Event('change')); }, 4000);
         });
     } else {
         uploadText.innerHTML = `
@@ -871,13 +904,10 @@ window.addEventListener('paste', function(e) {
                 // Gán file vào ô input hidden
                 const dt = new DataTransfer();
                 dt.items.add(file);
-                document.getElementById('mediaUploadInput').files = dt.files;
+                fi.files = dt.files;
                 
-                // Hiển thị trạng thái
-                document.getElementById('uploadResult').innerHTML = `<p class="text-blue-600 text-xs">⏳ Đang tự động tải lên thao tác Dán: ${file.name}...</p>`;
-                
-                // Tự động bấm nút tải lên
-                document.getElementById('btnUploadMediaFile').click();
+                // Tự động kích hoạt upload
+                fi.dispatchEvent(new Event('change'));
                 break; // Chỉ xử lý file đầu tiên
             }
         }
