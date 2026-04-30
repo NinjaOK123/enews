@@ -663,7 +663,49 @@ ClassicEditor.create(document.querySelector('#editor'), {
     },
     language: 'vi',
     ckfinder: { uploadUrl: uploadMediaUrl + '?_token={{ csrf_token() }}' }
-}).then(e => { window.myEditor = e; }).catch(console.error);
+}).then(e => { 
+    window.myEditor = e; 
+    
+    // Inject Custom Video/Media button into CKEditor toolbar
+    try {
+        const toolbar = e.ui.view.toolbar.element;
+        const mediaBtnWrap = document.createElement('div');
+        mediaBtnWrap.className = 'ck ck-toolbar__item';
+        
+        const mediaBtn = document.createElement('button');
+        mediaBtn.setAttribute('type', 'button');
+        mediaBtn.className = 'ck ck-button ck-off';
+        mediaBtn.title = 'Thư viện Media (Tải video/ảnh)';
+        // SVG icon with emerald tint
+        mediaBtn.innerHTML = '<svg viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg" class="ck ck-icon" style="color: #10b981;"><path d="M4.5 4A1.5 1.5 0 0 0 3 5.5v9A1.5 1.5 0 0 0 4.5 16h11a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 15.5 4h-11zM2 5.5C2 4.12 3.12 3 4.5 3h11C16.88 3 18 4.12 18 5.5v9c0 1.38-1.12 2.5-2.5 2.5h-11C3.12 17 2 15.88 2 14.5v-9zm7.5 7.97V6.53a.5.5 0 0 1 .79-.4l3.5 2.47a.5.5 0 0 1 0 .82l-3.5 2.47a.5.5 0 0 1-.79-.4z"/></svg>';
+        
+        mediaBtn.addEventListener('mouseenter', () => mediaBtn.classList.add('ck-on'));
+        mediaBtn.addEventListener('mouseleave', () => mediaBtn.classList.remove('ck-on'));
+        mediaBtn.onclick = function(event) {
+            event.preventDefault();
+            document.getElementById('mediaModal').classList.remove('hidden');
+            loadMedia("{{ route('contributor.media.personal') }}", 'personalMediaList');
+        };
+        
+        mediaBtnWrap.appendChild(mediaBtn);
+        
+        // Find the toolbar items container
+        const itemsContainer = toolbar.querySelector('.ck-toolbar__items');
+        if (itemsContainer) {
+            // Try to insert it before the undo button group or just append
+            const allItems = itemsContainer.children;
+            let inserted = false;
+            for(let i=0; i<allItems.length; i++) {
+                if(allItems[i].innerHTML.includes('mediaEmbed')) {
+                    itemsContainer.insertBefore(mediaBtnWrap, allItems[i].nextSibling);
+                    inserted = true;
+                    break;
+                }
+            }
+            if(!inserted) itemsContainer.appendChild(mediaBtnWrap);
+        }
+    } catch(err) { console.warn(err); }
+}).catch(console.error);
 
 
 // Thumbnail drag-drop preview
