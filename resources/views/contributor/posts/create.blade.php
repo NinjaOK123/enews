@@ -916,14 +916,31 @@ window.addEventListener('paste', function(e) {
 });
 
 function insertMediaToEditor(url, type) {
-    if(!myEditor) return;
+    if(!window.myEditor) {
+        alert("Lỗi: Không tìm thấy trình soạn thảo!");
+        return;
+    }
     
-    if (type === 'image' || (type && type.startsWith('image/'))) {
-        const html = `<figure class="image"><img src="${url}" alt="media"></figure>`;
-        const view = myEditor.data.processor.toView(html);
-        myEditor.model.insertContent(myEditor.data.toModel(view), myEditor.model.document.selection);
-    } else {
-        myEditor.execute('mediaEmbed', url);
+    try {
+        if (type === 'image' || (type && type.startsWith('image/'))) {
+            const html = `<figure class="image"><img src="${url}" alt="media"></figure>`;
+            const view = window.myEditor.data.processor.toView(html);
+            const modelFragment = window.myEditor.data.toModel(view);
+            window.myEditor.model.insertContent(modelFragment);
+        } else {
+            window.myEditor.execute('mediaEmbed', url);
+        }
+    } catch (e) {
+        console.error("Lỗi chèn media:", e);
+        try {
+            // Fallback for video if mediaEmbed fails
+            const html = `<figure class="media"><video controls style="max-width: 100%;" src="${url}"></video></figure>`;
+            const view = window.myEditor.data.processor.toView(html);
+            const modelFragment = window.myEditor.data.toModel(view);
+            window.myEditor.model.insertContent(modelFragment);
+        } catch (e2) {
+            alert("Lỗi chèn media: " + e2.message);
+        }
     }
     
     document.getElementById('mediaModal').classList.add('hidden');
