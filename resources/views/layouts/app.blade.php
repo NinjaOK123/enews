@@ -311,10 +311,10 @@
                  x-transition:enter-start="opacity-0 scale-95 translate-y-2" x-transition:enter-end="opacity-100 scale-100 translate-y-0"
                  x-transition:leave="transition ease-in duration-100"
                  x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95"
-                 class="absolute right-0 mt-3 w-80 sm:w-[360px] bg-white/95 dark:bg-zinc-900/95 backdrop-blur-2xl rounded-3xl shadow-2xl overflow-hidden z-50 border border-white dark:border-white/10 ring-1 ring-black/5 dark:ring-white/5"
+                 class="absolute right-0 mt-3 w-80 sm:w-[360px] bg-white/95 dark:bg-zinc-900/95 backdrop-blur-2xl rounded-2xl shadow-2xl overflow-hidden z-50 border border-white dark:border-white/10 ring-1 ring-black/5 dark:ring-white/5"
                  style="display:none;">
               {{-- Header --}}
-              <div class="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-[#1a5c38] to-[#2d9e60]">
+              <div class="flex items-center justify-between px-5 py-4 bg-gradient-to-r from-[#1a5c38] to-[#2d9e60]">
                 <span class="flex items-center gap-2 text-sm font-bold text-white">
                   <i class="bi bi-bell-fill"></i> Thông báo
                 </span>
