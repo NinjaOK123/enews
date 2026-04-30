@@ -536,7 +536,7 @@
           </div>
           <div class="text-center px-4">
              <p class="text-sm font-bold text-gray-700 dark:text-zinc-300 mb-1">Click hoặc kéo thả file vào đây</p>
-             <p class="text-xs text-gray-400 dark:text-zinc-500">Hỗ trợ JPG, PNG, WEBP, MP4 (Tối đa 10MB)</p>
+             <p class="text-xs text-gray-400 dark:text-zinc-500">Hỗ trợ JPG, PNG, WEBP, MP4 (Tối đa 20MB)</p>
           </div>
         </label>
         <input type="file" id="mediaUploadInput" accept="image/*,video/*" class="hidden">
