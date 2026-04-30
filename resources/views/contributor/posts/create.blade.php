@@ -348,19 +348,34 @@
                 open: false, 
                 activeIndex: -1,
                 authors: {{ Js::from($suggestedAuthors ?? []) }},
+                get currentTerm() {
+                    return (authorVal || '').split(',').pop().trim();
+                },
                 get filteredAuthors() {
-                    if (!authorVal) return this.authors.slice(0, 6);
-                    return this.authors.filter(a => a.toLowerCase().includes(authorVal.toLowerCase()) && a !== authorVal).slice(0, 6);
+                    if (!this.currentTerm) return this.authors.slice(0, 6);
+                    return this.authors.filter(a => a.toLowerCase().includes(this.currentTerm.toLowerCase()) && a !== this.currentTerm).slice(0, 6);
+                },
+                selectAuthor(author) {
+                    let parts = (authorVal || '').split(',');
+                    parts.pop();
+                    if (parts.length > 0) {
+                        authorVal = parts.map(p => p.trim()).join(', ') + ', ' + author;
+                    } else {
+                        authorVal = author;
+                    }
+                    this.open = false;
+                    this.activeIndex = -1;
+                    $refs.authorInput.focus();
                 }
             }">
-                <input type="text" name="source_author" id="source_author"
+                <input type="text" name="source_author" id="source_author" x-ref="authorInput"
                        x-model="authorVal"
                        @input="open = true; activeIndex = -1"
                        @focus="open = true"
                        @click.outside="open = false"
                        @keydown.arrow-down.prevent="if (open) { activeIndex = activeIndex === filteredAuthors.length - 1 ? 0 : activeIndex + 1 }"
                        @keydown.arrow-up.prevent="if (open) { activeIndex = activeIndex <= 0 ? filteredAuthors.length - 1 : activeIndex - 1 }"
-                       @keydown.enter.prevent="if (open && activeIndex >= 0 && filteredAuthors[activeIndex]) { authorVal = filteredAuthors[activeIndex]; open = false; activeIndex = -1; }"
+                       @keydown.enter.prevent="if (open && activeIndex >= 0 && filteredAuthors[activeIndex]) { selectAuthor(filteredAuthors[activeIndex]) }"
                        @keydown.escape="open = false"
                        autocomplete="off"
                        placeholder="VD: Cẩm Thiều - TV"
@@ -368,7 +383,7 @@
                 
                 <div x-show="open && filteredAuthors.length > 0" x-transition.opacity.duration.200ms x-cloak class="absolute z-30 w-full mt-2 bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-xl shadow-lg overflow-hidden">
                     <template x-for="(author, index) in filteredAuthors" :key="author">
-                        <div @click="authorVal = author; open = false; activeIndex = -1" 
+                        <div @click="selectAuthor(author)" 
                              @mouseenter="activeIndex = index"
                              :class="{'bg-emerald-50 dark:bg-emerald-500/20': activeIndex === index, 'bg-transparent': activeIndex !== index}"
                              class="px-4 py-2.5 cursor-pointer text-sm font-medium text-gray-700 dark:text-zinc-200 transition-colors border-b border-gray-100 dark:border-zinc-700/50 last:border-0 flex items-center gap-2">
@@ -397,19 +412,34 @@
                 pOpen: false, 
                 pActiveIndex: -1,
                 authors: {{ Js::from($suggestedAuthors ?? []) }},
+                get currentTerm() {
+                    return (photographerVal || '').split(',').pop().trim();
+                },
                 get filteredPhotographers() {
-                    if (!photographerVal) return this.authors.slice(0, 6);
-                    return this.authors.filter(a => a.toLowerCase().includes(photographerVal.toLowerCase()) && a !== photographerVal).slice(0, 6);
+                    if (!this.currentTerm) return this.authors.slice(0, 6);
+                    return this.authors.filter(a => a.toLowerCase().includes(this.currentTerm.toLowerCase()) && a !== this.currentTerm).slice(0, 6);
+                },
+                selectPhotographer(author) {
+                    let parts = (photographerVal || '').split(',');
+                    parts.pop();
+                    if (parts.length > 0) {
+                        photographerVal = parts.map(p => p.trim()).join(', ') + ', ' + author;
+                    } else {
+                        photographerVal = author;
+                    }
+                    this.pOpen = false;
+                    this.pActiveIndex = -1;
+                    $refs.photoInput.focus();
                 }
             }">
-                <input type="text" name="photographer" id="photographer"
+                <input type="text" name="photographer" id="photographer" x-ref="photoInput"
                        x-model="photographerVal"
                        @input="if(!sameAsAuthor) { pOpen = true; pActiveIndex = -1; }"
                        @focus="if(!sameAsAuthor) pOpen = true"
                        @click.outside="pOpen = false"
                        @keydown.arrow-down.prevent="if (pOpen && !sameAsAuthor) { pActiveIndex = pActiveIndex === filteredPhotographers.length - 1 ? 0 : pActiveIndex + 1 }"
                        @keydown.arrow-up.prevent="if (pOpen && !sameAsAuthor) { pActiveIndex = pActiveIndex <= 0 ? filteredPhotographers.length - 1 : pActiveIndex - 1 }"
-                       @keydown.enter.prevent="if (pOpen && !sameAsAuthor && pActiveIndex >= 0 && filteredPhotographers[pActiveIndex]) { photographerVal = filteredPhotographers[pActiveIndex]; pOpen = false; pActiveIndex = -1; }"
+                       @keydown.enter.prevent="if (pOpen && !sameAsAuthor && pActiveIndex >= 0 && filteredPhotographers[pActiveIndex]) { selectPhotographer(filteredPhotographers[pActiveIndex]) }"
                        @keydown.escape="pOpen = false"
                        autocomplete="off"
                        :readonly="sameAsAuthor"
@@ -419,7 +449,7 @@
                 
                 <div x-show="pOpen && !sameAsAuthor && filteredPhotographers.length > 0" x-transition.opacity.duration.200ms x-cloak class="absolute z-30 w-full mt-2 bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-xl shadow-lg overflow-hidden">
                     <template x-for="(author, index) in filteredPhotographers" :key="author">
-                        <div @click="photographerVal = author; pOpen = false; pActiveIndex = -1" 
+                        <div @click="selectPhotographer(author)" 
                              @mouseenter="pActiveIndex = index"
                              :class="{'bg-emerald-50 dark:bg-emerald-500/20': pActiveIndex === index, 'bg-transparent': pActiveIndex !== index}"
                              class="px-4 py-2.5 cursor-pointer text-sm font-medium text-gray-700 dark:text-zinc-200 transition-colors border-b border-gray-100 dark:border-zinc-700/50 last:border-0 flex items-center gap-2">
