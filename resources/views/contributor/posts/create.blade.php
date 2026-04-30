@@ -346,6 +346,7 @@
             </label>
             <div class="relative" x-data="{ 
                 open: false, 
+                activeIndex: -1,
                 authors: {{ Js::from($suggestedAuthors ?? []) }},
                 get filteredAuthors() {
                     if (!authorVal) return this.authors.slice(0, 6);
@@ -354,18 +355,24 @@
             }">
                 <input type="text" name="source_author" id="source_author"
                        x-model="authorVal"
-                       @input="open = true"
+                       @input="open = true; activeIndex = -1"
                        @focus="open = true"
                        @click.outside="open = false"
+                       @keydown.arrow-down.prevent="if (open) { activeIndex = activeIndex === filteredAuthors.length - 1 ? 0 : activeIndex + 1 }"
+                       @keydown.arrow-up.prevent="if (open) { activeIndex = activeIndex <= 0 ? filteredAuthors.length - 1 : activeIndex - 1 }"
+                       @keydown.enter.prevent="if (open && activeIndex >= 0 && filteredAuthors[activeIndex]) { authorVal = filteredAuthors[activeIndex]; open = false; activeIndex = -1; }"
+                       @keydown.escape="open = false"
                        autocomplete="off"
                        placeholder="VD: Cẩm Thiều - TV"
                        class="w-full border border-gray-200 dark:border-zinc-800 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 dark:focus:ring-emerald-500/20 bg-white dark:bg-zinc-950/50 dark:text-zinc-100 transition relative z-20">
                 
                 <div x-show="open && filteredAuthors.length > 0" x-transition.opacity.duration.200ms x-cloak class="absolute z-30 w-full mt-2 bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-xl shadow-lg overflow-hidden">
-                    <template x-for="author in filteredAuthors" :key="author">
-                        <div @click="authorVal = author; open = false" 
-                             class="px-4 py-2.5 hover:bg-emerald-50 dark:hover:bg-emerald-500/20 cursor-pointer text-sm font-medium text-gray-700 dark:text-zinc-200 transition-colors border-b border-gray-100 dark:border-zinc-700/50 last:border-0 flex items-center gap-2">
-                             <i class="bi bi-person-circle text-gray-400 dark:text-zinc-500"></i>
+                    <template x-for="(author, index) in filteredAuthors" :key="author">
+                        <div @click="authorVal = author; open = false; activeIndex = -1" 
+                             @mouseenter="activeIndex = index"
+                             :class="{'bg-emerald-50 dark:bg-emerald-500/20': activeIndex === index, 'bg-transparent': activeIndex !== index}"
+                             class="px-4 py-2.5 cursor-pointer text-sm font-medium text-gray-700 dark:text-zinc-200 transition-colors border-b border-gray-100 dark:border-zinc-700/50 last:border-0 flex items-center gap-2">
+                             <i class="bi bi-person-circle text-gray-400 dark:text-zinc-500" :class="{'text-emerald-600 dark:text-emerald-400': activeIndex === index}"></i>
                              <span x-text="author"></span>
                         </div>
                     </template>
@@ -388,6 +395,7 @@
             </label>
             <div class="relative" x-data="{ 
                 pOpen: false, 
+                pActiveIndex: -1,
                 authors: {{ Js::from($suggestedAuthors ?? []) }},
                 get filteredPhotographers() {
                     if (!photographerVal) return this.authors.slice(0, 6);
@@ -396,9 +404,13 @@
             }">
                 <input type="text" name="photographer" id="photographer"
                        x-model="photographerVal"
-                       @input="if(!sameAsAuthor) pOpen = true"
+                       @input="if(!sameAsAuthor) { pOpen = true; pActiveIndex = -1; }"
                        @focus="if(!sameAsAuthor) pOpen = true"
                        @click.outside="pOpen = false"
+                       @keydown.arrow-down.prevent="if (pOpen && !sameAsAuthor) { pActiveIndex = pActiveIndex === filteredPhotographers.length - 1 ? 0 : pActiveIndex + 1 }"
+                       @keydown.arrow-up.prevent="if (pOpen && !sameAsAuthor) { pActiveIndex = pActiveIndex <= 0 ? filteredPhotographers.length - 1 : pActiveIndex - 1 }"
+                       @keydown.enter.prevent="if (pOpen && !sameAsAuthor && pActiveIndex >= 0 && filteredPhotographers[pActiveIndex]) { photographerVal = filteredPhotographers[pActiveIndex]; pOpen = false; pActiveIndex = -1; }"
+                       @keydown.escape="pOpen = false"
                        autocomplete="off"
                        :readonly="sameAsAuthor"
                        :class="sameAsAuthor ? 'bg-gray-50 dark:bg-zinc-900/50 text-gray-400 dark:text-zinc-600 cursor-not-allowed border-gray-200 dark:border-zinc-800' : 'bg-white dark:bg-zinc-950/50 text-gray-900 dark:text-zinc-100 border-gray-200 dark:border-zinc-800'"
@@ -406,10 +418,12 @@
                        class="w-full border rounded-xl px-3 py-2.5 text-sm outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 dark:focus:ring-emerald-500/20 transition relative z-10">
                 
                 <div x-show="pOpen && !sameAsAuthor && filteredPhotographers.length > 0" x-transition.opacity.duration.200ms x-cloak class="absolute z-30 w-full mt-2 bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-xl shadow-lg overflow-hidden">
-                    <template x-for="author in filteredPhotographers" :key="author">
-                        <div @click="photographerVal = author; pOpen = false" 
-                             class="px-4 py-2.5 hover:bg-emerald-50 dark:hover:bg-emerald-500/20 cursor-pointer text-sm font-medium text-gray-700 dark:text-zinc-200 transition-colors border-b border-gray-100 dark:border-zinc-700/50 last:border-0 flex items-center gap-2">
-                             <i class="bi bi-camera text-gray-400 dark:text-zinc-500"></i>
+                    <template x-for="(author, index) in filteredPhotographers" :key="author">
+                        <div @click="photographerVal = author; pOpen = false; pActiveIndex = -1" 
+                             @mouseenter="pActiveIndex = index"
+                             :class="{'bg-emerald-50 dark:bg-emerald-500/20': pActiveIndex === index, 'bg-transparent': pActiveIndex !== index}"
+                             class="px-4 py-2.5 cursor-pointer text-sm font-medium text-gray-700 dark:text-zinc-200 transition-colors border-b border-gray-100 dark:border-zinc-700/50 last:border-0 flex items-center gap-2">
+                             <i class="bi bi-camera text-gray-400 dark:text-zinc-500" :class="{'text-emerald-600 dark:text-emerald-400': pActiveIndex === index}"></i>
                              <span x-text="author"></span>
                         </div>
                     </template>
