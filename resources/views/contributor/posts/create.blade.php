@@ -646,6 +646,7 @@ ClassicEditor.create(document.querySelector('#editor'), {
     },
     mediaEmbed: {
         previewsInData: true,
+        toolbar: ['mediaEmbed'], // Add default toolbar if needed, though mediaEmbed doesn't have much natively
         extraProviders: [
             {
                 name: 'custom-video',
@@ -655,8 +656,8 @@ ClassicEditor.create(document.querySelector('#editor'), {
                 ],
                 html: match => {
                     const url = match[0];
-                    return `<div style="position:relative; width:100%; max-width:100%; margin: 1em auto;">
-                        <video controls style="width:100%; max-width:100%; border-radius: 8px;" src="${url}"></video>
+                    return `<div style="position:relative; max-width:100%; margin: 1em auto;">
+                        <video controls style="max-width:100%; border-radius: 8px;" src="${url}"></video>
                     </div>`;
                 }
             }
