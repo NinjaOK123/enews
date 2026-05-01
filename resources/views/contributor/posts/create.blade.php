@@ -196,10 +196,10 @@
             </label>
             <div class="relative">
               <select name="category_id" id="category_id" required
-                      class="w-full border border-gray-200 dark:border-zinc-800 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 dark:focus:ring-emerald-500/20 bg-white dark:bg-zinc-900 dark:text-zinc-100 transition appearance-none cursor-pointer">
-                <option value="" class="bg-white dark:bg-zinc-900 text-gray-900 dark:text-zinc-100">-- Chọn chuyên mục --</option>
+                      class="w-full border border-gray-200 dark:border-zinc-800 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 dark:focus:ring-emerald-500/20 bg-white dark:bg-zinc-950/50 dark:text-zinc-100 transition appearance-none cursor-pointer">
+                <option value="">-- Chọn chuyên mục --</option>
                 @foreach($categories as $cat)
-                <option value="{{ $cat->id }}" class="bg-white dark:bg-zinc-900 text-gray-900 dark:text-zinc-100"
+                <option value="{{ $cat->id }}"
                   {{ old('category_id', $post->category_id ?? '') == $cat->id ? 'selected' : '' }}>
                   {{ $cat->name ?? 'Category ' . $cat->id }}
                 </option>
@@ -249,17 +249,17 @@
                 <label class="block text-xs text-gray-600 dark:text-zinc-400 mb-1">Thể loại bài viết</label>
                 <div class="relative">
                   <select name="royalty_rate_id" id="royalty_rate_id"
-                          class="w-full border border-emerald-200 dark:border-emerald-500/30 rounded-xl px-3 py-2 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 dark:focus:ring-emerald-500/20 bg-white dark:bg-zinc-900 dark:text-zinc-100 transition appearance-none cursor-pointer">
-                    <option value="" class="bg-white dark:bg-zinc-900 text-gray-900 dark:text-zinc-100">-- Bỏ qua (Không tính) --</option>
+                          class="w-full border border-emerald-200 dark:border-emerald-500/30 rounded-xl px-3 py-2 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 dark:focus:ring-emerald-500/20 bg-white dark:bg-zinc-950/50 dark:text-zinc-200 transition appearance-none cursor-pointer">
+                    <option value="" class="bg-white dark:bg-zinc-900 text-gray-900 dark:text-zinc-200">-- Bỏ qua (Không tính) --</option>
                     @php $currentGroup = ''; @endphp
                     @foreach($royaltyRates as $rate)
                       @if($currentGroup != $rate->group_name)
                         @if($currentGroup != '') </optgroup> @endif
-                        <optgroup label="{{ $rate->group_name }}" class="bg-gray-50 dark:bg-zinc-800 text-emerald-700 dark:text-emerald-400 font-bold">
+                        <optgroup label="{{ $rate->group_name }}" class="bg-gray-50 dark:bg-zinc-800 text-emerald-700 dark:text-emerald-400 font-semibold">
                         @php $currentGroup = $rate->group_name; @endphp
                       @endif
                       <option value="{{ $rate->id }}" data-amount="{{ $rate->amount }}"
-                        class="bg-white dark:bg-zinc-900 text-gray-900 dark:text-zinc-100 font-normal"
+                        class="bg-white dark:bg-zinc-900 text-gray-800 dark:text-zinc-300 font-normal"
                         {{ old('royalty_rate_id', $post->royalty_rate_id ?? '') == $rate->id ? 'selected' : '' }}>
                         {{ $rate->name }} ({{ number_format($rate->amount) }}đ)
                       </option>
