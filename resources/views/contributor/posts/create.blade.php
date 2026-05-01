@@ -575,6 +575,13 @@
   .ck.ck-editor { border: 0 !important; }
   .ck.ck-editor__main>.ck-editor__editable:not(.ck-focused) { border: 0 !important; }
 
+  /* Allow playing video inside editor */
+  .ck-content .media video, .ck-content .ck-media__wrapper video {
+      pointer-events: auto !important;
+      position: relative !important;
+      z-index: 2 !important;
+  }
+
   /* Media Tabs */
   .media-tab-btn {
       border-radius: 9999px;
