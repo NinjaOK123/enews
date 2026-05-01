@@ -43,7 +43,7 @@ class MediaController extends Controller
     public function getPersonalMedia()
     {
         $media = Media::where('user_id', auth()->id())->latest()->get()->map(function($m) {
-            $m->url = route('contributor.media.view', $m->id);
+            $m->url = $m->publicUrl();
             return $m;
         });
         return response()->json($media);
@@ -58,7 +58,7 @@ class MediaController extends Controller
                   ->orWhere('shared_user_id', auth()->id());
             })
             ->latest()->get()->map(function($m) {
-            $m->url = route('contributor.media.view', $m->id);
+            $m->url = $m->publicUrl();
             return $m;
         });
         return response()->json($media);
