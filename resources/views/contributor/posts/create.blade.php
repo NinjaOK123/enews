@@ -520,10 +520,20 @@
     </div>
 
     {{-- Tabs --}}
-    <div class="flex px-6 pt-4 pb-3 space-x-2 border-b border-gray-100 dark:border-zinc-800/60 bg-white dark:bg-zinc-900">
-      <button type="button" class="media-tab-btn active-tab text-sm" data-tab="upload">📤 Tải lên</button>
-      <button type="button" class="media-tab-btn text-sm" data-tab="library" id="library-tab">📁 Của tôi</button>
-      <button type="button" class="media-tab-btn text-sm" data-tab="shared" id="shared-tab">🌐 Shared</button>
+    <div class="flex items-center justify-between px-6 pt-4 pb-3 border-b border-gray-100 dark:border-zinc-800/60 bg-white dark:bg-zinc-900">
+      <div class="flex space-x-2">
+        <button type="button" class="media-tab-btn active-tab text-sm" data-tab="upload">📤 Tải lên</button>
+        <button type="button" class="media-tab-btn text-sm" data-tab="library" id="library-tab">📁 Của tôi</button>
+        <button type="button" class="media-tab-btn text-sm" data-tab="shared" id="shared-tab">🌐 Shared</button>
+      </div>
+      <div class="flex items-center gap-2" id="mediaWidthSelector">
+        <label for="mediaInsertWidth" class="text-xs text-gray-500 dark:text-zinc-400 font-medium">Độ rộng video:</label>
+        <select id="mediaInsertWidth" class="text-sm border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-gray-700 dark:text-zinc-200 rounded-lg py-1 px-2 focus:ring-emerald-500 focus:border-emerald-500">
+            <option value="100%">100%</option>
+            <option value="75%">75%</option>
+            <option value="50%">50%</option>
+        </select>
+      </div>
     </div>
 
     <div class="flex-1 overflow-y-auto p-6 bg-white dark:bg-zinc-900">
@@ -659,12 +669,22 @@ ClassicEditor.create(document.querySelector('#editor'), {
                 name: 'custom-video',
                 url: [
                     /^.*\.(mp4|webm|ogg)(\?.*)?$/i,
-                    /\/media\/\d+\/view/i
+                    /\/media\/\d+\/view/i,
+                    /\/storage\/.*(\?.*)?/i
                 ],
                 html: match => {
-                    const url = match[0];
-                    return `<div style="position:relative; max-width:100%; margin: 1em auto;">
-                        <video controls style="max-width:100%; border-radius: 8px;" src="${url}"></video>
+                    const fullUrl = match[0];
+                    let width = '100%';
+                    let align = 'center'; // Center by default
+                    try {
+                        const urlObj = new URL(fullUrl, window.location.origin);
+                        if (urlObj.searchParams.has('w')) {
+                            width = urlObj.searchParams.get('w') + '%';
+                        }
+                    } catch(e) {}
+                    
+                    return `<div style="position:relative; width:${width}; max-width:100%; margin: 1em auto; text-align: ${align};">
+                        <video controls style="max-width:100%; border-radius: 8px; display: inline-block; width: 100%;" src="${fullUrl}"></video>
                     </div>`;
                 }
             }
@@ -936,13 +956,26 @@ function insertMediaToEditor(url, type) {
             const modelFragment = window.myEditor.data.toModel(view);
             window.myEditor.model.insertContent(modelFragment);
         } else {
-            window.myEditor.execute('mediaEmbed', url);
+            let finalUrl = url;
+            const wSelect = document.getElementById('mediaInsertWidth');
+            if (wSelect && wSelect.value !== '100%') {
+                const wVal = parseInt(wSelect.value);
+                finalUrl = url + (url.includes('?') ? '&' : '?') + 'w=' + wVal;
+            }
+            window.myEditor.execute('mediaEmbed', finalUrl);
         }
     } catch (e) {
         console.error("Lỗi chèn media:", e);
         try {
             // Fallback for video if mediaEmbed fails
-            const html = `<figure class="media"><video controls style="max-width: 100%;" src="${url}"></video></figure>`;
+            let finalUrl = url;
+            const wSelect = document.getElementById('mediaInsertWidth');
+            let wStyle = '100%';
+            if (wSelect && wSelect.value !== '100%') {
+                wStyle = parseInt(wSelect.value) + '%';
+                finalUrl = url + (url.includes('?') ? '&' : '?') + 'w=' + parseInt(wSelect.value);
+            }
+            const html = `<figure class="media" style="text-align: center;"><div style="width: ${wStyle}; margin: 0 auto;"><video controls style="max-width: 100%; width: 100%; display: block;" src="${finalUrl}"></video></div></figure>`;
             const view = window.myEditor.data.processor.toView(html);
             const modelFragment = window.myEditor.data.toModel(view);
             window.myEditor.model.insertContent(modelFragment);
