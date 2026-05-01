@@ -247,27 +247,75 @@
             <div class="space-y-3 relative z-10">
               <div>
                 <label class="block text-xs text-gray-600 dark:text-zinc-400 mb-1">Thể loại bài viết</label>
-                <div class="relative">
-                  <select name="royalty_rate_id" id="royalty_rate_id"
-                          class="w-full border border-emerald-200 dark:border-emerald-500/30 rounded-xl px-3 py-2 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 dark:focus:ring-emerald-500/20 bg-white dark:bg-zinc-950/50 dark:text-zinc-200 transition appearance-none cursor-pointer">
-                    <option value="" class="bg-white dark:bg-zinc-900 text-gray-900 dark:text-zinc-200">-- Bỏ qua (Không tính) --</option>
+                <div class="relative" x-data="{
+                    open: false,
+                    selectedId: '{{ old('royalty_rate_id', $post->royalty_rate_id ?? '') }}',
+                    selectedText: '-- Bỏ qua (Không tính) --',
+                    options: [
+                        { id: '', text: '-- Bỏ qua (Không tính) --' },
+                        @foreach($royaltyRates as $rate)
+                        { id: '{{ $rate->id }}', text: '{{ addslashes($rate->name) }} ({{ number_format($rate->amount) }}đ)' },
+                        @endforeach
+                    ],
+                    init() {
+                        const sel = this.options.find(o => o.id == this.selectedId);
+                        if(sel) this.selectedText = sel.text;
+                        
+                        this.$watch('selectedId', (val) => {
+                            const selectEl = document.getElementById('royalty_rate_id');
+                            selectEl.value = val;
+                            selectEl.dispatchEvent(new Event('change'));
+                        });
+                    },
+                    selectOption(opt) {
+                        this.selectedId = opt.id;
+                        this.selectedText = opt.text;
+                        this.open = false;
+                    }
+                }" @click.away="open = false">
+                  
+                  <!-- Hidden native select for form submission & JS calculation -->
+                  <select name="royalty_rate_id" id="royalty_rate_id" class="hidden">
+                    <option value="" data-amount="0">-- Bỏ qua (Không tính) --</option>
+                    @foreach($royaltyRates as $rate)
+                      <option value="{{ $rate->id }}" data-amount="{{ $rate->amount }}" {{ old('royalty_rate_id', $post->royalty_rate_id ?? '') == $rate->id ? 'selected' : '' }}>
+                        {{ $rate->name }}
+                      </option>
+                    @endforeach
+                  </select>
+                  
+                  <!-- Custom Select Button -->
+                  <button type="button" @click="open = !open" 
+                          class="w-full text-left border border-emerald-200 dark:border-emerald-500/30 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 dark:focus:ring-emerald-500/20 bg-white dark:bg-zinc-950/50 dark:text-zinc-200 transition cursor-pointer flex justify-between items-center shadow-sm">
+                    <span x-text="selectedText" class="truncate pr-4 leading-snug"></span>
+                    <i class="bi bi-chevron-down text-xs text-emerald-500 dark:text-emerald-400 transition-transform duration-200" :class="open ? 'rotate-180' : ''"></i>
+                  </button>
+
+                  <!-- Custom Dropdown Menu -->
+                  <div x-show="open" x-transition.opacity.duration.200ms x-cloak
+                       class="absolute z-50 w-full mt-1 bg-white dark:bg-zinc-900 border border-emerald-100 dark:border-zinc-800 rounded-xl shadow-xl max-h-72 overflow-y-auto overflow-x-hidden">
+                    
+                    <div @click="selectOption({id: '', text: '-- Bỏ qua (Không tính) --'})" 
+                         class="px-3 py-2.5 text-sm cursor-pointer hover:bg-emerald-50 dark:hover:bg-zinc-800 text-gray-700 dark:text-zinc-300 border-b border-gray-100 dark:border-zinc-800 transition-colors font-medium">
+                      -- Bỏ qua (Không tính) --
+                    </div>
+
                     @php $currentGroup = ''; @endphp
                     @foreach($royaltyRates as $rate)
                       @if($currentGroup != $rate->group_name)
-                        @if($currentGroup != '') </optgroup> @endif
-                        <optgroup label="{{ $rate->group_name }}" class="bg-gray-50 dark:bg-zinc-800 text-emerald-700 dark:text-emerald-400 font-semibold">
+                        <div class="px-3 py-2 text-[10px] font-black text-emerald-600 dark:text-emerald-500 bg-emerald-50/80 dark:bg-emerald-900/10 uppercase tracking-widest mt-1 sticky top-0 backdrop-blur-sm z-10">
+                          {{ $rate->group_name }}
+                        </div>
                         @php $currentGroup = $rate->group_name; @endphp
                       @endif
-                      <option value="{{ $rate->id }}" data-amount="{{ $rate->amount }}"
-                        class="bg-white dark:bg-zinc-900 text-gray-800 dark:text-zinc-300 font-normal"
-                        {{ old('royalty_rate_id', $post->royalty_rate_id ?? '') == $rate->id ? 'selected' : '' }}>
-                        {{ $rate->name }} ({{ number_format($rate->amount) }}đ)
-                      </option>
+                      
+                      <div @click="selectOption({ id: '{{ $rate->id }}', text: '{{ addslashes($rate->name) }} ({{ number_format($rate->amount) }}đ)' })"
+                           :class="selectedId == '{{ $rate->id }}' ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400' : 'hover:bg-gray-50 dark:hover:bg-zinc-800/80 text-gray-700 dark:text-zinc-300'"
+                           class="px-3 py-2.5 text-sm cursor-pointer transition-colors whitespace-normal leading-relaxed border-b border-gray-50 dark:border-zinc-800/50 last:border-0 flex items-start gap-2">
+                          <span class="flex-1 font-medium">{{ $rate->name }} <span class="text-xs text-gray-400 dark:text-zinc-500 font-normal ml-1">({{ number_format($rate->amount) }}đ)</span></span>
+                          <i x-show="selectedId == '{{ $rate->id }}'" class="bi bi-check-circle-fill text-emerald-500 mt-0.5"></i>
+                      </div>
                     @endforeach
-                    @if($currentGroup != '') </optgroup> @endif
-                  </select>
-                  <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-emerald-500 dark:text-emerald-400">
-                    <i class="bi bi-chevron-down text-xs"></i>
                   </div>
                 </div>
               </div>
