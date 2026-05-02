@@ -953,7 +953,11 @@
             @else
                 <a href="{{ $posts->previousPageUrl() }}" title="Trang trước">&#8249;</a>
             @endif
-            @foreach($posts->getUrlRange(max(1, $posts->currentPage()-2), min($posts->lastPage(), $posts->currentPage()+2)) as $page => $url)
+            @php
+                $startPage = max(1, $posts->currentPage() - 2);
+                $endPage = min($posts->lastPage(), $posts->currentPage() + 2);
+            @endphp
+            @foreach($posts->getUrlRange($startPage, $endPage) as $page => $url)
                 @if($page == $posts->currentPage())
                     <span class="active-page">{{ $page }}</span>
                 @else
@@ -1237,20 +1241,20 @@ function createCollection(name, isPublic, onSuccess) {
      class="fixed inset-0 z-[1000] flex items-center justify-center p-4"
      style="display:none;">
     <div class="absolute inset-0 bg-black/60" @click="if(!loading) open = false"></div>
-    <div class="relative w-full max-w-2xl bg-white rounded-2xl shadow-2xl overflow-hidden max-h-[90vh] overflow-y-auto"
-         x-transition:enter="transition ease-out duration-200"
-         x-transition:enter-start="opacity-0 scale-95"
-         x-transition:enter-end="opacity-100 scale-100"
+    <div class="relative w-full max-w-2xl bg-white dark:bg-[#1c1c1e] rounded-[24px] shadow-[0_20px_50px_-12px_rgba(0,0,0,0.3)] border border-gray-100 dark:border-[#2c2c2e] overflow-hidden max-h-[90vh] overflow-y-auto"
+         x-transition:enter="transition ease-out duration-300"
+         x-transition:enter-start="opacity-0 scale-[0.97] translate-y-4"
+         x-transition:enter-end="opacity-100 scale-100 translate-y-0"
          @click.stop>
 
         {{-- Header --}}
-        <div class="flex items-center justify-between px-8 py-5 bg-gradient-to-r from-[#d97706] to-[#f59e0b] sticky top-0 z-10">
+        <div class="flex items-center justify-between px-8 py-6 bg-white/80 dark:bg-[#1c1c1e]/80 backdrop-blur-xl sticky top-0 z-10 border-b border-gray-100/80 dark:border-[#2c2c2e]/80">
             <div>
-                <h5 class="text-white font-bold text-xl">🤝 Đăng ký Cộng tác viên</h5>
-                <p class="text-white/80 text-sm mt-0.5">Điền thông tin để gửi yêu cầu đến Admin</p>
+                <h5 class="text-gray-900 dark:text-white font-bold text-[22px] tracking-tight">Đăng ký Cộng tác viên</h5>
+                <p class="text-gray-500 dark:text-gray-400 text-[13px] font-medium mt-1">Vui lòng điền thông tin chính xác để nhận nhuận bút</p>
             </div>
-            <button @click="if(!loading) open = false" class="text-white/80 hover:text-white">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <button @click="if(!loading) open = false" class="w-8 h-8 flex items-center justify-center bg-gray-100 dark:bg-[#2c2c2e] hover:bg-gray-200 dark:hover:bg-[#3c3c3e] text-gray-500 dark:text-gray-400 rounded-full transition-colors focus:outline-none">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18 18 6M6 6l12 12"/>
                 </svg>
             </button>
@@ -1258,170 +1262,295 @@ function createCollection(name, isPublic, onSuccess) {
 
         {{-- ── Loading overlay ── --}}
         <div x-show="loading" x-transition
-             class="absolute inset-0 bg-white/90 z-20 flex flex-col items-center justify-center gap-4"
+             class="absolute inset-0 bg-white/90 dark:bg-[#1c1c1e]/90 z-20 flex flex-col items-center justify-center gap-4 backdrop-blur-md"
              style="display:none;">
-            <svg class="animate-spin w-14 h-14 text-amber-500" fill="none" viewBox="0 0 24 24">
+            <svg class="animate-spin w-10 h-10 text-gray-900 dark:text-white" fill="none" viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
             </svg>
-            <p class="text-amber-600 font-semibold text-lg">Đang gửi yêu cầu...</p>
+            <p class="text-gray-900 dark:text-white font-semibold text-[15px] animate-pulse tracking-tight">Đang gửi yêu cầu...</p>
         </div>
 
         {{-- ── Success screen ── --}}
         <div x-show="success" x-transition
-             class="absolute inset-0 bg-white z-20 flex flex-col items-center justify-center gap-5 text-center p-8"
+             class="absolute inset-0 bg-white dark:bg-[#1c1c1e] z-20 flex flex-col items-center justify-center gap-5 text-center p-8"
              style="display:none;">
             {{-- Animated tick --}}
-            <div class="w-24 h-24 rounded-full bg-green-100 flex items-center justify-center"
+            <div class="w-20 h-20 rounded-full bg-blue-50 dark:bg-[#0a84ff]/20 flex items-center justify-center"
                  style="animation: popIn .4s cubic-bezier(.68,-.55,.27,1.55) both;">
-                <svg class="w-14 h-14 text-green-500" style="animation: drawTick .5s ease .3s both;" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                <svg class="w-10 h-10 text-[#007aff] dark:text-[#0a84ff]" style="animation: drawTick .5s ease .3s both;" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="3">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"
                           style="stroke-dasharray:30;stroke-dashoffset:30;animation:dashDraw .5s ease .3s forwards;"/>
                 </svg>
             </div>
             <div>
-                <h3 class="text-2xl font-bold text-gray-800 mb-2">Gửi thành công! 🎉</h3>
-                <p class="text-gray-500 text-base">Yêu cầu Cộng tác viên của bạn đã được gửi đến Admin.<br>Bạn sẽ nhận thông báo qua chuông khi được xét duyệt.</p>
+                <h3 class="text-[22px] font-bold text-gray-900 dark:text-white mb-2 tracking-tight">Đăng ký thành công</h3>
+                <p class="text-gray-500 dark:text-gray-400 text-[15px] leading-relaxed max-w-sm mx-auto">Yêu cầu của bạn đã được gửi đến Ban Biên tập. Chúng tôi sẽ xét duyệt và thông báo sớm.</p>
             </div>
             <button @click="open = false; window.location.reload()"
-                    class="px-8 py-3 bg-green-500 hover:bg-green-600 text-white font-bold rounded-xl shadow transition text-base">
-                Đóng
+                    class="mt-4 px-10 py-3.5 bg-gray-900 dark:bg-white hover:bg-black dark:hover:bg-gray-200 text-white dark:text-gray-900 font-semibold rounded-full transition-all text-[15px]">
+                Hoàn tất
             </button>
         </div>
 
         {{-- Error --}}
-        <div x-show="errorMsg" x-transition class="mx-8 mt-5 bg-red-50 border border-red-200 text-red-700 rounded-xl px-4 py-3 text-sm">
+        <div x-show="errorMsg" x-transition class="mx-8 mt-6 flex items-start gap-3 bg-red-50 dark:bg-red-500/10 border-none text-red-600 dark:text-red-400 rounded-[14px] px-4 py-3.5 text-[14px] font-medium">
+            <svg class="w-5 h-5 shrink-0 mt-0.5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
             <span x-text="errorMsg"></span>
         </div>
 
         {{-- Body form --}}
         <form id="ctvForm" @submit.prevent="submit($el)">
             @csrf
-            <div class="p-8 grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div class="p-8 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-6">
+                
+                <div class="md:col-span-2 pb-2 mb-2 border-b border-gray-100 dark:border-[#2c2c2e] flex items-center gap-2.5">
+                    <span class="w-6 h-6 rounded-full bg-gray-900 dark:bg-white text-white dark:text-gray-900 flex items-center justify-center font-semibold text-xs shrink-0">1</span>
+                    <h6 class="font-bold text-gray-900 dark:text-white text-[15px] tracking-tight">Thông tin sinh viên</h6>
+                </div>
+
                 {{-- Họ tên --}}
                 <div class="md:col-span-2">
-                    <label class="block text-sm font-bold text-gray-700 mb-2">Họ và tên đầy đủ <span class="text-red-500">*</span></label>
+                    <label class="block text-[13px] font-semibold text-gray-700 dark:text-gray-300 mb-2">Họ và tên đầy đủ <span class="text-red-500">*</span></label>
                     <input type="text" name="full_name" value="{{ $user->name }}" required
-                           placeholder="TRẦN NGUYỄN MINH THIÊN"
-                           class="w-full border border-gray-300 rounded-xl px-4 py-3 text-base outline-none focus:border-[#f59e0b] focus:ring-2 focus:ring-[#f59e0b]/20 transition">
+                           placeholder="Trần Nguyễn Minh Thiên"
+                           class="w-full bg-[#f5f5f7] dark:bg-white/5 border border-transparent dark:border-white/10 rounded-[14px] px-4 py-3.5 text-[15px] text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:bg-white dark:focus:bg-white/10 focus:border-[#007aff] dark:focus:border-[#0a84ff] focus:ring-4 focus:ring-[#007aff]/10 dark:focus:ring-[#0a84ff]/20 transition-all outline-none shadow-sm dark:shadow-none">
                 </div>
+
+                {{-- Email --}}
+                <div class="md:col-span-2">
+                    <label class="block text-[13px] font-semibold text-gray-700 dark:text-gray-300 mb-2">Địa chỉ Email <span class="text-red-500">*</span></label>
+                    <input type="email" name="email" value="{{ $user->email }}" required
+                           placeholder="example@email.com"
+                           class="w-full bg-[#f5f5f7] dark:bg-white/5 border border-transparent dark:border-white/10 rounded-[14px] px-4 py-3.5 text-[15px] text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:bg-white dark:focus:bg-white/10 focus:border-[#007aff] dark:focus:border-[#0a84ff] focus:ring-4 focus:ring-[#007aff]/10 dark:focus:ring-[#0a84ff]/20 transition-all outline-none shadow-sm dark:shadow-none">
+                </div>
+
+                {{-- MSSV --}}
+                <div>
+                    <label class="block text-[13px] font-semibold text-gray-700 dark:text-gray-300 mb-2">Mã số sinh viên <span class="text-red-500">*</span></label>
+                    <input type="text" name="mssv" required
+                           placeholder="2100001234"
+                           class="w-full bg-[#f5f5f7] dark:bg-white/5 border border-transparent dark:border-white/10 rounded-[14px] px-4 py-3.5 text-[15px] text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:bg-white dark:focus:bg-white/10 focus:border-[#007aff] dark:focus:border-[#0a84ff] focus:ring-4 focus:ring-[#007aff]/10 dark:focus:ring-[#0a84ff]/20 transition-all outline-none shadow-sm dark:shadow-none">
+                </div>
+
+                {{-- Lớp --}}
+                <div>
+                    <label class="block text-[13px] font-semibold text-gray-700 dark:text-gray-300 mb-2">Lớp <span class="text-red-500">*</span></label>
+                    <input type="text" name="class_name" required
+                           placeholder="21BITV01"
+                           class="w-full bg-[#f5f5f7] dark:bg-white/5 border border-transparent dark:border-white/10 rounded-[14px] px-4 py-3.5 text-[15px] text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:bg-white dark:focus:bg-white/10 focus:border-[#007aff] dark:focus:border-[#0a84ff] focus:ring-4 focus:ring-[#007aff]/10 dark:focus:ring-[#0a84ff]/20 transition-all outline-none uppercase shadow-sm dark:shadow-none" oninput="this.value=this.value.toUpperCase()">
+                </div>
+
+                {{-- Số CMND/CCCD --}}
+                <div class="md:col-span-2">
+                    <label class="block text-[13px] font-semibold text-gray-700 dark:text-gray-300 mb-2">Số CMND / Căn cước công dân <span class="text-red-500">*</span></label>
+                    <input type="text" name="id_card" required pattern="[0-9]{9,12}" title="Gồm 9 hoặc 12 số"
+                           placeholder="079203001234"
+                           class="w-full bg-[#f5f5f7] dark:bg-white/5 border border-transparent dark:border-white/10 rounded-[14px] px-4 py-3.5 text-[15px] text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:bg-white dark:focus:bg-white/10 focus:border-[#007aff] dark:focus:border-[#0a84ff] focus:ring-4 focus:ring-[#007aff]/10 dark:focus:ring-[#0a84ff]/20 transition-all outline-none shadow-sm dark:shadow-none">
+                </div>
+
+                <div class="md:col-span-2 pb-2 mb-2 mt-4 border-b border-gray-100 dark:border-[#2c2c2e] flex items-center gap-2.5">
+                    <span class="w-6 h-6 rounded-full bg-gray-900 dark:bg-white text-white dark:text-gray-900 flex items-center justify-center font-semibold text-xs shrink-0">2</span>
+                    <h6 class="font-bold text-gray-900 dark:text-white text-[15px] tracking-tight">Thông tin nhận nhuận bút</h6>
+                </div>
+
                 {{-- Ngân hàng --}}
                 <div x-data="{
                         openBank: false,
                         searchQuery: '',
-                        selectedBank: '',
-                        banks: [
-                            @foreach(\App\Models\ContributorRequest::banks() as $bank)
-                            '{{ addslashes($bank) }}',
-                            @endforeach
-                        ],
+                        selectedBank: null,
+                        banks: [],
+                        loadingBanks: true,
                         get filteredBanks() {
                             if (this.searchQuery === '') return this.banks;
-                            return this.banks.filter(i => i.toLowerCase().includes(this.searchQuery.toLowerCase()));
+                            const q = this.searchQuery.toLowerCase();
+                            return this.banks.filter(b => 
+                                b.name.toLowerCase().includes(q) || 
+                                b.shortName.toLowerCase().includes(q) || 
+                                b.code.toLowerCase().includes(q)
+                            );
+                        },
+                        async init() {
+                            try {
+                                const res = await fetch('https://api.vietqr.io/v2/banks');
+                                const json = await res.json();
+                                if (json.code === '00') {
+                                    this.banks = json.data;
+                                }
+                            } catch (e) {
+                                console.error('Failed to fetch banks', e);
+                                // Fallback
+                                this.banks = [
+                                    @foreach(\App\Models\ContributorRequest::banks() as $bank)
+                                    { name: '{{ addslashes($bank) }}', shortName: '{{ addslashes($bank) }}', logo: '' },
+                                    @endforeach
+                                ];
+                            } finally {
+                                this.loadingBanks = false;
+                            }
                         }
                     }"
-                    class="relative">
-                    <label class="block text-sm font-bold text-gray-700 mb-2">Ngân hàng <span class="text-red-500">*</span></label>
+                    class="relative md:col-span-1">
+                    <label class="block text-[13px] font-semibold text-gray-700 dark:text-gray-300 mb-2">Ngân hàng <span class="text-red-500">*</span></label>
                     
-                    {{-- Input ẩn chứa giá trị gửi form --}}
-                    <input type="hidden" name="bank_name" :value="selectedBank" required>
+                    {{-- Input ẩn --}}
+                    <input type="hidden" name="bank_name" :value="selectedBank ? selectedBank.shortName : ''" required>
 
                     {{-- Nút Dropdown --}}
                     <button type="button" @click="openBank = !openBank" @click.outside="openBank = false"
-                            class="w-full flex items-center justify-between border border-gray-300 rounded-xl px-4 py-3 text-base bg-white outline-none focus:border-[#f59e0b] focus:ring-2 focus:ring-[#f59e0b]/20 transition text-left shadow-sm"
-                            :class="!selectedBank ? 'text-gray-400' : 'text-gray-900'">
-                        <div class="flex items-center gap-3 truncate">
-                            <i class="bi bi-bank2 text-amber-500" x-show="selectedBank"></i>
-                            <i class="bi bi-bank text-gray-300" x-show="!selectedBank"></i>
-                            <span class="truncate font-medium transition-colors" x-text="selectedBank ? selectedBank : '-- Chọn ngân hàng --'"></span>
+                            class="w-full flex items-center justify-between border rounded-[14px] px-4 py-3.5 text-[15px] outline-none transition-all text-left shadow-sm dark:shadow-none"
+                            :class="openBank ? 'bg-white border-[#007aff] ring-4 ring-[#007aff]/10 dark:bg-white/10 dark:border-[#0a84ff] dark:ring-[#0a84ff]/20' : 'bg-[#f5f5f7] border-transparent dark:bg-white/5 dark:border-white/10'">
+                        <div class="flex items-center gap-3 truncate" :class="!selectedBank ? 'text-gray-400 dark:text-gray-500' : 'text-gray-900 dark:text-white'">
+                            <template x-if="selectedBank && selectedBank.logo">
+                                <img :src="selectedBank.logo" class="w-6 h-6 object-contain rounded-sm bg-white p-0.5" alt="">
+                            </template>
+                            <span class="truncate font-medium transition-colors" x-text="selectedBank ? selectedBank.shortName : 'Chọn ngân hàng'"></span>
                         </div>
-                        <i class="bi bi-chevron-down text-gray-400 transition-transform" :class="openBank ? 'rotate-180' : ''"></i>
+                        <i class="bi bi-chevron-down text-gray-400 dark:text-gray-500 transition-transform" :class="openBank ? 'rotate-180' : ''"></i>
                     </button>
 
                     {{-- Menu --}}
                     <div x-show="openBank" x-cloak
-                         x-transition:enter="transition ease-out duration-150"
-                         x-transition:enter-start="opacity-0 scale-95 -translate-y-2"
+                         x-transition:enter="transition ease-out duration-250"
+                         x-transition:enter-start="opacity-0 scale-[0.98] -translate-y-2"
                          x-transition:enter-end="opacity-100 scale-100 translate-y-0"
-                         x-transition:leave="transition ease-in duration-100"
+                         x-transition:leave="transition ease-in duration-150"
                          x-transition:leave-start="opacity-100 scale-100 translate-y-0"
-                         x-transition:leave-end="opacity-0 scale-95 -translate-y-2"
-                         class="absolute z-50 w-full mt-2 left-0 bg-white border border-gray-200 rounded-2xl shadow-xl overflow-hidden"
-                         style="display:none;">
+                         x-transition:leave-end="opacity-0 scale-[0.98] -translate-y-2"
+                         class="absolute z-50 w-[140%] sm:w-full mt-3 top-full left-0 bg-white/90 dark:bg-[#1c1c1e]/85 backdrop-blur-3xl border border-gray-200/50 dark:border-white/10 rounded-[22px] shadow-[0_20px_60px_rgba(0,0,0,0.2)] dark:shadow-[0_20px_60px_rgba(0,0,0,0.5)] overflow-hidden flex flex-col origin-top"
+                         style="display:none; max-height: 350px;">
                         
                         {{-- Ô Search --}}
-                        <div class="p-3 border-b border-gray-100 bg-gray-50/80 backdrop-blur-sm sticky top-0">
-                            <div class="relative">
-                                <i class="bi bi-search absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400"></i>
-                                <input type="text" x-model="searchQuery" placeholder="Tìm kiếm ngân hàng..."
+                        <div class="p-3 border-b border-gray-100/80 dark:border-white/5 shrink-0 bg-gray-50/50 dark:bg-white/[0.02]">
+                            <div class="relative group">
+                                <input type="text" x-model="searchQuery" placeholder="Tìm tên, mã ngân hàng..."
                                        @keydown.escape="openBank = false"
-                                       class="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm text-gray-700 outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20 transition shadow-sm">
+                                       class="w-full px-4 py-2.5 bg-white dark:bg-black/40 border border-gray-200 dark:border-white/5 rounded-[12px] text-[14px] text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 outline-none focus:border-[#007aff] dark:focus:border-[#0a84ff] focus:ring-4 focus:ring-[#007aff]/10 dark:focus:ring-[#0a84ff]/20 transition-all shadow-sm dark:shadow-none">
                             </div>
                         </div>
 
                         {{-- DSS Ngân hàng --}}
-                        <ul class="max-h-64 overflow-y-auto w-full py-1 overscroll-contain">
-                            <template x-for="bank in filteredBanks" :key="bank">
+                        <ul class="overflow-y-auto w-full py-2 overscroll-contain apple-scrollbar flex-1">
+                            {{-- Loading --}}
+                            <div x-show="loadingBanks" class="px-4 py-10 text-center flex flex-col items-center gap-3">
+                                <svg class="animate-spin w-6 h-6 text-[#007aff]" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+                                </svg>
+                                <span class="text-[13px] text-gray-500">Đang tải danh sách...</span>
+                            </div>
+
+                            <template x-for="bank in filteredBanks" :key="bank.id || bank.name">
                                 <li @click="selectedBank = bank; openBank = false; searchQuery = ''"
-                                    class="px-4 py-3 hover:bg-amber-50 cursor-pointer flex items-center gap-3 transition">
-                                    <div class="w-8 h-8 rounded-[10px] bg-gradient-to-br from-amber-50 to-amber-100 border border-amber-200/50 flex items-center justify-center shrink-0 shadow-sm">
-                                        <i class="bi bi-bank2 text-amber-600/90 text-sm"></i>
+                                    class="px-4 py-3 mx-2 my-1 rounded-[12px] hover:bg-gray-100 dark:hover:bg-white/[0.08] cursor-pointer flex items-center gap-3 transition-all active:scale-[0.98]">
+                                    <div class="w-10 h-10 rounded-lg bg-white flex items-center justify-center shrink-0 border border-gray-100 p-1 shadow-sm">
+                                        <template x-if="bank.logo">
+                                            <img :src="bank.logo" class="w-full h-full object-contain" :alt="bank.shortName">
+                                        </template>
+                                        <template x-if="!bank.logo">
+                                            <span class="text-[12px] font-bold text-gray-400" x-text="bank.shortName.substring(0, 2).toUpperCase()"></span>
+                                        </template>
                                     </div>
-                                    <span x-text="bank" class="text-[15px] text-gray-700 font-medium"></span>
-                                    <i class="bi bi-check-circle-fill text-amber-500 ml-auto text-lg" x-show="selectedBank === bank"></i>
+                                    <div class="flex flex-col flex-1 min-w-0">
+                                        <span x-text="bank.shortName" class="text-[15px] text-gray-900 dark:text-white font-bold leading-tight truncate"></span>
+                                        <span x-text="bank.name" class="text-[11px] text-gray-500 dark:text-gray-400 truncate"></span>
+                                    </div>
+                                    <div x-show="selectedBank && selectedBank.code === bank.code" class="shrink-0">
+                                        <svg class="w-5 h-5 text-[#007aff] dark:text-[#0a84ff]" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="3">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                                        </svg>
+                                    </div>
                                 </li>
                             </template>
-                            <li x-show="filteredBanks.length === 0" class="px-4 py-8 text-center text-gray-500 flex flex-col items-center gap-3">
-                                <i class="bi bi-search text-gray-300 text-3xl"></i>
-                                <span class="text-sm font-medium">Không tìm thấy ngân hàng nào</span>
+                            <li x-show="!loadingBanks && filteredBanks.length === 0" class="px-4 py-10 text-center text-gray-400 dark:text-gray-500 flex flex-col items-center gap-3">
+                                <svg class="w-10 h-10 opacity-20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                                </svg>
+                                <span class="text-[14px] font-medium">Không tìm thấy ngân hàng này</span>
                             </li>
                         </ul>
                     </div>
                 </div>
+
                 {{-- Số tài khoản --}}
-                <div>
-                    <label class="block text-sm font-bold text-gray-700 mb-2">Số tài khoản <span class="text-red-500">*</span></label>
+                <div class="md:col-span-1">
+                    <label class="block text-[13px] font-semibold text-gray-700 dark:text-gray-300 mb-2">Số tài khoản <span class="text-red-500">*</span></label>
                     <input type="text" name="bank_account" required
                            placeholder="0123456789" pattern="[0-9]{6,20}" title="Chỉ nhập số, 6–20 ký tự"
-                           class="w-full border border-gray-300 rounded-xl px-4 py-3 text-base font-mono outline-none focus:border-[#f59e0b] focus:ring-2 focus:ring-[#f59e0b]/20 transition">
+                           class="w-full bg-[#f5f5f7] dark:bg-white/5 border border-transparent dark:border-white/10 rounded-[14px] px-4 py-3.5 text-[15px] font-mono text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:bg-white dark:focus:bg-white/10 focus:border-[#007aff] dark:focus:border-[#0a84ff] focus:ring-4 focus:ring-[#007aff]/10 dark:focus:ring-[#0a84ff]/20 transition-all outline-none shadow-sm dark:shadow-none">
                 </div>
+
+                {{-- Chi nhánh --}}
+                <div class="md:col-span-2">
+                    <label class="block text-[13px] font-semibold text-gray-700 dark:text-gray-300 mb-2">Tên chi nhánh / Tỉnh thành <span class="text-red-500">*</span></label>
+                    <input type="text" name="bank_branch" required
+                           placeholder="Ví dụ: Chi nhánh Gò Vấp, TP.HCM"
+                           class="w-full bg-[#f5f5f7] dark:bg-white/5 border border-transparent dark:border-white/10 rounded-[14px] px-4 py-3.5 text-[15px] text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:bg-white dark:focus:bg-white/10 focus:border-[#007aff] dark:focus:border-[#0a84ff] focus:ring-4 focus:ring-[#007aff]/10 dark:focus:ring-[#0a84ff]/20 transition-all outline-none shadow-sm dark:shadow-none">
+                </div>
+
                 {{-- Chủ tài khoản --}}
                 <div class="md:col-span-2">
-                    <label class="block text-sm font-bold text-gray-700 mb-2">
+                    <label class="block text-[13px] font-semibold text-gray-700 dark:text-gray-300 mb-2">
                         Tên chủ tài khoản <span class="text-red-500">*</span>
-                        <span class="text-gray-400 font-normal text-xs">(đúng như in trên thẻ)</span>
+                        <span class="text-gray-400 dark:text-gray-500 font-normal ml-1">(đúng như in trên thẻ)</span>
                     </label>
                     <input type="text" name="account_holder" value="{{ strtoupper($user->name) }}" required
                            placeholder="TRAN NGUYEN MINH THIEN"
-                           class="w-full border border-gray-300 rounded-xl px-4 py-3 text-base font-medium outline-none focus:border-[#f59e0b] focus:ring-2 focus:ring-[#f59e0b]/20 transition uppercase"
+                           class="w-full bg-[#f5f5f7] dark:bg-white/5 border border-transparent dark:border-white/10 rounded-[14px] px-4 py-3.5 text-[15px] font-medium text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:bg-white dark:focus:bg-white/10 focus:border-[#007aff] dark:focus:border-[#0a84ff] focus:ring-4 focus:ring-[#007aff]/10 dark:focus:ring-[#0a84ff]/20 transition-all outline-none uppercase shadow-sm dark:shadow-none"
                            oninput="this.value=this.value.toUpperCase()">
                 </div>
+
                 {{-- Ghi chú --}}
-                <div class="md:col-span-2">
-                    <label class="block text-sm font-bold text-gray-700 mb-2">Ghi chú thêm</label>
-                    <textarea name="note" rows="3" maxlength="500"
-                              placeholder="Lý do muốn trở thành cộng tác viên, kinh nghiệm viết lách..."
-                              class="w-full border border-gray-300 rounded-xl px-4 py-3 text-base outline-none focus:border-[#f59e0b] focus:ring-2 focus:ring-[#f59e0b]/20 transition resize-none"></textarea>
+                <div class="md:col-span-2 mt-2">
+                    <label class="block text-[13px] font-semibold text-gray-700 dark:text-gray-300 mb-2">Ghi chú thêm</label>
+                    <textarea name="note" rows="2" maxlength="500"
+                              placeholder="Kinh nghiệm viết lách của bạn (nếu có)..."
+                              class="w-full bg-[#f5f5f7] dark:bg-white/5 border border-transparent dark:border-white/10 rounded-[14px] px-4 py-3.5 text-[15px] text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:bg-white dark:focus:bg-white/10 focus:border-[#007aff] dark:focus:border-[#0a84ff] focus:ring-4 focus:ring-[#007aff]/10 dark:focus:ring-[#0a84ff]/20 transition-all outline-none resize-none shadow-sm dark:shadow-none"></textarea>
                 </div>
+
                 {{-- Info --}}
-                <div class="md:col-span-2 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 text-sm text-amber-800">
-                    ℹ️ Admin sẽ xét duyệt và thông báo kết quả qua chuông thông báo của bạn.
+                <div class="md:col-span-2 text-center text-[13px] text-gray-400 mt-2">
+                    Yêu cầu sẽ được Ban Biên tập xem xét trong vòng 24-48 giờ.
                 </div>
             </div>
+
             {{-- Footer --}}
-            <div class="flex flex-col sm:flex-row items-center justify-end gap-3 px-8 py-5 border-t border-gray-100">
-                <button type="button" @click="open = false" :disabled="loading"
-                        class="w-full sm:w-auto px-8 py-3 text-base font-semibold text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-xl transition">
-                    Hủy
-                </button>
+            <div class="flex flex-col sm:flex-row-reverse items-center justify-start gap-3 px-8 py-6 bg-white dark:bg-[#1c1c1e] border-t border-gray-100 dark:border-[#2c2c2e]">
                 <button type="submit" :disabled="loading"
-                        class="w-full sm:w-auto px-10 py-3 text-base font-bold text-white bg-amber-500 hover:bg-amber-600 rounded-xl shadow-lg shadow-amber-200 transition disabled:opacity-60 flex items-center justify-center gap-2">
-                    <span>📨</span> <span>Gửi yêu cầu</span>
+                        class="w-full sm:w-auto px-8 py-3 text-[15px] font-semibold text-white bg-[#007aff] dark:bg-[#0a84ff] hover:bg-[#005bb5] dark:hover:bg-[#007aff] rounded-full transition-all disabled:opacity-60">
+                    Gửi yêu cầu
+                </button>
+                <button type="button" @click="open = false" :disabled="loading"
+                        class="w-full sm:w-auto px-8 py-3 text-[15px] font-semibold text-gray-600 dark:text-gray-300 bg-transparent hover:bg-gray-100 dark:hover:bg-[#2c2c2e] rounded-full transition-all">
+                    Hủy bỏ
                 </button>
             </div>
         </form>
     </div>
 </div>
+
+<style>
+/* Custom Apple-like Scrollbar for Dropdown */
+.apple-scrollbar::-webkit-scrollbar {
+    width: 6px;
+}
+.apple-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+}
+.apple-scrollbar::-webkit-scrollbar-thumb {
+    background-color: rgba(156, 163, 175, 0.4); /* gray-400 equivalent */
+    border-radius: 10px;
+}
+.apple-scrollbar::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(107, 114, 128, 0.7); /* gray-500 equivalent */
+}
+.dark .apple-scrollbar::-webkit-scrollbar-thumb {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+.dark .apple-scrollbar::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(255, 255, 255, 0.4);
+}
+</style>
 
 <style>
 @keyframes popIn { from { transform: scale(0); opacity: 0; } to { transform: scale(1); opacity: 1; } }

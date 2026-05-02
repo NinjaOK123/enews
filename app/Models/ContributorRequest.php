@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class ContributorRequest extends Model
 {
     protected $fillable = [
-        'user_id', 'full_name', 'bank_name', 'bank_account',
+        'user_id', 'full_name', 'email', 'mssv', 'class_name', 'id_card', 'bank_name', 'bank_branch', 'bank_account',
         'account_holder', 'note', 'status', 'admin_note',
         'reviewed_by', 'reviewed_at',
     ];

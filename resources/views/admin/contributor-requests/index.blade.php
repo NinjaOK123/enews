@@ -104,10 +104,20 @@
                         <td class="py-4 px-6">
                             <div class="flex flex-col gap-1.5">
                                 <div class="font-bold text-gray-900 dark:text-zinc-100 text-[15px] whitespace-nowrap transition-colors">{{ $req->full_name }}</div>
-                                <div class="flex items-center gap-2 text-xs text-gray-500 dark:text-zinc-400 whitespace-nowrap transition-colors">
-                                    <span class="inline-flex items-center gap-1"><i class="bi bi-person text-gray-400 dark:text-zinc-500"></i> {{ $req->user->name }}</span>
-                                    <span class="w-1 h-1 rounded-full bg-gray-300 dark:bg-zinc-700"></span>
-                                    <span class="inline-flex items-center gap-1"><i class="bi bi-envelope text-gray-400 dark:text-zinc-500"></i> {{ $req->user->email }}</span>
+                                <div class="flex flex-col gap-1 text-xs text-gray-500 dark:text-zinc-400 whitespace-nowrap transition-colors">
+                                    <div class="flex items-center gap-2">
+                                        <span class="inline-flex items-center gap-1" title="MSSV"><i class="bi bi-person-badge text-gray-400 dark:text-zinc-500"></i> {{ $req->mssv ?? '—' }}</span>
+                                        <span class="w-1 h-1 rounded-full bg-gray-300 dark:bg-zinc-700"></span>
+                                        <span class="inline-flex items-center gap-1" title="Lớp"><i class="bi bi-mortarboard text-gray-400 dark:text-zinc-500"></i> {{ $req->class_name ?? '—' }}</span>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <span class="inline-flex items-center gap-1" title="Tài khoản"><i class="bi bi-person text-gray-400 dark:text-zinc-500"></i> {{ $req->user->name }}</span>
+                                        <span class="w-1 h-1 rounded-full bg-gray-300 dark:bg-zinc-700"></span>
+                                        <span class="inline-flex items-center gap-1"><i class="bi bi-envelope text-gray-400 dark:text-zinc-500"></i> {{ $req->user->email }}</span>
+                                    </div>
+                                    <div class="mt-0.5">
+                                        <span class="inline-flex items-center gap-1 text-gray-600 dark:text-zinc-300 font-medium" title="CMND/CCCD"><i class="bi bi-credit-card-2-front text-gray-400 dark:text-zinc-500"></i> {{ $req->id_card ?? '—' }}</span>
+                                    </div>
                                 </div>
                             </div>
                         </td>
