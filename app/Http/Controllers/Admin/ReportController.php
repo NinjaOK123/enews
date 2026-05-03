@@ -1251,62 +1251,77 @@ class ReportController extends Controller
                 }
             ])->orderByDesc('created_at')->get();
 
-        $xml = '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
-        $xml .= '<?mso-application progid="Excel.Sheet"?>' . "\n";
-        $xml .= '<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" ';
-        $xml .= 'xmlns:o="urn:schemas-microsoft-com:office:office" ';
-        $xml .= 'xmlns:x="urn:schemas-microsoft-com:office:excel" ';
-        $xml .= 'xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet" ';
-        $xml .= 'xmlns:html="http://www.w3.org/TR/REC-html40">' . "\n";
+        $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheet->setTitle('BaoCao_CTV');
+
+        // Styles
+        $headerStyle = [
+            'font' => ['bold' => true, 'color' => ['argb' => 'FFFFFFFF']],
+            'fill' => ['fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID, 'color' => ['argb' => 'FF4F81BD']],
+            'alignment' => ['horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER, 'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER],
+            'borders' => ['allBorders' => ['borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN]]
+        ];
         
-        $xml .= '<Styles>' . "\n";
-        $xml .= '<Style ss:ID="Default" ss:Name="Normal"><Alignment ss:Vertical="Bottom"/><Borders/><Font ss:FontName="Arial" x:Family="Swiss" ss:Size="11" ss:Color="#000000"/><Interior/><NumberFormat/><Protection/></Style>' . "\n";
-        $xml .= '<Style ss:ID="Header"><Alignment ss:Horizontal="Center" ss:Vertical="Center"/><Font ss:FontName="Arial" x:Family="Swiss" ss:Size="11" ss:Color="#FFFFFF" ss:Bold="1"/><Interior ss:Color="#4F81BD" ss:Pattern="Solid"/></Style>' . "\n";
-        $xml .= '<Style ss:ID="Center"><Alignment ss:Horizontal="Center" ss:Vertical="Center"/></Style>' . "\n";
-        $xml .= '</Styles>' . "\n";
+        $centerStyle = [
+            'alignment' => ['horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER, 'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER],
+            'borders' => ['allBorders' => ['borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN]]
+        ];
         
-        $xml .= '<Worksheet ss:Name="BaoCao_CTV">' . "\n";
-        $xml .= '<Table>' . "\n";
-        
-        $xml .= '<Column ss:Width="40"/>';
-        $xml .= '<Column ss:Width="150"/>';
-        $xml .= '<Column ss:Width="150"/>';
-        $xml .= '<Column ss:Width="100"/>';
-        $xml .= '<Column ss:Width="100"/>';
-        $xml .= '<Column ss:Width="100"/>';
-        $xml .= '<Column ss:Width="100"/>';
-        $xml .= "\n";
-        
-        $xml .= '<Row ss:Height="25">' . "\n";
+        $borderStyle = [
+            'borders' => ['allBorders' => ['borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN]]
+        ];
+
+        // Column Widths
+        $sheet->getColumnDimension('A')->setWidth(8);
+        $sheet->getColumnDimension('B')->setWidth(30);
+        $sheet->getColumnDimension('C')->setWidth(35);
+        $sheet->getColumnDimension('D')->setWidth(18);
+        $sheet->getColumnDimension('E')->setWidth(18);
+        $sheet->getColumnDimension('F')->setWidth(18);
+        $sheet->getColumnDimension('G')->setWidth(18);
+
+        // Headers
         $headers = ['STT', 'Tên CTV', 'Email', 'Ngày tham gia', 'Tổng bài gửi', 'Bài được duyệt', 'Bài chờ/Từ chối'];
+        $col = 'A';
         foreach ($headers as $header) {
-            $xml .= sprintf('<Cell ss:StyleID="Header"><Data ss:Type="String">%s</Data></Cell>', htmlspecialchars($header)) . "\n";
+            $sheet->setCellValue($col . '1', $header);
+            $col++;
         }
-        $xml .= '</Row>' . "\n";
-        
+        $sheet->getStyle('A1:G1')->applyFromArray($headerStyle);
+        $sheet->getRowDimension(1)->setRowHeight(25);
+
+        // Data
+        $row = 2;
         $index = 1;
         foreach ($contributors as $contributor) {
-            $xml .= '<Row>' . "\n";
-            $xml .= sprintf('<Cell ss:StyleID="Center"><Data ss:Type="Number">%d</Data></Cell>', $index++) . "\n";
-            $xml .= sprintf('<Cell><Data ss:Type="String">%s</Data></Cell>', htmlspecialchars($contributor->name ?? '')) . "\n";
-            $xml .= sprintf('<Cell><Data ss:Type="String">%s</Data></Cell>', htmlspecialchars($contributor->email ?? '')) . "\n";
-            $xml .= sprintf('<Cell ss:StyleID="Center"><Data ss:Type="String">%s</Data></Cell>', htmlspecialchars($contributor->created_at ? $contributor->created_at->format('d/m/Y') : '')) . "\n";
-            $xml .= sprintf('<Cell ss:StyleID="Center"><Data ss:Type="Number">%d</Data></Cell>', $contributor->total_posts_in_period) . "\n";
-            $xml .= sprintf('<Cell ss:StyleID="Center"><Data ss:Type="Number">%d</Data></Cell>', $contributor->published_posts_in_period) . "\n";
-            $xml .= sprintf('<Cell ss:StyleID="Center"><Data ss:Type="Number">%d</Data></Cell>', $contributor->pending_posts_in_period) . "\n";
-            $xml .= '</Row>' . "\n";
+            $sheet->setCellValue('A' . $row, $index++);
+            $sheet->setCellValue('B' . $row, $contributor->name ?? '');
+            $sheet->setCellValue('C' . $row, $contributor->email ?? '');
+            $sheet->setCellValue('D' . $row, $contributor->created_at ? $contributor->created_at->format('d/m/Y') : '');
+            $sheet->setCellValue('E' . $row, $contributor->total_posts_in_period);
+            $sheet->setCellValue('F' . $row, $contributor->published_posts_in_period);
+            $sheet->setCellValue('G' . $row, $contributor->pending_posts_in_period);
+
+            $sheet->getStyle('A' . $row)->applyFromArray($centerStyle);
+            $sheet->getStyle('B' . $row)->applyFromArray($borderStyle);
+            $sheet->getStyle('C' . $row)->applyFromArray($borderStyle);
+            $sheet->getStyle('D' . $row)->applyFromArray($centerStyle);
+            $sheet->getStyle('E' . $row)->applyFromArray($centerStyle);
+            $sheet->getStyle('F' . $row)->applyFromArray($centerStyle);
+            $sheet->getStyle('G' . $row)->applyFromArray($centerStyle);
+
+            $row++;
         }
+
+        $filename = "Bao_Cao_Cong_Tac_Vien_" . Carbon::now()->format('d_m_Y_H_i_s') . ".xlsx";
+        $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
         
-        $xml .= '</Table>' . "\n";
-        $xml .= '</Worksheet>' . "\n";
-        $xml .= '</Workbook>';
-        
-        $filename = 'Bao_Cao_Cong_Tac_Vien_' . Carbon::now()->format('d_m_Y_H_i_s') . '.xml';
-        
-        return response($xml, 200, [
-            'Content-Type' => 'application/vnd.ms-excel',
-            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
-            'Cache-Control' => 'max-age=0',
+        return response()->streamDownload(function () use ($writer) {
+            $writer->save('php://output');
+        }, $filename, [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'Cache-Control' => 'max-age=0'
         ]);
     }
     private function convertNumberToVietnameseWords($number)
