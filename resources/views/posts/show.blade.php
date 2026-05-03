@@ -711,17 +711,19 @@ html.dark .tts-settings-card .btn-close { filter: invert(1) grayscale(100%) brig
           </div>
 
           <div class="mb-2">
-            <label class="form-label small fw-semibold mb-1 text-muted" style="font-size: 0.7rem;">Ngôn ngữ</label>
+            <label class="form-label small fw-semibold mb-1 text-muted" style="font-size: 0.7rem;">Ngôn ngữ đọc</label>
             <select id="tts-lang-select" class="form-select form-select-sm" style="font-size: 0.75rem;">
-              <option value="vi-VN" selected>Tiếng Việt (vi-VN)</option>
-              <option value="en-US">Tiếng Anh (en-US)</option>
-            </select>
-          </div>
-
-          <div>
-            <label class="form-label small fw-semibold mb-1 text-muted" style="font-size: 0.7rem;">Giọng đọc</label>
-            <select id="tts-voice-select" class="form-select form-select-sm" style="font-size: 0.75rem;">
-              <option value="">Đang tải danh sách...</option>
+              <option value="vi" selected>Tiếng Việt (Vietnamese)</option>
+              <option value="en">Tiếng Anh (English)</option>
+              <option value="fr">Tiếng Pháp (French)</option>
+              <option value="de">Tiếng Đức (German)</option>
+              <option value="ja">Tiếng Nhật (Japanese)</option>
+              <option value="ko">Tiếng Hàn (Korean)</option>
+              <option value="zh-CN">Tiếng Trung (Chinese)</option>
+              <option value="es">Tiếng Tây Ban Nha (Spanish)</option>
+              <option value="ru">Tiếng Nga (Russian)</option>
+              <option value="th">Tiếng Thái (Thai)</option>
+              <option value="id">Tiếng Indonesia</option>
             </select>
           </div>
           
@@ -750,7 +752,6 @@ html.dark .tts-settings-card .btn-close { filter: invert(1) grayscale(100%) brig
     @push('scripts')
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const synth = window.speechSynthesis;
             const playBtn = document.getElementById('tts-play-btn');
             const stopBtn = document.getElementById('tts-stop-btn');
             const playText = document.getElementById('tts-play-text');
@@ -762,25 +763,19 @@ html.dark .tts-settings-card .btn-close { filter: invert(1) grayscale(100%) brig
             const settingsClose = document.getElementById('tts-settings-close');
             const rateBtns = document.querySelectorAll('.tts-rate-btn');
             const langSelect = document.getElementById('tts-lang-select');
-            const voiceSelect = document.getElementById('tts-voice-select');
             
-            if (!synth) {
-                if(playBtn) playBtn.style.display = 'none';
-                if(settingsBtn) settingsBtn.style.display = 'none';
-                return;
-            }
-
             let isReading = false;
-            let currentUtteranceIndex = 0;
-            let readableElements = [];
             let isPaused = false;
-            let voices = [];
+            let readableElements = [];
+            let utteranceQueue = [];
+            let currentUtteranceIndex = 0;
+            let currentElement = null;
+            let audio = new Audio();
             
             // Default Settings
             let ttsSettings = {
                 rate: 1.0,
-                lang: 'vi-VN',
-                voiceURI: ''
+                lang: 'vi'
             };
 
             // Load settings from localStorage
@@ -792,7 +787,6 @@ html.dark .tts-settings-card .btn-close { filter: invert(1) grayscale(100%) brig
             }
 
             function initUIFromSettings() {
-                // Update Rate Buttons
                 rateBtns.forEach(btn => {
                     if (parseFloat(btn.dataset.rate) === ttsSettings.rate) {
                         btn.classList.replace('btn-light', 'btn-success');
@@ -800,46 +794,10 @@ html.dark .tts-settings-card .btn-close { filter: invert(1) grayscale(100%) brig
                         btn.classList.replace('btn-success', 'btn-light');
                     }
                 });
-                // Update Lang Select
                 if(langSelect) langSelect.value = ttsSettings.lang;
             }
 
-            function loadVoices() {
-                voices = synth.getVoices();
-                if (!langSelect || !voiceSelect) return;
-                
-                const selectedLang = langSelect.value;
-                
-                // Filter voices by language
-                const filteredVoices = voices.filter(v => v.lang.startsWith(selectedLang.split('-')[0]));
-                
-                voiceSelect.innerHTML = '';
-                if (filteredVoices.length === 0) {
-                    const opt = document.createElement('option');
-                    opt.textContent = 'Không tìm thấy giọng đọc phù hợp';
-                    voiceSelect.appendChild(opt);
-                } else {
-                    filteredVoices.forEach(voice => {
-                        const opt = document.createElement('option');
-                        opt.value = voice.voiceURI;
-                        opt.textContent = `${voice.name} (${voice.lang})`;
-                        if (voice.voiceURI === ttsSettings.voiceURI) opt.selected = true;
-                        voiceSelect.appendChild(opt);
-                    });
-                    
-                    // If no voiceURI saved or not in list, pick first one
-                    if (!voiceSelect.value && filteredVoices.length > 0) {
-                        ttsSettings.voiceURI = filteredVoices[0].voiceURI;
-                    }
-                }
-            }
-
-            // Initialization
             initUIFromSettings();
-            if (synth.onvoiceschanged !== undefined) {
-                synth.onvoiceschanged = loadVoices;
-            }
-            loadVoices();
 
             function saveSettings() {
                 localStorage.setItem('tts_settings', JSON.stringify(ttsSettings));
@@ -873,9 +831,7 @@ html.dark .tts-settings-card .btn-close { filter: invert(1) grayscale(100%) brig
                     saveSettings();
                     
                     if (isReading) {
-                        const wasPaused = isPaused;
-                        synth.cancel();
-                        if (!wasPaused) speakNext();
+                        audio.playbackRate = ttsSettings.rate;
                     }
                 });
             });
@@ -883,40 +839,71 @@ html.dark .tts-settings-card .btn-close { filter: invert(1) grayscale(100%) brig
             if (langSelect) {
                 langSelect.addEventListener('change', () => {
                     ttsSettings.lang = langSelect.value;
-                    loadVoices();
-                    ttsSettings.voiceURI = voiceSelect.value;
                     saveSettings();
                     
                     if (isReading) {
-                        synth.cancel();
-                        if (!isPaused) speakNext();
+                        // Restart reading with new language
+                        stopReading();
+                        startReading();
                     }
                 });
             }
 
-            if (voiceSelect) {
-                voiceSelect.addEventListener('change', () => {
-                    ttsSettings.voiceURI = voiceSelect.value;
-                    saveSettings();
-                    
-                    if (isReading) {
-                        synth.cancel();
-                        if (!isPaused) speakNext();
+            function chunkText(text, maxLength = 200) {
+                const sentences = text.match(/[^.!?]+[.!?]*/g) || [text];
+                const chunks = [];
+                let currentChunk = '';
+
+                sentences.forEach(sentence => {
+                    sentence = sentence.trim();
+                    if (!sentence) return;
+                    if (currentChunk.length + sentence.length <= maxLength) {
+                        currentChunk += (currentChunk ? ' ' : '') + sentence;
+                    } else {
+                        if (currentChunk) chunks.push(currentChunk);
+                        if (sentence.length > maxLength) {
+                            const words = sentence.split(' ');
+                            let wordChunk = '';
+                            words.forEach(word => {
+                                if (wordChunk.length + word.length + 1 <= maxLength) {
+                                    wordChunk += (wordChunk ? ' ' : '') + word;
+                                } else {
+                                    if (wordChunk) chunks.push(wordChunk);
+                                    wordChunk = word;
+                                }
+                            });
+                            if (wordChunk) currentChunk = wordChunk;
+                        } else {
+                            currentChunk = sentence;
+                        }
                     }
                 });
+                if (currentChunk) chunks.push(currentChunk);
+                return chunks;
             }
 
             function initReadableElements() {
                 readableElements = [];
+                utteranceQueue = [];
                 const titleEl = document.querySelector('.article-title');
                 const leadEl = document.querySelector('.article-lead');
                 const bodyElements = document.querySelectorAll('#articleBody p, #articleBody h2, #articleBody h3, #articleBody blockquote, #articleBody li');
                 
-                if (titleEl) readableElements.push(titleEl);
-                if (leadEl) readableElements.push(leadEl);
-                bodyElements.forEach(el => {
-                    if (el.innerText.trim().length > 0) readableElements.push(el);
-                });
+                const addElement = (el) => {
+                    if (!el) return;
+                    const text = el.innerText.trim();
+                    if (text.length > 0) {
+                        readableElements.push(el);
+                        const chunks = chunkText(text, 200);
+                        chunks.forEach(chunk => {
+                            utteranceQueue.push({ el: el, text: chunk });
+                        });
+                    }
+                };
+
+                addElement(titleEl);
+                addElement(leadEl);
+                bodyElements.forEach(el => addElement(el));
             }
 
             function resetUI() {
@@ -932,58 +919,88 @@ html.dark .tts-settings-card .btn-close { filter: invert(1) grayscale(100%) brig
                 isReading = false;
                 isPaused = false;
                 currentUtteranceIndex = 0;
+                currentElement = null;
             }
 
             function speakNext() {
-                if (currentUtteranceIndex >= readableElements.length) {
+                if (currentUtteranceIndex >= utteranceQueue.length) {
                     resetUI();
                     return;
                 }
 
-                if (!isReading) return;
+                if (!isReading || isPaused) return;
 
-                const el = readableElements[currentUtteranceIndex];
-                const text = el.innerText.trim();
+                const item = utteranceQueue[currentUtteranceIndex];
+                const el = item.el;
+                const text = item.text;
 
-                readableElements.forEach(e => e.classList.remove('tts-active'));
-                el.classList.add('tts-active');
-                
-                const rect = el.getBoundingClientRect();
-                if(rect.top < 0 || rect.bottom > window.innerHeight) {
-                    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                if (currentElement !== el) {
+                    readableElements.forEach(e => e.classList.remove('tts-active'));
+                    el.classList.add('tts-active');
+                    currentElement = el;
+                    
+                    const rect = el.getBoundingClientRect();
+                    if(rect.top < 0 || rect.bottom > window.innerHeight) {
+                        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
                 }
 
-                const utterance = new SpeechSynthesisUtterance(text);
-                utterance.lang = ttsSettings.lang;
-                utterance.rate = ttsSettings.rate;
-                utterance.pitch = 1.0;
-                utterance.volume = 1.0;
-
-                const selectedVoice = voices.find(v => v.voiceURI === ttsSettings.voiceURI);
-                if (selectedVoice) {
-                    utterance.voice = selectedVoice;
-                }
-
-                utterance.onend = () => {
-                    if (isReading && !isPaused) {
-                        currentUtteranceIndex++;
-                        speakNext();
-                    }
-                };
+                const url = `https://translate.googleapis.com/translate_tts?ie=UTF-8&client=gtx&tl=${ttsSettings.lang}&q=${encodeURIComponent(text)}`;
                 
-                utterance.onerror = (e) => {
-                    if (e.error !== 'canceled') {
-                        resetUI();
-                    }
-                };
+                audio.src = url;
+                audio.playbackRate = ttsSettings.rate;
+                
+                audio.play().catch(e => {
+                    console.error("Audio play error", e);
+                    // Skip this chunk if it fails to load or play
+                    currentUtteranceIndex++;
+                    speakNext();
+                });
+            }
 
-                synth.speak(utterance);
+            audio.onended = () => {
+                if (isReading && !isPaused) {
+                    currentUtteranceIndex++;
+                    speakNext();
+                }
+            };
+
+            audio.onerror = () => {
+                if (isReading && !isPaused) {
+                    currentUtteranceIndex++;
+                    speakNext();
+                }
+            };
+
+            function startReading() {
+                initReadableElements();
+                if (utteranceQueue.length > 0) {
+                    isReading = true;
+                    isPaused = false;
+                    currentUtteranceIndex = 0;
+                    
+                    if(playText) playText.textContent = 'Tạm dừng';
+                    if(playIcon) playIcon.className = 'bi bi-pause-circle-fill me-1';
+                    if(playBtn) {
+                        playBtn.classList.replace('btn-outline-success', 'btn-success');
+                        playBtn.classList.add('text-white');
+                    }
+                    if(stopBtn) stopBtn.style.display = 'inline-block';
+                    
+                    speakNext();
+                }
+            }
+
+            function stopReading() {
+                audio.pause();
+                audio.src = '';
+                resetUI();
             }
 
             if (playBtn) {
                 playBtn.addEventListener('click', () => {
                     if (isReading && !isPaused) {
-                        synth.pause();
+                        audio.pause();
                         isPaused = true;
                         playText.textContent = 'Tiếp tục';
                         playIcon.className = 'bi bi-play-circle-fill me-1';
@@ -992,41 +1009,27 @@ html.dark .tts-settings-card .btn-close { filter: invert(1) grayscale(100%) brig
                     }
                     
                     if (isReading && isPaused) {
-                        synth.resume();
                         isPaused = false;
                         playText.textContent = 'Tạm dừng';
                         playIcon.className = 'bi bi-pause-circle-fill me-1';
                         playBtn.classList.replace('btn-warning', 'btn-success');
+                        audio.play();
                         return;
                     }
 
-                    synth.cancel();
-                    initReadableElements();
-                    if (readableElements.length > 0) {
-                        isReading = true;
-                        isPaused = false;
-                        currentUtteranceIndex = 0;
-                        
-                        playText.textContent = 'Tạm dừng';
-                        playIcon.className = 'bi bi-pause-circle-fill me-1';
-                        playBtn.classList.replace('btn-outline-success', 'btn-success');
-                        playBtn.classList.add('text-white');
-                        if(stopBtn) stopBtn.style.display = 'inline-block';
-                        
-                        speakNext();
-                    }
+                    stopReading();
+                    startReading();
                 });
             }
 
             if (stopBtn) {
                 stopBtn.addEventListener('click', () => {
-                    synth.cancel();
-                    resetUI();
+                    stopReading();
                 });
             }
 
             window.addEventListener('beforeunload', () => {
-                synth.cancel();
+                if (isReading) stopReading();
             });
         });
     </script>
