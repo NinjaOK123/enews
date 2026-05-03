@@ -531,6 +531,40 @@
   box-shadow: 0 2px 10px rgba(0,0,0,0.05);
 }
 
+/* ═══ DARK MODE OVERRIDES ══════════════════════════════════ */
+html.dark .article-title { color: #f4f4f5; }
+html.dark .article-breadcrumb { color: #a1a1aa; }
+html.dark .article-breadcrumb .sep { color: #52525b; }
+html.dark .article-lead { color: #d4d4d8; background: #0d3b10; border-left-color: var(--green,#2a7a27); }
+html.dark .article-meta { color: #a1a1aa; border-color: #3f3f46; }
+html.dark .article-meta-item { border-right-color: #3f3f46; }
+html.dark .article-meta-item strong { color: #e4e4e7; }
+html.dark .article-hero figcaption { background: #18181b; color: #a1a1aa; border-top-color: #27272a; }
+html.dark .article-body { color: #d4d4d8; }
+html.dark .article-body h3, html.dark .article-body > p:last-child { color: #f4f4f5; }
+html.dark .article-body blockquote { background: rgba(255,102,0,0.1); color: #d4d4d8; }
+html.dark .article-tags { border-top-color: #3f3f46; }
+html.dark .share-bar { background: #18181b; border-color: #27272a; }
+html.dark .share-label { color: #a1a1aa; }
+html.dark .related-wrap, html.dark .comments-wrap { background: #18181b; border-color: #27272a; }
+html.dark .related-card { background: #18181b; border-color: #3f3f46; }
+html.dark .related-card-title { color: #e4e4e7; }
+html.dark .comment-item { border-bottom-color: #27272a; }
+html.dark .comment-bubble { background: #27272a; }
+html.dark .comment-bubble-name { color: #f4f4f5; }
+html.dark .comment-bubble-text { color: #d4d4d8; }
+html.dark .comment-form-wrap { border-top-color: #3f3f46; }
+html.dark .comment-textarea { background: #18181b; border-color: #3f3f46; color: #f4f4f5; }
+html.dark .sidebar-widget-body { background: #18181b; border-color: #27272a; }
+html.dark .info-box { background: #0d3b10; }
+html.dark .info-row { color: #a1a1aa; border-bottom-color: #1b5e20; }
+html.dark .info-row strong { color: #e4e4e7; }
+html.dark .recent-item { border-bottom-color: #27272a; color: #d4d4d8; }
+html.dark .recent-item:hover { background: #27272a; }
+html.dark .recent-item-title { color: #e4e4e7; }
+html.dark .cat-list-item { color: #d4d4d8; border-bottom-color: #27272a; }
+html.dark .cat-list-item:hover { background: #0d3b10; }
+
 @media (max-width: 900px) {
   .article-page    { flex-direction: column; }
   .article-sidebar { width: 100%; position: static; }
