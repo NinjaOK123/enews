@@ -541,7 +541,8 @@ html.dark .article-meta-item { border-right-color: #3f3f46; }
 html.dark .article-meta-item strong { color: #e4e4e7; }
 html.dark .article-hero figcaption { background: #18181b; color: #a1a1aa; border-top-color: #27272a; }
 html.dark .article-body { color: #d4d4d8; }
-html.dark .article-body h3, html.dark .article-body > p:last-child { color: #f4f4f5; }
+html.dark .article-body h3 { color: #f4f4f5; }
+html.dark .article-body > p:last-child, html.dark .article-body > p:last-child * { color: #f4f4f5 !important; }
 html.dark .article-body blockquote { background: rgba(255,102,0,0.1); color: #d4d4d8; }
 html.dark .article-tags { border-top-color: #3f3f46; }
 html.dark .share-bar { background: #18181b; border-color: #27272a; }
