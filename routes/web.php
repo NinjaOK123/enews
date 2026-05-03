@@ -148,6 +148,10 @@ Route::prefix('admin')
              Route::get('/royalty', [App\Http\Controllers\Admin\ReportController::class, 'royaltyIndex'])->name('royalty.index');
              Route::post('/royalty/export', [App\Http\Controllers\Admin\ReportController::class, 'exportRoyaltyExcel'])->name('royalty.export');
              Route::post('/royalty/template', [App\Http\Controllers\Admin\ReportController::class, 'uploadTemplate'])->name('royalty.template');
+             
+             // Báo cáo CTV
+             Route::get('/contributors', [App\Http\Controllers\Admin\ReportController::class, 'contributorsIndex'])->name('contributors.index');
+             Route::get('/contributors/export', [App\Http\Controllers\Admin\ReportController::class, 'exportContributorsExcel'])->name('contributors.export');
          });
 
 

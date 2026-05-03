@@ -28,6 +28,28 @@
 
             <form action="{{ route('admin.reports.index') }}" method="GET" class="flex flex-wrap items-center gap-3">
                 <div class="flex items-center bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl shadow-sm transition-colors overflow-hidden p-1">
+                    <input type="text" name="source_author" value="{{ request('source_author') }}" placeholder="Tìm bút danh..." class="bg-transparent border-none text-[13px] text-gray-700 dark:text-zinc-300 focus:ring-0 py-1.5 px-3 font-medium min-w-[120px] max-w-[140px]">
+                    
+                    <div class="w-px h-5 bg-gray-200 dark:bg-zinc-800 mx-1"></div>
+
+                    <select name="author_id" class="bg-transparent border-none text-[13px] text-gray-700 dark:text-zinc-300 focus:ring-0 py-1.5 px-3 font-medium min-w-[130px] truncate max-w-[150px]">
+                        <option value="" class="bg-white dark:bg-zinc-900">Tất cả người đăng</option>
+                        @foreach($authors as $author)
+                            <option value="{{ $author->id }}" class="bg-white dark:bg-zinc-900" {{ request('author_id') == $author->id ? 'selected' : '' }}>{{ $author->name }}</option>
+                        @endforeach
+                    </select>
+
+                    <div class="w-px h-5 bg-gray-200 dark:bg-zinc-800 mx-1"></div>
+
+                    <select name="approver_id" class="bg-transparent border-none text-[13px] text-gray-700 dark:text-zinc-300 focus:ring-0 py-1.5 px-3 font-medium min-w-[130px] truncate max-w-[150px]">
+                        <option value="" class="bg-white dark:bg-zinc-900">Tất cả người duyệt</option>
+                        @foreach($approvers as $approver)
+                            <option value="{{ $approver->id }}" class="bg-white dark:bg-zinc-900" {{ request('approver_id') == $approver->id ? 'selected' : '' }}>{{ $approver->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div class="flex items-center bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl shadow-sm transition-colors overflow-hidden p-1">
                     <input type="date" name="start_date" value="{{ $startDate }}" title="Từ ngày" class="bg-transparent border-none text-[13px] text-gray-700 dark:text-zinc-300 focus:ring-0 w-[115px] sm:w-[130px] py-1.5 px-3 font-medium [&::-webkit-calendar-picker-indicator]:dark:invert">
                     
                     <div class="w-px h-5 bg-gray-200 dark:bg-zinc-800 mx-1"></div>
@@ -41,7 +63,7 @@
                 </div>
             </form>
 
-            @if(request('start_date') || request('end_date') || request('period'))
+            @if(request('start_date') || request('end_date') || request('period') || request('author_id') || request('approver_id') || request('source_author'))
             <a href="{{ route('admin.reports.index') }}" class="px-4 py-2.5 text-[13px] font-bold text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-500/10 hover:bg-red-100 dark:hover:bg-red-500/20 rounded-xl transition-colors shadow-sm flex items-center gap-2">
                 <i class="bi bi-x-circle-fill"></i>
             </a>
@@ -68,7 +90,7 @@
                         </li>
                         <div class="h-px w-full bg-gray-100 dark:bg-zinc-800 my-1 transition-colors"></div>
                         <li>
-                            <a href="{{ route('admin.reports.export-csv', ['start_date' => request('start_date'), 'end_date' => request('end_date')]) }}" class="px-4 py-2 hover:bg-gray-50 dark:hover:bg-zinc-800 flex items-center gap-3 transition-colors no-underline">
+                            <a href="{{ route('admin.reports.export-csv', ['start_date' => request('start_date'), 'end_date' => request('end_date'), 'author_id' => request('author_id'), 'approver_id' => request('approver_id'), 'source_author' => request('source_author')]) }}" class="px-4 py-2 hover:bg-gray-50 dark:hover:bg-zinc-800 flex items-center gap-3 transition-colors no-underline">
                                 <span class="w-8 h-8 rounded-lg bg-emerald-100 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0"><i class="bi bi-file-earmark-excel-fill"></i></span> Xuất thẻ Excel (.xlsx)
                             </a>
                         </li>
@@ -78,11 +100,28 @@
         </div>
     </div>
 
-    @if(request('start_date') && request('end_date'))
-        <div class="mb-6 animate-fade-in-up">
+    @if(request('start_date') || request('end_date') || request('author_id') || request('approver_id') || request('source_author'))
+        <div class="mb-6 animate-fade-in-up flex flex-wrap gap-2">
+            @if(request('start_date') && request('end_date'))
             <span class="inline-flex items-center gap-2 px-4 py-2 bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20 text-emerald-700 dark:text-emerald-400 rounded-full text-[13px] font-semibold shadow-sm transition-colors">
-                <i class="bi bi-funnel-fill text-emerald-500"></i> Đang lọc: {{ \Carbon\Carbon::parse(request('start_date'))->format('d/m/Y') }} → {{ \Carbon\Carbon::parse(request('end_date'))->format('d/m/Y') }}
+                <i class="bi bi-calendar-check-fill text-emerald-500"></i> {{ \Carbon\Carbon::parse(request('start_date'))->format('d/m/Y') }} → {{ \Carbon\Carbon::parse(request('end_date'))->format('d/m/Y') }}
             </span>
+            @endif
+            @if(request('source_author'))
+            <span class="inline-flex items-center gap-2 px-4 py-2 bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-200 dark:border-indigo-500/20 text-indigo-700 dark:text-indigo-400 rounded-full text-[13px] font-semibold shadow-sm transition-colors">
+                <i class="bi bi-pen-fill text-indigo-500"></i> Bút danh: {{ request('source_author') }}
+            </span>
+            @endif
+            @if(request('author_id'))
+            <span class="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/20 text-blue-700 dark:text-blue-400 rounded-full text-[13px] font-semibold shadow-sm transition-colors">
+                <i class="bi bi-person-fill text-blue-500"></i> Người đăng: {{ collect($authors)->firstWhere('id', request('author_id'))?->name ?? 'N/A' }}
+            </span>
+            @endif
+            @if(request('approver_id'))
+            <span class="inline-flex items-center gap-2 px-4 py-2 bg-purple-50 dark:bg-purple-500/10 border border-purple-200 dark:border-purple-500/20 text-purple-700 dark:text-purple-400 rounded-full text-[13px] font-semibold shadow-sm transition-colors">
+                <i class="bi bi-person-check-fill text-purple-500"></i> Người duyệt: {{ collect($approvers)->firstWhere('id', request('approver_id'))?->name ?? 'N/A' }}
+            </span>
+            @endif
         </div>
     @endif
 
@@ -226,6 +265,76 @@
                     <div class="text-center py-6 text-[13px] text-gray-400 font-medium">Chưa có dữ liệu chuyên mục.</div>
                 @endforelse
             </div>
+        </div>
+    </div>
+
+    <!-- Detailed Posts List -->
+    <div class="bg-white dark:bg-zinc-900 rounded-2xl shadow-[0_2px_10px_rgb(0,0,0,0.04)] dark:shadow-none border border-gray-100 dark:border-zinc-800 p-6 mb-8">
+        <div class="flex items-center justify-between mb-5">
+            <h5 class="text-[14px] font-bold text-gray-900 dark:text-zinc-100 uppercase tracking-wider flex items-center gap-2">
+                <i class="bi bi-card-list text-indigo-500 text-lg"></i> CHI TIẾT BÀI VIẾT TRONG KỲ
+            </h5>
+            <a href="{{ route('admin.posts.index') }}" class="text-[12px] font-bold text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 transition-colors">Xem tất cả <i class="bi bi-arrow-right"></i></a>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="border-b border-gray-100 dark:border-zinc-800 text-[12px] uppercase tracking-wider text-gray-500 dark:text-zinc-400">
+                        <th class="py-3 font-semibold">Bài viết</th>
+                        <th class="py-3 font-semibold">Tác giả / Người đăng</th>
+                        <th class="py-3 font-semibold">Người duyệt</th>
+                        <th class="py-3 font-semibold text-center">Trạng thái</th>
+                        <th class="py-3 font-semibold text-right">Thời gian</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-50 dark:divide-zinc-800/50">
+                    @forelse($recentPosts as $post)
+                    <tr class="hover:bg-gray-50 dark:hover:bg-zinc-800/50 transition-colors text-[13px]">
+                        <td class="py-3 min-w-[250px] pr-4">
+                            <a href="{{ route('admin.posts.edit', $post->id) }}" class="font-bold text-gray-800 dark:text-zinc-200 hover:text-blue-600 dark:hover:text-blue-400 transition-colors block line-clamp-1" title="{{ $post->title }}">
+                                {{ $post->title }}
+                            </a>
+                            <div class="text-[11px] text-gray-500 dark:text-zinc-400 mt-0.5">{{ $post->category?->name ?? 'Chưa phân loại' }}</div>
+                        </td>
+                        <td class="py-3 pr-4">
+                            <div class="font-medium text-gray-800 dark:text-zinc-200">{{ $post->source_author ?: ($post->author?->name ?? 'N/A') }}</div>
+                        </td>
+                        <td class="py-3 pr-4">
+                            @php
+                                $approverName = 'N/A';
+                                if ($post->approvalLogs->isNotEmpty()) {
+                                    $approverName = $post->approvalLogs->first()->user?->name ?? 'N/A';
+                                } elseif ($post->status === 'published' && $post->author?->role === 'admin') {
+                                    $approverName = $post->author->name . ' (Tự đăng)';
+                                }
+                            @endphp
+                            <div class="font-medium text-gray-800 dark:text-zinc-200">{{ $approverName }}</div>
+                        </td>
+                        <td class="py-3 text-center">
+                            @if($post->status === 'published')
+                                <span class="px-2 py-1 bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[11px] font-bold rounded-lg uppercase inline-block">Đã duyệt</span>
+                            @elseif($post->status === 'pending')
+                                <span class="px-2 py-1 bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 text-[11px] font-bold rounded-lg uppercase inline-block">Chờ duyệt</span>
+                            @elseif($post->status === 'rejected')
+                                <span class="px-2 py-1 bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 text-[11px] font-bold rounded-lg uppercase inline-block">Từ chối</span>
+                            @else
+                                <span class="px-2 py-1 bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 text-[11px] font-bold rounded-lg uppercase inline-block">Nháp</span>
+                            @endif
+                        </td>
+                        <td class="py-3 text-right">
+                            <div class="font-medium text-gray-800 dark:text-zinc-200" title="Ngày tạo: {{ $post->created_at->format('d/m/Y H:i') }}">{{ $post->created_at->format('d/m/Y') }}</div>
+                            @if($post->published_at)
+                                <div class="text-[11px] text-emerald-600 dark:text-emerald-500 mt-0.5" title="Đã đăng lúc"><i class="bi bi-check-circle"></i> {{ $post->published_at->format('H:i') }}</div>
+                            @endif
+                        </td>
+                    </tr>
+                    @empty
+                    <tr>
+                        <td colspan="5" class="py-8 text-center text-gray-400 text-[13px] font-medium">Chưa có bài viết nào trong kỳ này.</td>
+                    </tr>
+                    @endforelse
+                </tbody>
+            </table>
         </div>
     </div>
 

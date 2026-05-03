@@ -118,6 +118,8 @@
                 if($role==='admin')
                     $navItems[] = ['route'=>route('admin.reports.index'),'is'=>'admin.reports.index','icon'=>'bi-bar-chart','label'=>'Báo cáo chung'];
                 if($role==='admin')
+                    $navItems[] = ['route'=>route('admin.reports.contributors.index'),'is'=>'admin.reports.contributors.*','icon'=>'bi-person-badge','label'=>'Báo cáo CTV'];
+                if($role==='admin')
                     $navItems[] = ['route'=>route('admin.reports.royalty.index'),'is'=>'admin.reports.royalty.*','icon'=>'bi-wallet2','label'=>'Nhuận bút'];
 
                 // Section Title (Xét Duyệt)

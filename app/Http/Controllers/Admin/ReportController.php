@@ -32,6 +32,9 @@ class ReportController extends Controller
         $period = $request->input('period');
         $startDate = $request->input('start_date');
         $endDate = $request->input('end_date');
+        $authorId = $request->input('author_id');
+        $approverId = $request->input('approver_id');
+        $sourceAuthor = $request->input('source_author');
         $dateRange = null;
 
         if ($period) {
@@ -60,11 +63,25 @@ class ReportController extends Controller
             return $query;
         };
 
+        // Base post query with author/approver filters
+        $basePostQuery = Post::query();
+        if ($authorId) {
+            $basePostQuery->where('author_id', $authorId);
+        }
+        if ($sourceAuthor) {
+            $basePostQuery->where('source_author', 'LIKE', '%' . $sourceAuthor . '%');
+        }
+        if ($approverId) {
+            $basePostQuery->whereHas('approvalLogs', function($q) use ($approverId) {
+                $q->where('user_id', $approverId);
+            });
+        }
+
         // 1. Post Stats
-        $totalPosts = $applyDateFilter(Post::query())->count();
-        $publishedPosts = $applyDateFilter(Post::where('status', 'published'))->count();
-        $pendingPosts = $applyDateFilter(Post::where('status', 'pending'))->count();
-        $draftPosts = $applyDateFilter(Post::where('status', 'draft'))->count();
+        $totalPosts = $applyDateFilter(clone $basePostQuery)->count();
+        $publishedPosts = $applyDateFilter((clone $basePostQuery)->where('status', 'published'))->count();
+        $pendingPosts = $applyDateFilter((clone $basePostQuery)->where('status', 'pending'))->count();
+        $draftPosts = $applyDateFilter((clone $basePostQuery)->where('status', 'draft'))->count();
 
         // 2. User Stats
         $totalUsers = clone User::query();
@@ -80,7 +97,7 @@ class ReportController extends Controller
         $usersByRole = $usersByRole->selectRaw('role, count(*) as count')->groupBy('role')->pluck('count', 'role');
 
         // 3. Views Stats
-        $totalViews = $applyDateFilter(Post::query())->sum('view_count');
+        $totalViews = $applyDateFilter(clone $basePostQuery)->sum('view_count');
 
         // 4. Comment & Category Stats
         $totalComments = clone Comment::query();
@@ -115,7 +132,7 @@ class ReportController extends Controller
         };
 
         // Growths
-        $postP = $getPulse(Post::query());
+        $postP = $getPulse(clone $basePostQuery);
         $curPosts = $postP['cur']->count(); $prevPosts = $postP['prev']->count();
         $growthPosts = $prevPosts > 0 ? round((($curPosts - $prevPosts) / $prevPosts) * 100, 1) : ($curPosts > 0 ? 100 : 0);
 
@@ -123,7 +140,7 @@ class ReportController extends Controller
         $curUsers = $userP['cur']->count(); $prevUsers = $userP['prev']->count();
         $growthUsers = $prevUsers > 0 ? round((($curUsers - $prevUsers) / $prevUsers) * 100, 1) : ($curUsers > 0 ? 100 : 0);
 
-        $viewP = $getPulse(Post::query());
+        $viewP = $getPulse(clone $basePostQuery);
         $curViews = $viewP['cur']->sum('view_count'); $prevViews = $viewP['prev']->sum('view_count');
         $growthViews = $prevViews > 0 ? round((($curViews - $prevViews) / $prevViews) * 100, 1) : ($curViews > 0 ? 100 : 0);
 
@@ -143,21 +160,33 @@ class ReportController extends Controller
 
         // --- HỘI ĐỒNG: BỔ SUNG ACTIONABLE INSIGHTS (THIẾU HÀNH ĐỘNG / DRILL DOWN) ---
         // Top 5 bài viết có lượt xem cao nhất (có thể lọc theo date_range nếu có)
-        $topPosts = $applyDateFilter(Post::with('category'))->orderBy('view_count', 'desc')->take(5)->get();
+        $topPosts = $applyDateFilter((clone $basePostQuery)->with('category'))->orderBy('view_count', 'desc')->take(5)->get();
         
         // Quá hạn: Bài viết pending > 3 ngày
-        $stalePendingPosts = Post::where('status', 'pending')
+        $stalePendingPosts = (clone $basePostQuery)->where('status', 'pending')
             ->where('created_at', '<', Carbon::now()->subDays(3))
             ->count();
             
         // Top Chuyên mục: Danh sách category có lượng View tổng cao nhất trong chu kỳ
-        $topCategories = Category::withCount(['posts' => function($q) use ($applyDateFilter) {
+        $topCategories = Category::withCount(['posts' => function($q) use ($applyDateFilter, $authorId, $approverId, $sourceAuthor) {
             $applyDateFilter($q);
+            if ($authorId) $q->where('author_id', $authorId);
+            if ($sourceAuthor) $q->where('source_author', 'LIKE', '%' . $sourceAuthor . '%');
+            if ($approverId) {
+                $q->whereHas('approvalLogs', function($sq) use ($approverId) {
+                    $sq->where('user_id', $approverId);
+                });
+            }
         }])->orderBy('posts_count', 'desc')->take(5)->get();
 
+        // Thêm chi tiết bài viết (giới hạn 20 bài mới nhất trong kỳ để hiện trên report)
+        $recentPosts = $applyDateFilter((clone $basePostQuery)->with(['category', 'author', 'approvalLogs.user']))
+            ->orderBy('created_at', 'desc')
+            ->limit(20)
+            ->get();
 
         // Chart Data: Posts per month (for the current year)
-        $chartData = Post::selectRaw('MONTH(created_at) as month, COUNT(*) as count')
+        $chartData = (clone $basePostQuery)->selectRaw('MONTH(created_at) as month, COUNT(*) as count')
             ->whereYear('created_at', date('Y'))
             ->groupBy('month')
             ->orderBy('month')
@@ -173,11 +202,16 @@ class ReportController extends Controller
             $chartValues[] = $monthData ? $monthData->count : 0;
         }
 
+        // Get lists for filter dropdowns
+        $authors = User::whereIn('role', ['admin', 'editor', 'contributor'])->orderBy('name')->get();
+        $approvers = User::whereIn('role', ['admin', 'editor'])->orderBy('name')->get();
+
         return view('admin.reports.index', compact(
             'totalPosts', 'publishedPosts', 'pendingPosts', 'draftPosts',
             'usersCount', 'usersByRole', 'totalViews', 'commentsCount', 'categoriesCount',
             'chartLabels', 'chartValues', 'startDate', 'endDate',
-            'growths', 'topPosts', 'stalePendingPosts', 'topCategories'
+            'growths', 'topPosts', 'stalePendingPosts', 'topCategories', 'recentPosts',
+            'authors', 'approvers', 'authorId', 'approverId', 'sourceAuthor'
         ));
     }
 
@@ -188,6 +222,9 @@ class ReportController extends Controller
     {
         $startDate = $request->input('start_date');
         $endDate   = $request->input('end_date');
+        $authorId = $request->input('author_id');
+        $approverId = $request->input('approver_id');
+        $sourceAuthor = $request->input('source_author');
         $dateRange = null;
 
         if ($startDate && $endDate) {
@@ -201,7 +238,20 @@ class ReportController extends Controller
             return $query;
         };
 
-        $posts = $applyDateFilter(Post::with(['category', 'author']))->orderBy('created_at', 'desc')->get();
+        $basePostQuery = Post::query();
+        if ($authorId) {
+            $basePostQuery->where('author_id', $authorId);
+        }
+        if ($sourceAuthor) {
+            $basePostQuery->where('source_author', 'LIKE', '%' . $sourceAuthor . '%');
+        }
+        if ($approverId) {
+            $basePostQuery->whereHas('approvalLogs', function($q) use ($approverId) {
+                $q->where('user_id', $approverId);
+            });
+        }
+
+        $posts = $applyDateFilter((clone $basePostQuery)->with(['category', 'author', 'approvalLogs.user']))->orderBy('created_at', 'desc')->get();
 
         $statusMap = [
             'published' => 'Đã duyệt',
@@ -239,12 +289,13 @@ class ReportController extends Controller
               . '<Column ss:Width="280"/>'   // Tiêu đề
               . '<Column ss:Width="130"/>'   // Chuyên mục
               . '<Column ss:Width="130"/>'   // Người đăng
+              . '<Column ss:Width="130"/>'   // Người duyệt
               . '<Column ss:Width="80"/>'    // Lượt xem
               . '<Column ss:Width="90"/>'    // Trạng thái
-              . '<Column ss:Width="120"/>'; // Ngày đăng
+              . '<Column ss:Width="120"/>';  // Ngày đăng
 
         // Header row
-        $headers = ['ID', 'Tiêu đề', 'Chuyên mục', 'Người đăng', 'Lượt xem', 'Trạng thái', 'Ngày đăng'];
+        $headers = ['ID', 'Tiêu đề', 'Chuyên mục', 'Người đăng', 'Người duyệt', 'Lượt xem', 'Trạng thái', 'Ngày đăng'];
         $xml .= '<Row ss:Height="24">';
         foreach ($headers as $h) {
             $xml .= '<Cell ss:StyleID="header"><Data ss:Type="String">' . htmlspecialchars($h, ENT_XML1) . '</Data></Cell>';
@@ -255,11 +306,20 @@ class ReportController extends Controller
         foreach ($posts as $i => $post) {
             $style = ($i % 2 === 0) ? 'row_even' : 'row_odd';
             $statusName = $statusMap[$post->status] ?? $post->status;
+            
+            $approverName = '';
+            if ($post->approvalLogs->isNotEmpty()) {
+                $approverName = $post->approvalLogs->first()->user?->name ?? '';
+            } elseif ($post->status === 'published' && $post->author?->role === 'admin') {
+                $approverName = $post->author->name . ' (Tự đăng)';
+            }
+
             $xml .= '<Row ss:Height="18">';
             $xml .= '<Cell ss:StyleID="' . $style . '"><Data ss:Type="Number">' . $post->id . '</Data></Cell>';
             $xml .= '<Cell ss:StyleID="' . $style . '"><Data ss:Type="String">' . htmlspecialchars($post->title, ENT_XML1) . '</Data></Cell>';
             $xml .= '<Cell ss:StyleID="' . $style . '"><Data ss:Type="String">' . htmlspecialchars($post->category ? $post->category->name : 'N/A', ENT_XML1) . '</Data></Cell>';
             $xml .= '<Cell ss:StyleID="' . $style . '"><Data ss:Type="String">' . htmlspecialchars($post->author ? $post->author->name : 'N/A', ENT_XML1) . '</Data></Cell>';
+            $xml .= '<Cell ss:StyleID="' . $style . '"><Data ss:Type="String">' . htmlspecialchars($approverName, ENT_XML1) . '</Data></Cell>';
             $xml .= '<Cell ss:StyleID="num"><Data ss:Type="Number">' . $post->view_count . '</Data></Cell>';
             $xml .= '<Cell ss:StyleID="' . $style . '"><Data ss:Type="String">' . htmlspecialchars($statusName, ENT_XML1) . '</Data></Cell>';
             $xml .= '<Cell ss:StyleID="' . $style . '"><Data ss:Type="String">' . $post->created_at->format('d/m/Y H:i') . '</Data></Cell>';
@@ -1074,6 +1134,179 @@ class ReportController extends Controller
         }, $filename, [
             'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
             'Cache-Control' => 'max-age=0'
+        ]);
+    }
+
+    /**
+     * Báo cáo cộng tác viên
+     */
+    public function contributorsIndex(Request $request)
+    {
+        $period = $request->input('period', 'month');
+        $startDate = $request->input('start_date');
+        $endDate = $request->input('end_date');
+        $type = $request->input('type'); // 'new' to filter only new members
+        $dateRange = null;
+
+        if (!$startDate && !$endDate && $period) {
+            $now = Carbon::now();
+            if ($period === 'week') {
+                $startDate = $now->copy()->startOfWeek()->format('Y-m-d');
+                $endDate = $now->copy()->endOfWeek()->format('Y-m-d');
+            } elseif ($period === 'month') {
+                $startDate = $now->copy()->startOfMonth()->format('Y-m-d');
+                $endDate = $now->copy()->endOfMonth()->format('Y-m-d');
+            } elseif ($period === 'year') {
+                $startDate = $now->copy()->startOfYear()->format('Y-m-d');
+                $endDate = $now->copy()->endOfYear()->format('Y-m-d');
+            }
+        }
+
+        if ($startDate && $endDate) {
+            $dateRange = [Carbon::parse($startDate)->startOfDay(), Carbon::parse($endDate)->endOfDay()];
+        }
+
+        // Total contributors overall
+        $totalContributors = User::where('role', 'contributor')->count();
+        
+        // New contributors in period
+        $newContributorsQuery = User::where('role', 'contributor');
+        if ($dateRange) {
+            $newContributorsQuery->whereBetween('created_at', $dateRange);
+        }
+        $newContributors = $newContributorsQuery->count();
+
+        // List of contributors with post stats
+        $contributorsQuery = User::where('role', 'contributor');
+
+        // Nếu lọc theo "CTV Mới", chỉ lấy những người tham gia trong khoảng thời gian này
+        if ($type === 'new' && $dateRange) {
+            $contributorsQuery->whereBetween('created_at', $dateRange);
+        }
+
+        $contributorsQuery->withCount([
+                'posts as total_posts_in_period' => function ($query) use ($dateRange) {
+                    if ($dateRange) {
+                        $query->whereBetween('created_at', $dateRange);
+                    }
+                },
+                'posts as published_posts_in_period' => function ($query) use ($dateRange) {
+                    $query->where('status', 'published');
+                    if ($dateRange) {
+                        $query->whereBetween('created_at', $dateRange);
+                    }
+                },
+                'posts as pending_posts_in_period' => function ($query) use ($dateRange) {
+                    $query->whereIn('status', ['pending', 'rejected']);
+                    if ($dateRange) {
+                        $query->whereBetween('created_at', $dateRange);
+                    }
+                }
+            ])->orderByDesc('created_at');
+
+        $contributors = $contributorsQuery->paginate(20)->withQueryString();
+
+        return view('admin.reports.contributors', compact(
+            'startDate', 'endDate', 'period', 'type', 'totalContributors', 'newContributors', 'contributors'
+        ));
+    }
+
+    /**
+     * Xuất Excel báo cáo cộng tác viên (XML Format giống báo cáo chung)
+     */
+    public function exportContributorsExcel(Request $request)
+    {
+        $startDate = $request->input('start_date');
+        $endDate = $request->input('end_date');
+        $type = $request->input('type');
+        $dateRange = null;
+
+        if ($startDate && $endDate) {
+            $dateRange = [Carbon::parse($startDate)->startOfDay(), Carbon::parse($endDate)->endOfDay()];
+        }
+
+        $contributorsQuery = User::where('role', 'contributor');
+        
+        if ($type === 'new' && $dateRange) {
+            $contributorsQuery->whereBetween('created_at', $dateRange);
+        }
+
+        $contributors = $contributorsQuery->withCount([
+                'posts as total_posts_in_period' => function ($query) use ($dateRange) {
+                    if ($dateRange) {
+                        $query->whereBetween('created_at', $dateRange);
+                    }
+                },
+                'posts as published_posts_in_period' => function ($query) use ($dateRange) {
+                    $query->where('status', 'published');
+                    if ($dateRange) {
+                        $query->whereBetween('created_at', $dateRange);
+                    }
+                },
+                'posts as pending_posts_in_period' => function ($query) use ($dateRange) {
+                    $query->whereIn('status', ['pending', 'rejected']);
+                    if ($dateRange) {
+                        $query->whereBetween('created_at', $dateRange);
+                    }
+                }
+            ])->orderByDesc('created_at')->get();
+
+        $xml = '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
+        $xml .= '<?mso-application progid="Excel.Sheet"?>' . "\n";
+        $xml .= '<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" ';
+        $xml .= 'xmlns:o="urn:schemas-microsoft-com:office:office" ';
+        $xml .= 'xmlns:x="urn:schemas-microsoft-com:office:excel" ';
+        $xml .= 'xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet" ';
+        $xml .= 'xmlns:html="http://www.w3.org/TR/REC-html40">' . "\n";
+        
+        $xml .= '<Styles>' . "\n";
+        $xml .= '<Style ss:ID="Default" ss:Name="Normal"><Alignment ss:Vertical="Bottom"/><Borders/><Font ss:FontName="Arial" x:Family="Swiss" ss:Size="11" ss:Color="#000000"/><Interior/><NumberFormat/><Protection/></Style>' . "\n";
+        $xml .= '<Style ss:ID="Header"><Alignment ss:Horizontal="Center" ss:Vertical="Center"/><Font ss:FontName="Arial" x:Family="Swiss" ss:Size="11" ss:Color="#FFFFFF" ss:Bold="1"/><Interior ss:Color="#4F81BD" ss:Pattern="Solid"/></Style>' . "\n";
+        $xml .= '<Style ss:ID="Center"><Alignment ss:Horizontal="Center" ss:Vertical="Center"/></Style>' . "\n";
+        $xml .= '</Styles>' . "\n";
+        
+        $xml .= '<Worksheet ss:Name="BaoCao_CTV">' . "\n";
+        $xml .= '<Table>' . "\n";
+        
+        $xml .= '<Column ss:Width="40"/>';
+        $xml .= '<Column ss:Width="150"/>';
+        $xml .= '<Column ss:Width="150"/>';
+        $xml .= '<Column ss:Width="100"/>';
+        $xml .= '<Column ss:Width="100"/>';
+        $xml .= '<Column ss:Width="100"/>';
+        $xml .= '<Column ss:Width="100"/>';
+        $xml .= "\n";
+        
+        $xml .= '<Row ss:Height="25">' . "\n";
+        $headers = ['STT', 'Tên CTV', 'Email', 'Ngày tham gia', 'Tổng bài gửi', 'Bài được duyệt', 'Bài chờ/Từ chối'];
+        foreach ($headers as $header) {
+            $xml .= sprintf('<Cell ss:StyleID="Header"><Data ss:Type="String">%s</Data></Cell>', htmlspecialchars($header)) . "\n";
+        }
+        $xml .= '</Row>' . "\n";
+        
+        $index = 1;
+        foreach ($contributors as $contributor) {
+            $xml .= '<Row>' . "\n";
+            $xml .= sprintf('<Cell ss:StyleID="Center"><Data ss:Type="Number">%d</Data></Cell>', $index++) . "\n";
+            $xml .= sprintf('<Cell><Data ss:Type="String">%s</Data></Cell>', htmlspecialchars($contributor->name ?? '')) . "\n";
+            $xml .= sprintf('<Cell><Data ss:Type="String">%s</Data></Cell>', htmlspecialchars($contributor->email ?? '')) . "\n";
+            $xml .= sprintf('<Cell ss:StyleID="Center"><Data ss:Type="String">%s</Data></Cell>', htmlspecialchars($contributor->created_at ? $contributor->created_at->format('d/m/Y') : '')) . "\n";
+            $xml .= sprintf('<Cell ss:StyleID="Center"><Data ss:Type="Number">%d</Data></Cell>', $contributor->total_posts_in_period) . "\n";
+            $xml .= sprintf('<Cell ss:StyleID="Center"><Data ss:Type="Number">%d</Data></Cell>', $contributor->published_posts_in_period) . "\n";
+            $xml .= sprintf('<Cell ss:StyleID="Center"><Data ss:Type="Number">%d</Data></Cell>', $contributor->pending_posts_in_period) . "\n";
+            $xml .= '</Row>' . "\n";
+        }
+        
+        $xml .= '</Table>' . "\n";
+        $xml .= '</Worksheet>' . "\n";
+        $xml .= '</Workbook>';
+        
+        $filename = 'Bao_Cao_Cong_Tac_Vien_' . Carbon::now()->format('d_m_Y_H_i_s') . '.xml';
+        
+        return response($xml, 200, [
+            'Content-Type' => 'application/vnd.ms-excel',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+            'Cache-Control' => 'max-age=0',
         ]);
     }
     private function convertNumberToVietnameseWords($number)

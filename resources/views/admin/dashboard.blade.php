@@ -9,6 +9,7 @@
     $s_posts    = $stats['total_posts']      ?? 0;
     $s_pending  = $stats['pending_posts']    ?? 0;
     $s_users    = $stats['total_users']      ?? 0;
+    $s_contribs = $stats['total_contributors'] ?? 0;
     $s_comments = $stats['total_comments']   ?? 0;
     $s_views    = $stats['total_views']      ?? 0;
     $s_cats     = $stats['total_categories'] ?? 0;
@@ -40,8 +41,8 @@
     </a>
 </div>
 
-{{-- 2. STATS CARDS (4 CARDS) --}}
-<div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5 mb-8">
+{{-- 2. STATS CARDS (5 CARDS) --}}
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-5 mb-8">
     
     {{-- Card 1: Tổng bài viết --}}
     <div class="bg-blue-500 border border-transparent rounded-xl p-5 shadow-[0_4px_14px_rgba(59,130,246,0.3)] transition-all duration-200 text-white group overflow-hidden relative">
@@ -119,6 +120,25 @@
             <circle cx="150" cy="25" r="2" fill="white"/>
             <circle cx="200" cy="5" r="3" fill="white" class="animate-pulse"/>
         </svg>
+    </div>
+
+    {{-- Card 5: Cộng tác viên --}}
+    <div class="bg-teal-500 border border-transparent rounded-xl p-5 shadow-[0_4px_14px_rgba(20,184,166,0.3)] transition-all duration-200 text-white group overflow-hidden relative">
+        <div class="flex items-center justify-between mb-2 relative z-10">
+            <span class="text-[13px] font-semibold text-teal-50 uppercase tracking-wider flex items-center gap-2">
+                <i class="bi bi-person-badge-fill text-[15px]"></i> CTV
+            </span>
+        </div>
+        <div class="text-[36px] font-bold tracking-tight leading-none mb-3 relative z-10">{{ number_format($s_contribs) }}</div>
+        <div class="flex items-center gap-2 mt-auto relative z-10">
+            @php $g_contribs = $stats['growth_contributors'] ?? 15; @endphp
+            <span class="inline-flex items-center px-2 py-0.5 rounded text-[12px] font-bold bg-white/20 text-white">
+                +{{ $g_contribs }} <i class="bi bi-arrow-up-short"></i>
+            </span>
+            <span class="text-teal-100 text-xs font-medium">+{{ $g_contribs }} so với tuần trước.</span>
+        </div>
+        <!-- Decorative subtle icon -->
+        <i class="bi bi-star-fill absolute -right-4 -bottom-4 text-[100px] text-white opacity-10 group-hover:scale-110 transition-transform duration-500"></i>
     </div>
 
 </div>

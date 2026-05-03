@@ -35,11 +35,11 @@
             </div>
             <div class="w-full sm:w-48 relative">
                 <select name="role" class="w-full px-4 py-2 bg-gray-50 dark:bg-zinc-950/50 border border-gray-200 dark:border-zinc-800 rounded-xl text-sm text-gray-700 dark:text-zinc-300 focus:bg-white dark:focus:bg-zinc-900 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500/50 outline-none transition-all appearance-none cursor-pointer">
-                    <option value="">Tất cả chức danh</option>
-                    <option value="reader" {{ request('role') == 'reader' ? 'selected' : '' }}>Người đọc</option>
-                    <option value="contributor" {{ request('role') == 'contributor' ? 'selected' : '' }}>Cộng tác viên</option>
-                    <option value="editor" {{ request('role') == 'editor' ? 'selected' : '' }}>Biên tập viên</option>
-                    <option value="admin" {{ request('role') == 'admin' ? 'selected' : '' }}>Quản trị viên</option>
+                    <option value="" class="bg-white dark:bg-zinc-900">Tất cả chức danh</option>
+                    <option value="reader" class="bg-white dark:bg-zinc-900" {{ request('role') == 'reader' ? 'selected' : '' }}>Người đọc</option>
+                    <option value="contributor" class="bg-white dark:bg-zinc-900" {{ request('role') == 'contributor' ? 'selected' : '' }}>Cộng tác viên</option>
+                    <option value="editor" class="bg-white dark:bg-zinc-900" {{ request('role') == 'editor' ? 'selected' : '' }}>Biên tập viên</option>
+                    <option value="admin" class="bg-white dark:bg-zinc-900" {{ request('role') == 'admin' ? 'selected' : '' }}>Quản trị viên</option>
                 </select>
                 <div class="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none text-gray-400 dark:text-zinc-500"><i class="bi bi-chevron-down text-xs"></i></div>
             </div>
@@ -61,12 +61,12 @@
             <div class="flex items-center gap-3 w-full sm:w-auto">
                 <span class="text-sm text-gray-600 dark:text-zinc-400 font-medium pl-2"><i class="bi bi-ui-checks"></i> Chọn nhiều:</span>
                 <select name="bulk_action" id="bulkActionSelect" class="flex-1 sm:flex-none px-4 py-2 border border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-950/50 text-gray-700 dark:text-zinc-300 rounded-xl text-sm outline-none focus:border-emerald-500/50 focus:ring-2 focus:ring-emerald-500/20 min-w-[200px] cursor-pointer appearance-none">
-                    <option value="">-- Chọn thao tác hàng loạt --</option>
-                    <option value="upgrade_contributor" {{ request('bulk_action') == 'upgrade_contributor' ? 'selected' : '' }}>🚀 Nâng hạng lên Cộng tác viên</option>
-                    <option value="downgrade_reader">Ngưng cấp quyền (Về Người đọc)</option>
-                    <option value="lock_account">🔒 Khoá tài khoản</option>
-                    <option value="unlock_account">🔓 Mở khoá tài khoản</option>
-                    <option value="delete">🗑 Xoá tài khoản</option>
+                    <option value="" class="bg-white dark:bg-zinc-900">-- Chọn thao tác hàng loạt --</option>
+                    <option value="upgrade_contributor" class="bg-white dark:bg-zinc-900" {{ request('bulk_action') == 'upgrade_contributor' ? 'selected' : '' }}>🚀 Nâng hạng lên Cộng tác viên</option>
+                    <option value="downgrade_reader" class="bg-white dark:bg-zinc-900">Ngưng cấp quyền (Về Người đọc)</option>
+                    <option value="lock_account" class="bg-white dark:bg-zinc-900">🔒 Khoá tài khoản</option>
+                    <option value="unlock_account" class="bg-white dark:bg-zinc-900">🔓 Mở khoá tài khoản</option>
+                    <option value="delete" class="bg-white dark:bg-zinc-900">🗑 Xoá tài khoản</option>
                 </select>
             </div>
             <button type="button" @click="

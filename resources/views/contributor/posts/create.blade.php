@@ -105,9 +105,7 @@
                     <button type="button" onclick="aiQuickAction('expand', this)" class="px-3 py-1.5 text-[10px] font-black uppercase text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-500/10 rounded-lg transition-all flex items-center gap-1.5" title="Viết tiếp đoạn văn">
                         <i class="bi bi-lightning-charge"></i> Viết tiếp
                     </button>
-                    <button type="button" onclick="aiQuickAction('summary', this)" class="px-3 py-1.5 text-[10px] font-black uppercase text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-500/10 rounded-lg transition-all flex items-center gap-1.5" title="Tạo đoạn Sapo">
-                        <i class="bi bi-card-text"></i> Tóm tắt
-                    </button>
+
                     <button type="button" onclick="aiQuickAction('image', this)" class="px-3 py-1.5 text-[10px] font-black uppercase text-pink-600 dark:text-pink-400 hover:bg-pink-50 dark:hover:bg-pink-500/10 rounded-lg transition-all flex items-center gap-1.5" title="Tạo ảnh AI minh hoạ">
                         <i class="bi bi-image"></i> Tạo ảnh
                     </button>
