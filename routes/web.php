@@ -18,9 +18,33 @@ Route::get('/tim-kiem', [SearchController::class, 'index'])->name('search');
 Route::get('/chuyen-muc/{slug}', [CategoryController::class, 'show'])->name('category');
 Route::get('/bai-viet/{post:slug}', [PostController::class, 'show'])->name('post.show');
 
+// Proxy for Google TTS to avoid Referer blocks
+Route::get('/tts/proxy', function (\Illuminate\Http\Request $request) {
+    $text = $request->input('q');
+    $lang = $request->input('tl', 'vi');
+    if (!$text) return response('No text', 400);
+
+    $url = "https://translate.googleapis.com/translate_tts?ie=UTF-8&client=gtx&tl={$lang}&q=" . urlencode($text);
+    
+    $options = [
+        'http' => [
+            'method' => 'GET',
+            'header' => "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)\r\n"
+        ]
+    ];
+    $context = stream_context_create($options);
+    
+    try {
+        $audio = file_get_contents($url, false, $context);
+        if ($audio === false) throw new Exception("Failed to fetch audio");
+        return response($audio, 200)->header('Content-Type', 'audio/mpeg');
+    } catch (\Exception $e) {
+        return response($e->getMessage(), 500);
+    }
+})->name('tts.proxy');
+
 // PWA Offline Fallback Route
 Route::view('/offline', 'offline')->name('offline');
-
 
 // ─── Trang tĩnh ─────────────────────────────────────────────────
 Route::get('/gioi-thieu',         [PageController::class, 'gioiThieu'])->name('about');

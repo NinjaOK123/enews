@@ -945,7 +945,7 @@ html.dark .tts-settings-card .btn-close { filter: invert(1) grayscale(100%) brig
                     }
                 }
 
-                const url = `https://translate.googleapis.com/translate_tts?ie=UTF-8&client=gtx&tl=${ttsSettings.lang}&q=${encodeURIComponent(text)}`;
+                const url = `/tts/proxy?tl=${ttsSettings.lang}&q=${encodeURIComponent(text)}`;
                 
                 audio.src = url;
                 audio.playbackRate = ttsSettings.rate;
