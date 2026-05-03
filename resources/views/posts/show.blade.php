@@ -194,7 +194,12 @@
   text-align: right;
   font-weight: bold;
   margin-top: 2.5rem;
-  color: #111;
+  color: #333;
+}
+
+.article-source-author {
+  color: #1a1a1a;
+  font-size: 0.95rem;
 }
 
 .article-body blockquote {
@@ -541,15 +546,9 @@ html.dark .article-meta-item { border-right-color: #3f3f46; }
 html.dark .article-meta-item strong { color: #e4e4e7; }
 html.dark .article-hero figcaption { background: #18181b; color: #a1a1aa; border-top-color: #27272a; }
 html.dark .article-body { color: #d4d4d8; }
-html.dark .article-body h3 { color: #f4f4f5; }
-html.dark .article-body > p:last-child, 
-html.dark .article-body > p:last-child *,
-html.dark .article-body [style*="text-align: right"],
-html.dark .article-body [style*="text-align: right"] * { color: #f4f4f5 !important; }
-/* Override hardcoded black text from editor */
-html.dark .article-body [style*="color: rgb(0, 0, 0)"],
-html.dark .article-body [style*="color: #000"],
-html.dark .article-body [style*="color: black"] { color: #f4f4f5 !important; }
+html.dark .article-body h3, 
+html.dark .article-body > p:last-child,
+html.dark .article-source-author { color: #f4f4f5 !important; }
 html.dark .article-body blockquote { background: rgba(255,102,0,0.1); color: #d4d4d8; }
 html.dark .article-tags { border-top-color: #3f3f46; }
 html.dark .share-bar { background: #18181b; border-color: #27272a; }
@@ -1046,7 +1045,7 @@ html.dark .tts-settings-card .btn-close { filter: invert(1) grayscale(100%) brig
     {{-- Tác giả / Nguồn --}}
     @if($post->source_author)
     <div style="text-align:right; margin: 1.2rem 0 0.5rem; padding-top: 0.8rem;">
-        <strong style="font-size:0.95rem; color:#1a1a1a;">{{ $post->source_author }}</strong>
+        <strong class="article-source-author">{{ $post->source_author }}</strong>
     </div>
     @endif
 
