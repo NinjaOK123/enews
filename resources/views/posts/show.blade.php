@@ -549,6 +549,11 @@ html.dark .article-body { color: #d4d4d8; }
 html.dark .article-body h3, 
 html.dark .article-body > p:last-child,
 html.dark .article-source-author { color: #f4f4f5 !important; }
+
+/* Override hardcoded black text from editor */
+html.dark .article-body [style*="color: rgb(0, 0, 0)"],
+html.dark .article-body [style*="color: #000"],
+html.dark .article-body [style*="color: black"] { color: #f4f4f5 !important; }
 html.dark .article-body blockquote { background: rgba(255,102,0,0.1); color: #d4d4d8; }
 html.dark .article-tags { border-top-color: #3f3f46; }
 html.dark .share-bar { background: #18181b; border-color: #27272a; }
