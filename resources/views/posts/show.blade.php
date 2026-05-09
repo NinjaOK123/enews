@@ -549,11 +549,6 @@ html.dark .article-body { color: #d4d4d8; }
 html.dark .article-body h3, 
 html.dark .article-body > p:last-child,
 html.dark .article-source-author { color: #f4f4f5 !important; }
-
-/* Override hardcoded black text from editor */
-html.dark .article-body [style*="color: rgb(0, 0, 0)"],
-html.dark .article-body [style*="color: #000"],
-html.dark .article-body [style*="color: black"] { color: #f4f4f5 !important; }
 html.dark .article-body blockquote { background: rgba(255,102,0,0.1); color: #d4d4d8; }
 html.dark .article-tags { border-top-color: #3f3f46; }
 html.dark .share-bar { background: #18181b; border-color: #27272a; }
@@ -1158,6 +1153,57 @@ html.dark .tts-settings-card .btn-close { filter: invert(1) grayscale(100%) brig
     </script>
     @endpush
 
+
+    {{-- ══ Article Navigation (Trang trước / Trang sau) ══════════════════════════════════ --}}
+    <div class="article-navigation" style="display: flex; justify-content: space-between; gap: 15px; margin: 30px 0; padding-top: 20px; border-top: 1px solid #eee;">
+        
+        {{-- Previous Post (Bài mới hơn) --}}
+        <div style="flex: 1; min-width: 0;">
+            @if($nextPost)
+                <a href="{{ route('post.show', $nextPost->slug) }}" class="nav-post-link" style="display: flex; flex-direction: column; text-decoration: none; padding: 15px; background: #f8f9fa; border-radius: 8px; transition: all 0.2s; height: 100%;">
+                    <span style="font-size: 0.75rem; font-weight: 700; color: #777; text-transform: uppercase; margin-bottom: 5px; display: flex; align-items: center; gap: 4px;">
+                        <i class="bi bi-chevron-left"></i> Trang trước
+                    </span>
+                    <span style="font-size: 0.95rem; font-weight: 700; color: var(--green,#2a7a27); line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis;">
+                        {{ $nextPost->title }}
+                    </span>
+                </a>
+            @endif
+        </div>
+
+        {{-- Next Post (Bài cũ hơn) --}}
+        <div style="flex: 1; min-width: 0; text-align: right;">
+            @if($previousPost)
+                <a href="{{ route('post.show', $previousPost->slug) }}" class="nav-post-link" style="display: flex; flex-direction: column; text-decoration: none; padding: 15px; background: #f8f9fa; border-radius: 8px; transition: all 0.2s; height: 100%; align-items: flex-end;">
+                    <span style="font-size: 0.75rem; font-weight: 700; color: #777; text-transform: uppercase; margin-bottom: 5px; display: flex; align-items: center; gap: 4px;">
+                        Trang sau <i class="bi bi-chevron-right"></i>
+                    </span>
+                    <span style="font-size: 0.95rem; font-weight: 700; color: var(--green,#2a7a27); line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis; text-align: right;">
+                        {{ $previousPost->title }}
+                    </span>
+                </a>
+            @endif
+        </div>
+
+    </div>
+
+    <style>
+        .nav-post-link:hover {
+            background: #e8f5e9 !important;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(42, 122, 39, 0.1);
+        }
+        html.dark .nav-post-link {
+            background: #18181b !important;
+            border: 1px solid #27272a;
+        }
+        html.dark .nav-post-link:hover {
+            background: #27272a !important;
+        }
+        html.dark .article-navigation {
+            border-top-color: #27272a !important;
+        }
+    </style>
 
     {{-- ══ Related Articles ══════════════════════════════════ --}}
     @if($relatedPosts->isNotEmpty())

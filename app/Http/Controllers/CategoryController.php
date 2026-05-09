@@ -17,7 +17,7 @@ class CategoryController extends Controller
         $posts = Post::published()
             ->whereIn('category_id', $categoryIds)
             ->with(['author:id,name,avatar', 'category:id,name,slug'])
-            ->latest()
+            ->latest('published_at')
             ->paginate(12);
 
         // All active categories for sidebar

@@ -43,15 +43,29 @@ class PostController extends Controller
             ->where('category_id', $post->category_id)
             ->where('id', '!=', $post->id)
             ->with(['author:id,name', 'category:id,name,slug'])
-            ->latest()
+            ->latest('published_at')
             ->limit(4)
             ->get();
+
+        // Bài tiếp theo (cũ hơn bài hiện tại)
+        $previousPost = Post::published()
+            ->where('category_id', $post->category_id)
+            ->where('published_at', '<', $post->published_at)
+            ->latest('published_at')
+            ->first();
+
+        // Bài trước đó (mới hơn bài hiện tại)
+        $nextPost = Post::published()
+            ->where('category_id', $post->category_id)
+            ->where('published_at', '>', $post->published_at)
+            ->oldest('published_at')
+            ->first();
 
         // Sidebar: 6 bài mới nhất (toàn site)
         $recentPosts = Post::published()
             ->where('id', '!=', $post->id)
             ->with(['category:id,name,slug'])
-            ->latest()
+            ->latest('published_at')
             ->limit(6)
             ->get();
 
@@ -61,7 +75,7 @@ class PostController extends Controller
             ->orderByDesc('posts_count')
             ->get();
 
-        return view('posts.show', compact('post', 'relatedPosts', 'recentPosts', 'allCategories'));
+        return view('posts.show', compact('post', 'relatedPosts', 'recentPosts', 'allCategories', 'previousPost', 'nextPost'));
     }
 
     /**
@@ -87,7 +101,7 @@ class PostController extends Controller
         Comment::create([
             'post_id'     => $post->id,
             'user_id'     => auth()->id(),
-            'content'     => $request->content,
+            'content'     => $request->input('content'),
             // true = auto-approved (publicly visible like Facebook)
             'is_approved' => true,
         ]);

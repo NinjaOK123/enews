@@ -77,6 +77,12 @@
                 onmouseover="this.style.background='#1b5e20'" onmouseout="this.style.background='var(--primary,#2a7a27)'">
           <i class="bi bi-search me-2"></i>Tìm kiếm
         </button>
+        
+        <select name="sort" style="border:1.5px solid #d0d0d0; border-radius:7px; padding:8px 12px; font-size:.85rem; outline:none; background:#fff; font-family:inherit; font-weight:600; color:#555; cursor:pointer;" onchange="this.form.submit()">
+          <option value="desc" {{ request('sort') != 'asc' ? 'selected' : '' }}>Mới nhất</option>
+          <option value="asc" {{ request('sort') == 'asc' ? 'selected' : '' }}>Cũ nhất</option>
+        </select>
+
         @if($hasFilters)
         <a href="{{ route('search') }}"
            style="color:#888; font-size:.80rem; text-decoration:none; padding:9px 14px; border:1px solid #ddd; border-radius:7px;">

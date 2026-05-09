@@ -28,7 +28,7 @@ class HomeController extends Controller
             if ($heroPosts->isEmpty()) {
                 $heroPosts = Post::published()
                     ->with(['category:id,name,slug', 'author:id,name'])
-                    ->latest()
+                    ->latest('published_at')
                     ->limit(5)
                     ->get();
             }
@@ -36,7 +36,7 @@ class HomeController extends Controller
             // ── "Mới nhất" sidebar ────────────────────────────────────────
             $sidebarLatest = Post::published()
                 ->with('category:id,name,slug')
-                ->latest()
+                ->latest('published_at')
                 ->limit(9)
                 ->get();
 
@@ -89,7 +89,7 @@ class HomeController extends Controller
                 $sections[$slug] = Post::published()
                     ->where('category_id', $catId)
                     ->with(['author:id,name', 'category:id,name,slug'])
-                    ->latest()
+                    ->latest('published_at')
                     ->limit(4)
                     ->get();
             } else {

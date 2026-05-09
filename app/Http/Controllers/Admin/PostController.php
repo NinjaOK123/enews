@@ -40,11 +40,19 @@ class PostController extends Controller
 
         // Lọc theo ngày đăng
         if ($request->filled('date')) {
-            $query->whereDate('created_at', $request->date);
+            $query->whereDate('published_at', $request->date);
         }
 
 
-        $posts = $query->latest()->paginate(15)->withQueryString();
+        // Sắp xếp
+        $sort = $request->input('sort', 'desc');
+        if ($sort === 'asc') {
+            $query->orderBy('published_at', 'asc');
+        } else {
+            $query->latest('published_at');
+        }
+
+        $posts = $query->paginate(15)->withQueryString();
         $categories = Category::orderBy('name')->get();
         
         return view('admin.posts.index', compact('posts', 'categories'));

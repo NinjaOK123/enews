@@ -65,7 +65,7 @@
            :style="sidebarStyle()">
 
         {{-- Logo --}}
-        <div class="flex items-center gap-3 h-[64px] border-b border-zinc-200 dark:border-white/10 shrink-0 relative w-full overflow-hidden transition-all duration-300" :class="collapsed ? 'justify-center px-0' : 'justify-start px-5'">
+        <div @click="toggle()" class="cursor-pointer flex items-center gap-3 h-[64px] border-b border-zinc-200 dark:border-white/10 shrink-0 relative w-full overflow-hidden transition-all duration-300 hover:bg-zinc-50 dark:hover:bg-white/5" :class="collapsed ? 'justify-center px-0' : 'justify-start px-5'">
             <div class="w-8 h-8 rounded-lg bg-zinc-100 dark:bg-white/5 border border-zinc-200 dark:border-white/10 flex items-center justify-center text-zinc-900 dark:text-zinc-100 shrink-0 transition-all duration-300">
                 <i class="bi bi-newspaper"></i>
             </div>
@@ -223,14 +223,6 @@
         <header class="h-[64px] bg-white dark:bg-zinc-950 border-b border-zinc-200 dark:border-white/10 sticky top-0 z-30 px-6 flex items-center justify-between shadow-sm transition-colors duration-200">
             
             <div class="flex items-center gap-4">
-                {{-- Hamburger --}}
-                <button @click="toggle()"
-                        class="w-8 h-8 flex items-center justify-center rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-500 dark:text-zinc-400 transition cursor-pointer outline-none">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                       <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
-                    </svg>
-                </button>
-
                 {{-- Breadcrumbs / Welcome --}}
                 <div class="hidden md:flex flex-col">
                     <span class="text-[14px] font-medium tracking-tight text-zinc-900 dark:text-zinc-100">Workspace</span>

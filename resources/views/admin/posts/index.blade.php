@@ -78,11 +78,17 @@
             </div>
 
             <div class="mt-4 pt-4 border-t border-gray-100 dark:border-zinc-800/80 flex items-center justify-end gap-2.5 transition-colors">
-                @if(request()->anyFilled(['q', 'category_id', 'status', 'date']))
+                @if(request()->anyFilled(['q', 'category_id', 'status', 'date', 'sort']))
                 <a href="{{ route('admin.posts.index') }}" class="px-4 py-1.5 text-[13px] font-semibold text-gray-500 dark:text-zinc-400 bg-gray-100 dark:bg-zinc-800 hover:bg-gray-200 dark:hover:bg-zinc-700 hover:text-gray-700 dark:hover:text-zinc-200 rounded-lg transition-colors">
                     Xóa lọc
                 </a>
                 @endif
+                
+                <select name="sort" class="px-3 py-1.5 text-[13px] font-semibold bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 text-gray-700 dark:text-zinc-300 rounded-lg outline-none focus:ring-2 focus:ring-green-500/20 dark:focus:ring-emerald-500/20 focus:border-green-500 transition-all cursor-pointer shadow-sm">
+                    <option value="desc" {{ request('sort') != 'asc' ? 'selected' : '' }}>Mới nhất</option>
+                    <option value="asc" {{ request('sort') == 'asc' ? 'selected' : '' }}>Cũ nhất</option>
+                </select>
+
                 <button type="submit" class="px-5 py-1.5 bg-gray-800 dark:bg-zinc-100 hover:bg-black dark:hover:bg-white text-white dark:text-zinc-900 text-[13px] font-semibold rounded-lg shadow-sm transition-all focus:ring-2 focus:ring-offset-2 focus:ring-gray-800 dark:focus:ring-zinc-100 flex items-center gap-1.5">
                     <i class="bi bi-funnel-fill text-xs"></i> Lọc kết quả
                 </button>
@@ -102,7 +108,7 @@
                         <th class="px-6 py-5 text-center">Người đăng</th>
                         <th class="px-6 py-5 text-center">Trạng thái</th>
                         <th class="px-6 py-5 text-center">Hiện Slider</th>
-                        <th class="px-6 py-5 text-center">Ngày tạo</th>
+                        <th class="px-6 py-5 text-center">Ngày đăng</th>
                         <th class="px-6 py-5 text-right">Hành động</th>
                     </tr>
                 </thead>
@@ -176,8 +182,8 @@
                             </div>
                         </td>
                         <td class="px-6 py-5 align-top text-center text-gray-500 dark:text-zinc-400 text-[13px] font-medium transition-colors">
-                            <i class="bi bi-clock me-1 text-gray-400 dark:text-zinc-500"></i> {{ $post->created_at->format('d/m/Y') }}<br>
-                            {{ $post->created_at->format('H:i') }}
+                            <i class="bi bi-clock me-1 text-gray-400 dark:text-zinc-500"></i> {{ optional($post->published_at)->format('d/m/Y') ?? 'Chưa đăng' }}<br>
+                            {{ optional($post->published_at)->format('H:i') }}
                         </td>
                         <td class="px-6 py-5 align-top text-right" x-data="{ actOpen: false }" @click.outside="actOpen = false">
                             <div class="relative inline-flex items-center justify-end text-left">
