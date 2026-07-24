@@ -6,6 +6,13 @@
     <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
         <h3 class="text-2xl font-bold text-zinc-900 dark:text-zinc-100 tracking-tight">Quản lý bài viết</h3>
         <div class="flex items-center gap-3">
+            <!-- Sync Enews AGU Button -->
+            <form action="{{ route('admin.posts.sync-agu') }}" method="POST" onsubmit="return confirm('Bạn có chắc chắn muốn kết nối và đồng bộ tin mới nhất từ enews.agu.edu.vn?')">
+                @csrf
+                <button type="submit" class="inline-flex items-center justify-center gap-2 px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white text-[13px] font-medium rounded-lg shadow-sm transition-colors shrink-0 outline-none">
+                    <i class="bi bi-arrow-repeat"></i> Đồng bộ Enews AGU
+                </button>
+            </form>
 
             <!-- Admin can create posts by redirecting to contributor create -->
             <a href="{{ route('contributor.posts.create') }}" class="inline-flex items-center justify-center gap-2 px-5 py-2 bg-zinc-900 hover:bg-zinc-800 dark:bg-white dark:hover:bg-zinc-100 !text-white dark:!text-zinc-900 text-[13px] font-medium rounded-lg shadow-sm transition-colors shrink-0 outline-none">

@@ -54,3 +54,10 @@ Artisan::command('enews:import-joomla {--only= : users|categories|posts|featured
     }
 })->purpose('Import legacy Joomla enews.sql data into Laravel tables');
 
+// ─── Tự động cào tin tức từ enews.agu.edu.vn mỗi giờ 1 lần ───────
+\Illuminate\Support\Facades\Schedule::command('enews:crawl-agu --limit=20')
+    ->hourly()
+    ->withoutOverlapping()
+    ->appendOutputTo(storage_path('logs/cron_agu_crawler.log'));
+
+

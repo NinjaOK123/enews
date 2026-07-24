@@ -108,6 +108,7 @@ Route::prefix('admin')
      ->middleware(['auth', 'role:admin,editor'])
      ->group(function () {
          // Quản lý Bài viết (Admin & Editor)
+         Route::post('posts/sync-agu', [\App\Http\Controllers\Admin\PostController::class, 'syncAguNews'])->name('posts.sync-agu');
          Route::post('posts/{post}/approve', [\App\Http\Controllers\Admin\PostController::class, 'approve'])->name('posts.approve');
          Route::post('posts/{post}/reject', [\App\Http\Controllers\Admin\PostController::class, 'reject'])->name('posts.reject');
 

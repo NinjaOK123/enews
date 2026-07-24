@@ -14,7 +14,7 @@ use DOMXPath;
 
 class CrawlRecentArticles extends Command
 {
-    protected $signature = 'enews:crawl-recent {--limit=50 : Số lượng bài báo tối đa để quét} {--cookie= : Cookie sl-session từ trình duyệt sau khi pass WAF}';
+    protected $signature = 'enews:crawl-agu {--limit=50 : Số lượng bài báo tối đa để quét} {--cookie= : Cookie sl-session từ trình duyệt sau khi pass WAF} {--user-agent= : Custom User-Agent matching WAF cookie}';
     protected $description = 'Crawl các bài viết mới từ enews.agu.edu.vn từ 11/03/2026 đến hiện tại';
 
     private $baseUrl = 'https://enews.agu.edu.vn';
@@ -305,25 +305,43 @@ class CrawlRecentArticles extends Command
     private function fetchHtml($url, $wafCookie = null)
     {
         try {
+            $ch = curl_init();
+            $ua = $this->option('user-agent') ?: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36';
+            
             $headers = [
-                'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36'
+                'User-Agent: ' . $ua,
+                'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+                'Accept-Language: vi-VN,vi;q=0.9,en-US;q=0.8,en;q=0.7'
             ];
             
             if ($wafCookie) {
-                $headers['Cookie'] = $wafCookie;
+                $headers[] = 'Cookie: ' . $wafCookie;
             }
 
-            $response = Http::withoutVerifying() // Bỏ qua kiểm tra SSL nếu local bị lỗi certificate
-                ->withHeaders($headers)
-                ->timeout(60)->get($url); // Tăng timeout lên 60s
+            curl_setopt_array($ch, [
+                CURLOPT_URL            => $url,
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_FOLLOWLOCATION => true,
+                CURLOPT_MAXREDIRS      => 5,
+                CURLOPT_TIMEOUT        => 30,
+                CURLOPT_SSL_VERIFYPEER => false,
+                CURLOPT_SSL_VERIFYHOST => false,
+                CURLOPT_RESOLVE        => ['enews.agu.edu.vn:443:171.244.43.212', 'enews.agu.edu.vn:80:171.244.43.212'],
+                CURLOPT_HTTPHEADER     => $headers
+            ]);
 
-            if ($response->successful()) {
-                return $response->body();
+            $html = curl_exec($ch);
+            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            curl_close($ch);
+
+            if ($html !== false && $httpCode < 400) {
+                return $html;
+            } else if ($httpCode === 468) {
+                $this->error("      [SafeLine WAF Block 468] tại " . $url);
             } else {
-                $this->error("      [Lỗi HTTP] Code: " . $response->status() . " tại " . $url);
+                $this->error("      [Lỗi HTTP] Code: " . $httpCode . " tại " . $url);
             }
         } catch (\Exception $e) {
-            // Lấy dòng lỗi đầu tiên cho gọn
             $this->error("      [Lỗi Kết Nối] " . explode("\n", $e->getMessage())[0]);
         }
         return null;
@@ -359,9 +377,10 @@ class CrawlRecentArticles extends Command
         try {
             $ch = curl_init($remoteUrl);
             
+            $ua = $this->option('user-agent') ?: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36';
             $headers = [
                 'Accept: image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8',
-                'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+                'User-Agent: ' . $ua,
             ];
             
             if ($wafCookie) {
@@ -375,6 +394,7 @@ class CrawlRecentArticles extends Command
                 CURLOPT_TIMEOUT        => 30, // Tăng timeout tải ảnh lên 30s
                 CURLOPT_SSL_VERIFYPEER => false,
                 CURLOPT_SSL_VERIFYHOST => false,
+                CURLOPT_RESOLVE        => ['enews.agu.edu.vn:443:171.244.43.212', 'enews.agu.edu.vn:80:171.244.43.212'],
                 CURLOPT_HTTPHEADER     => $headers
             ]);
 

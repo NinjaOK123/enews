@@ -127,6 +127,19 @@ class PostController extends Controller
         });
     }
 
+    public function syncAguNews(Request $request)
+    {
+        $crawler = new \App\Services\AguNewsCrawlerService();
+        $limit = (int) $request->input('limit', 15);
+        $result = $crawler->crawlLatestNews($limit);
+
+        if ($result['status'] === 'error') {
+            return back()->with('error', $result['message']);
+        }
+
+        return back()->with('success', $result['message']);
+    }
+
     /**
      * View post revision history
      */
